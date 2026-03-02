@@ -1,0 +1,257 @@
+openapi: 3.0.3
+info:
+  title: Simple Tools API
+  description: |
+    A simple REST API providing calculator and weather forecast tools.
+    Based on the MCP Server implementation.
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: http://localhost:12000
+    description: Local development server
+
+tags:
+  - name: Calculator
+    description: Basic arithmetic operations
+  - name: Weather
+    description: Weather forecast information
+
+paths:
+  /calculator:
+    get:
+      tags:
+        - Calculator
+      summary: Perform arithmetic calculation
+      description: Execute basic arithmetic operations (add, subtract, multiply, divide)
+      operationId: calculator
+      parameters:
+        - name: operation
+          in: query
+          required: true
+          description: The arithmetic operation to perform
+          schema:
+            type: string
+            enum:
+              - add
+              - subtract
+              - multiply
+              - divide
+            example: add
+        - name: a
+          in: query
+          required: true
+          description: First number
+          schema:
+            type: number
+            example: 10
+        - name: b
+          in: query
+          required: true
+          description: Second number
+          schema:
+            type: number
+            example: 5
+      responses:
+        "200":
+          description: Calculation successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: number
+                    description: The result of the calculation
+                    example: 15
+                  expression:
+                    type: string
+                    description: The formatted expression
+                    example: "10 + 5"
+              examples:
+                addition:
+                  summary: Addition result
+                  value:
+                    result: 15
+                    expression: "10 + 5"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                invalidOperation:
+                  summary: Invalid operation
+                  value:
+                    error: "Invalid operation. Must be one of: add, subtract, multiply, divide"
+                divideByZero:
+                  summary: Division by zero
+                  value:
+                    error: "Cannot divide by zero"
+                invalidInput:
+                  summary: Invalid input type
+                  value:
+                    error: "Both 'a' and 'b' must be numbers"
+
+  /weather/forecast:
+    get:
+      tags:
+        - Weather
+      summary: Get weather forecast
+      description: Retrieve weather forecast for a specified city
+      operationId: weather_forecast
+      parameters:
+        - name: city
+          in: query
+          required: true
+          description: Name of the city
+          schema:
+            type: string
+            example: London
+        - name: days
+          in: query
+          required: false
+          description: Number of days to forecast (1-7)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 7
+            default: 1
+            example: 3
+      responses:
+        "200":
+          description: Forecast retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  city:
+                    type: string
+                    example: London
+                  days:
+                    type: integer
+                    example: 3
+                  forecast:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ForecastDay"
+              examples:
+                singleDay:
+                  summary: Single day forecast
+                  value:
+                    city: London
+                    days: 1
+                    forecast:
+                      - day: 1
+                        dayLabel: Today
+                        condition: Partly Cloudy
+                        temperature:
+                          fahrenheit: 68
+                          celsius: 20.0
+                        humidity: 65
+                        wind: 12
+                threeDays:
+                  summary: Three day forecast
+                  value:
+                    city: London
+                    days: 3
+                    forecast:
+                      - day: 1
+                        dayLabel: Today
+                        condition: Sunny
+                        temperature:
+                          fahrenheit: 72
+                          celsius: 22.2
+                        humidity: 55
+                        wind: 10
+                      - day: 2
+                        dayLabel: Day 2
+                        condition: Partly Cloudy
+                        temperature:
+                          fahrenheit: 68
+                          celsius: 20.0
+                        humidity: 60
+                        wind: 15
+                      - day: 3
+                        dayLabel: Day 3
+                        condition: Rainy
+                        temperature:
+                          fahrenheit: 62
+                          celsius: 16.7
+                        humidity: 80
+                        wind: 20
+        "400":
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                missingCity:
+                  summary: Missing city parameter
+                  value:
+                    error: "City is required"
+                invalidDays:
+                  summary: Invalid days value
+                  value:
+                    error: "Days must be a number between 1 and 7"
+
+components:
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+          example: An error occurred
+
+    ForecastDay:
+      type: object
+      properties:
+        day:
+          type: integer
+          description: Day number (1-7)
+          example: 1
+        dayLabel:
+          type: string
+          description: Human-readable day label
+          example: Today
+        condition:
+          type: string
+          description: Weather condition
+          enum:
+            - Sunny
+            - Partly Cloudy
+            - Cloudy
+            - Rainy
+            - Stormy
+            - Snowy
+          example: Sunny
+        temperature:
+          type: object
+          properties:
+            fahrenheit:
+              type: integer
+              description: Temperature in Fahrenheit
+              example: 72
+            celsius:
+              type: number
+              format: float
+              description: Temperature in Celsius
+              example: 22.2
+        humidity:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Humidity percentage
+          example: 65
+        wind:
+          type: integer
+          description: Wind speed in mph
+          example: 12

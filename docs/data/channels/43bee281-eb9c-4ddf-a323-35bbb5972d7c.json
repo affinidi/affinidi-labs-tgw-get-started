@@ -1,0 +1,49 @@
+{
+  "config_id": "43bee281-eb9c-4ddf-a323-35bbb5972d7c",
+  "name": "ap2-channel-merchant-agent",
+  "description": "Merchant Agent",
+  "listen_address": "localhost:8080",
+  "route": "/routes/sonata/explore",
+  "target_endpoint": "http://localhost:8001",
+  "extension_rules": {
+    "json_schema": {
+      "properties": {
+        "agentIdentity": {
+          "properties": {},
+          "required": [],
+          "type": "object"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "required": true
+  },
+  "enforce_extension": false,
+  "response_extension_rules": {
+    "json_schema": {
+      "properties": {
+        "agentIdentity": {
+          "properties": {},
+          "required": [],
+          "type": "object"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "required": true
+  },
+  "enforce_response_extension": false,
+  "custom_metadata": {
+    "enabled": false,
+    "payload": {}
+  },
+  "status": "active",
+  "channel_type": "user",
+  "protocol": "ap2",
+  "mcp_tool_policies": [],
+  "mcp_tool_policies_enabled": false,
+  "opa_enabled": false,
+  "publish_to_did_document": false
+}

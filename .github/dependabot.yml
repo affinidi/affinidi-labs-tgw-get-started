@@ -1,0 +1,34 @@
+# Dependabot configuration for automated dependency updates.
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Python - a2a
+  - package-ecosystem: "pip"
+    directory: "/a2a"
+    schedule:
+      interval: "weekly"
+
+  # Python - mcp
+  - package-ecosystem: "pip"
+    directory: "/mcp"
+    schedule:
+      interval: "weekly"
+
+  # Python - a2a-vertex-agent
+  - package-ecosystem: "pip"
+    directory: "/a2a-vertex-agent"
+    schedule:
+      interval: "weekly"
+
+  # Python - rest-api
+  - package-ecosystem: "pip"
+    directory: "/rest-api"
+    schedule:
+      interval: "weekly"

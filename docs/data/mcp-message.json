@@ -1,0 +1,53 @@
+{
+    "jsonrpc": "2.0",
+    "id": 8,
+    "method": "tools/call",
+    "_meta": {
+        "https://fabric.affinidi.io/extensions/agent-identity-credential/v1": {
+            "verifiablePresentation": {
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1"
+                ],
+                "type": [
+                    "VerifiablePresentation"
+                ],
+                "holder": "did:web:your-trust-gateway.com:channel:4cb668eb-49ce-486f-b3db-2de58561ed38",
+                "verifiableCredential": [
+                    {
+                        "@context": [
+                            "https://www.w3.org/2018/credentials/v1",
+                            "https://affinidi.io/contexts/agent-identity/v1"
+                        ],
+                        "type": [
+                            "VerifiableCredential",
+                            "AgentIdentityCredential"
+                        ],
+                        "issuer": "did:web:your-trust-gateway.com",
+                        "issuanceDate": "2026-02-06T09:40:41.537291+00:00",
+                        "credentialSubject": {
+                            "id": "did:web:your-trust-gateway.com:channel:4cb668eb-49ce-486f-b3db-2de58561ed38",
+                            "identityFields": {
+                                "type": "channel_identity",
+                                "purpose": "Channel: 2cfabee5-e060-405b-af1a-ade33e3b339d"
+                            }
+                        },
+                        "iat": 1770370841,
+                        "exp": 1801906841,
+                        "jti": "urn:uuid:1b4338cd-a0ac-4efa-84da-a1ceb62f5ce2"
+                    }
+                ],
+                "iat": 1770370841,
+                "exp": 1770457241,
+                "jti": "urn:uuid:4947f209-dba6-4b9e-94cf-efcb5f0f376a"
+            },
+            "did": "did:web:your-trust-gateway.com:channel:4cb668eb-49ce-486f-b3db-2de58561ed38"
+        }
+    },
+    "params": {
+        "name": "weather_forecast",
+        "arguments": {
+            "city": "New York",
+            "days": 3
+        }
+    }
+}

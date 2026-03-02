@@ -1,0 +1,40 @@
+{
+    "https://fabric.affinidi.io/extensions/agent-identity-credential/v1": {
+        "verifiablePresentation": {
+            "@context": [
+                "https://www.w3.org/2018/credentials/v1"
+            ],
+            "type": [
+                "VerifiablePresentation"
+            ],
+            "holder": "did:web:your-trust-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be",
+            "verifiableCredential": [
+                {
+                    "@context": [
+                        "https://www.w3.org/2018/credentials/v1",
+                        "https://affinidi.io/contexts/agent-identity/v1"
+                    ],
+                    "type": [
+                        "VerifiableCredential",
+                        "AgentIdentityCredential"
+                    ],
+                    "issuer": "did:web:your-trust-gateway.com",
+                    "issuanceDate": "2026-02-05T13:01:22.123995+00:00",
+                    "credentialSubject": {
+                        "id": "did:web:your-trust-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be",
+                        "identityFields": {
+                            "agentIdentity.name": "A2A Test Client"
+                        }
+                    },
+                    "iat": 1770296482,
+                    "exp": 1801832482,
+                    "jti": "urn:uuid:5220c842-da73-4f55-8c8a-f8af006b724c"
+                }
+            ],
+            "iat": 1770296482,
+            "exp": 1770382882,
+            "jti": "urn:uuid:f019c822-2445-42c4-9977-3269820c1b7a"
+        },
+        "did": "did:web:your-trust-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be"
+    }
+}

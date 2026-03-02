@@ -1,0 +1,72 @@
+{
+  "config_id": "94633cd5-b109-434b-a796-253f4723825e",
+  "name": "a2a-channel-echo-agent",
+  "description": "",
+  "listen_address": "your-trust-gateway.com",
+  "route": "/agents/strong/paris",
+  "target_endpoint": "http://localhost:10000",
+  "extension_rules": {
+    "json_schema": {
+      "type": "object",
+      "properties": {
+        "agentIdentity": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "x-identity": true
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      },
+      "required": []
+    },
+    "required": true
+  },
+  "enforce_extension": true,
+  "response_extension_rules": {
+    "json_schema": {
+      "type": "object",
+      "properties": {
+        "agentIdentity": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "x-identity": true
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "version"
+          ]
+        }
+      },
+      "required": []
+    },
+    "required": true
+  },
+  "enforce_response_extension": true,
+  "status": "active",
+  "channel_type": "user",
+  "protocol": "a2a",
+  "identity_config": {
+    "enabled": true,
+    "mode": "payload",
+    "meta_field": "agentIdentity"
+  },
+  "security_config": {
+    "mode": "none"
+  },
+  "mcp_tool_policies": [],
+  "mcp_tool_policies_enabled": false,
+  "opa_enabled": false,
+  "opa_policy": "",
+  "publish_to_did_document": false
+}

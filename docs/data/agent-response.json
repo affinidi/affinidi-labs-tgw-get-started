@@ -1,0 +1,96 @@
+{
+    "id": "d0ec2b6b-c731-4c62-bb16-bd740e4e308e",
+    "jsonrpc": "2.0",
+    "result": {
+        "contextId": "737a0117-5937-4a5a-bfe0-7e601616f15d",
+        "history": [
+            {
+                "contextId": "737a0117-5937-4a5a-bfe0-7e601616f15d",
+                "extensions": [
+                    "https://fabric.affinidi.io/extensions/agent-identity-credential/v1"
+                ],
+                "kind": "message",
+                "messageId": "2cc432affed74f41bd1a88fb94457740",
+                "metadata": {
+                    "https://fabric.affinidi.io/extensions/agent-identity-credential/v1": {
+                        "verifiablePresentation": {
+                            "@context": [
+                                "https://www.w3.org/2018/credentials/v1"
+                            ],
+                            "type": [
+                                "VerifiablePresentation"
+                            ],
+                            "holder": "did:web:your-trust-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be",
+                            "verifiableCredential": [
+                                {
+                                    "@context": [
+                                        "https://www.w3.org/2018/credentials/v1",
+                                        "https://affinidi.io/contexts/agent-identity/v1"
+                                    ],
+                                    "type": [
+                                        "VerifiableCredential",
+                                        "AgentIdentityCredential"
+                                    ],
+                                    "issuer": "did:web:your-trust-gateway.com",
+                                    "issuanceDate": "2026-02-05T14:21:58.250762+00:00",
+                                    "credentialSubject": {
+                                        "id": "did:web:your-trust-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be",
+                                        "identityFields": {
+                                            "type": "channel_identity",
+                                            "purpose": "Channel: 94633cd5-b109-434b-a796-253f4723825e"
+                                        }
+                                    },
+                                    "iat": 1770301318,
+                                    "exp": 1801837318,
+                                    "jti": "urn:uuid:8790cdd4-94e1-4c4f-a2c9-65fc7b83a7ba"
+                                }
+                            ],
+                            "iat": 1770301318,
+                            "exp": 1770387718,
+                            "jti": "urn:uuid:10dfc740-5f0f-4508-9b83-a8bc70c6ea99"
+                        },
+                        "did": "did:web:your-trust-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be"
+                    }
+                },
+                "parts": [
+                    {
+                        "kind": "text",
+                        "text": "hee"
+                    }
+                ],
+                "role": "user",
+                "taskId": "44e0dae9-9d11-4685-91a6-c567f8704042"
+            }
+        ],
+        "id": "44e0dae9-9d11-4685-91a6-c567f8704042",
+        "kind": "task",
+        "status": {
+            "message": {
+                "contextId": "737a0117-5937-4a5a-bfe0-7e601616f15d",
+                "extensions": [
+                    "https://fabric.affinidi.io/extensions/agent-identity/v1"
+                ],
+                "kind": "message",
+                "messageId": "6840fc90-cd38-4e73-9cae-92600fa861fa",
+                "metadata": {
+                    "https://fabric.affinidi.io/extensions/agent-identity/v1": {
+                        "agentIdentity": {
+                            "name": "Simple A2A Agent",
+                            "version": "1.0.0"
+                        }
+                    }
+                },
+                "parts": [
+                    {
+                        "kind": "text",
+                        "text": "Echo from Simple A2A Agent!\n\nYou said: hee\n\n"
+                    }
+                ],
+                "role": "agent",
+                "taskId": "44e0dae9-9d11-4685-91a6-c567f8704042"
+            },
+            "state": "completed",
+            "timestamp": "2026-02-05T19:51:58.253240"
+        }
+    }
+}

@@ -1,0 +1,49 @@
+{
+  "config_id": "b28912dd-41bf-4be3-932a-06380af748be",
+  "name": "ap2-channel-merchant-payment-processor_agent",
+  "description": "Payment Processor",
+  "listen_address": "localhost:8080",
+  "route": "/agents/liter/taxi",
+  "target_endpoint": "http://localhost:8003",
+  "extension_rules": {
+    "json_schema": {
+      "properties": {
+        "agentIdentity": {
+          "properties": {},
+          "required": [],
+          "type": "object"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "required": true
+  },
+  "enforce_extension": false,
+  "response_extension_rules": {
+    "json_schema": {
+      "properties": {
+        "agentIdentity": {
+          "properties": {},
+          "required": [],
+          "type": "object"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "required": true
+  },
+  "enforce_response_extension": false,
+  "custom_metadata": {
+    "enabled": false,
+    "payload": {}
+  },
+  "status": "active",
+  "channel_type": "user",
+  "protocol": "ap2",
+  "mcp_tool_policies": [],
+  "mcp_tool_policies_enabled": false,
+  "opa_enabled": false,
+  "publish_to_did_document": false
+}

@@ -1,0 +1,49 @@
+{
+  "config_id": "8f02889f-c3a6-4c8d-a0e5-2426ff16075f",
+  "name": "ap2-channel-credential-provider-agent",
+  "description": "Credential Provider",
+  "listen_address": "localhost:8080",
+  "route": "/agents/hand/prize",
+  "target_endpoint": "http://localhost:8002",
+  "extension_rules": {
+    "json_schema": {
+      "properties": {
+        "agentIdentity": {
+          "properties": {},
+          "required": [],
+          "type": "object"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "required": true
+  },
+  "enforce_extension": false,
+  "response_extension_rules": {
+    "json_schema": {
+      "properties": {
+        "agentIdentity": {
+          "properties": {},
+          "required": [],
+          "type": "object"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "required": true
+  },
+  "enforce_response_extension": false,
+  "custom_metadata": {
+    "enabled": false,
+    "payload": {}
+  },
+  "status": "active",
+  "channel_type": "user",
+  "protocol": "ap2",
+  "mcp_tool_policies": [],
+  "mcp_tool_policies_enabled": false,
+  "opa_enabled": false,
+  "publish_to_did_document": false
+}

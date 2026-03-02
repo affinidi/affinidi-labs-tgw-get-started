@@ -1,0 +1,79 @@
+name: Code Quality Checks
+
+on:
+  push:
+    branches:
+      - "**"
+      - "!main"
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  security:
+    permissions:
+      contents: read
+      checks: read
+      statuses: read
+      security-events: write
+    uses: affinidi/pipeline-security/.github/workflows/security-scanners.yml@main
+    with:
+      config-path: .github/labeler.yml
+    secrets: inherit
+
+  # Python projects: a2a, mcp, a2a-vertex-agent, rest-api
+  python-lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [a2a, mcp, a2a-vertex-agent, rest-api]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: ${{ matrix.project }}/requirements.txt
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.project }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8
+
+      - name: Lint with flake8 (errors only)
+        working-directory: ${{ matrix.project }}
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Lint with flake8 (style warnings)
+        working-directory: ${{ matrix.project }}
+        run: |
+          flake8 . --count --max-complexity=10 --max-line-length=120 --statistics || echo "Style warnings found"
+
+      - name: Check Python syntax
+        working-directory: ${{ matrix.project }}
+        run: |
+          python -m py_compile *.py && echo "All Python files compile successfully"
+
+  # Shell script validation
+  shellcheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: "."
+          ignore_paths: "venv .venv"
+          severity: warning

@@ -1,0 +1,38 @@
+📨 Received request: method=tools/call, id=8
+{
+  "jsonrpc": "2.0",
+  "id": 8,
+  "method": "tools/call",
+  "_meta": {
+    "agentIdentity": {
+      "name": "MCP Test Client",
+      "version": "1.0.0"
+    }
+  },
+  "params": {
+    "name": "weather_forecast",
+    "arguments": {
+      "city": "New York",
+      "days": 3
+    }
+  }
+}
+🔧 Calling tool: weather_forecast with args: {'city': 'New York', 'days': 3}
+Sending response: 
+{
+  "jsonrpc": "2.0",
+  "id": 8,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Weather Forecast for New York:\n\nToday: Rainy\n  Temperature: 77\u00b0F (25.0\u00b0C)\n  Humidity: 54%\n  Wind: 21 mph\n\nDay 2: Partly Cloudy\n  Temperature: 61\u00b0F (16.1\u00b0C)\n  Humidity: 58%\n  Wind: 8 mph\n\nDay 3: Stormy\n  Temperature: 75\u00b0F (23.9\u00b0C)\n  Humidity: 74%\n  Wind: 8 mph"
+      }
+    ]
+  },
+  "_meta": {
+    "agentIdentity": {
+      "name": "Simple MCP Server"
+    }
+  }
+}
