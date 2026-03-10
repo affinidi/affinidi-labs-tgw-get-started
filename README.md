@@ -42,19 +42,23 @@ Establish governed MCP and A2A connections by routing clients through the Trust 
 
 ## � Try it in GitHub Codespaces (No Local Setup Required)
 
-Don't want to install anything on your computer? GitHub Codespaces gives you a ready-to-use development environment entirely in your browser. You get a terminal, an editor, and all the tools pre-installed — nothing to download or configure. A github account is required to try out codespace.
+Don't want to install anything on your computer? GitHub Codespaces gives you a ready-to-use development environment entirely in your browser. You get a terminal, an editor, and all the tools pre-installed — nothing to download or configure.
+
+> **What you need:** A free GitHub account is required. Codespaces is included in all plans with **60 free hours per month** on free accounts — no credit card needed for this demo.
 
 ### Step 1 — Open the repository in Codespaces
 
 1. Go to this repository on GitHub.
 2. Click the green **`< > Code`** button near the top-right of the page.
-3. Select the **`Codespaces`** tab. This Tab is visible for only logged in accounts so create a Github account if not doen already.
+3. Select the **`Codespaces`** tab. This tab is only visible when you are signed in — create a free GitHub account first if you have not done so already.
 4. Click **`Create codespace on main`**.
 
    ![alt text](/docs/images/select-codespace.png)
 
 > A new browser tab will open and the environment will take about a minute to set up. You will see a VS Code editor appear in your browser when it is ready.
 > ![alt text](/docs/images/codespace-created.png)
+
+> **Heads up:** Codespaces automatically pauses after **30 minutes of inactivity** to save your free quota. If your server stops responding, just reopen the Codespace, re-run `./run.sh`, and re-forward the port.
 
 ### Step 2 — Open a terminal
 
@@ -96,6 +100,17 @@ cd mcp
 ```
 
 Replace `<your-forwarded-address>` with the URL you copied in Step 4. The test client will connect, list the available tools, and call the calculator and weather tools.
+
+A successful run will print something like:
+
+```
+Connected to MCP server
+Available tools: calculator, weather_forecast
+Calculation: 15 + 27 = 42
+Weather forecast for London: Partly cloudy, 18°C
+```
+
+If you see results like this, everything is working correctly.
 
 ---
 
