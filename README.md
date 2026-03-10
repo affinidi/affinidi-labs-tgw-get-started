@@ -20,6 +20,7 @@ Establish governed MCP and A2A connections by routing clients through the Trust 
 
 ## 📋 Table of Contents
 
+- [Try it in GitHub Codespaces](#-try-it-in-github-codespaces-no-local-setup-required)
 - [Overview](#overview)
 - [Project Structure](#project-structure)
 - [Part 1: Run Agents Without Trust Gateway](#part-1-run-agents-without-trust-gateway)
@@ -39,7 +40,105 @@ Establish governed MCP and A2A connections by routing clients through the Trust 
 
 ---
 
-## 🔍 Overview
+## � Try it in GitHub Codespaces (No Local Setup Required)
+
+Don't want to install anything on your computer? GitHub Codespaces gives you a ready-to-use development environment entirely in your browser. You get a terminal, an editor, and all the tools pre-installed — nothing to download or configure. A github account is required to try out codespace.
+
+### Step 1 — Open the repository in Codespaces
+
+1. Go to this repository on GitHub.
+2. Click the green **`< > Code`** button near the top-right of the page.
+3. Select the **`Codespaces`** tab. This Tab is visible for only logged in accounts so create a Github account if not doen already.
+4. Click **`Create codespace on main`**.
+
+   ![alt text](/docs/images/select-codespace.png)
+
+> A new browser tab will open and the environment will take about a minute to set up. You will see a VS Code editor appear in your browser when it is ready.
+> ![alt text](/docs/images/codespace-created.png)
+
+### Step 2 — Open a terminal
+
+If terminal tab is not visible inside the Codespace, click **Terminal → New Terminal** from the top menu bar (or press `` Ctrl+` ``). A terminal panel will appear at the bottom of the screen.
+
+### Step 3 — Run the MCP Server
+
+In the terminal, run:
+
+```bash
+cd mcp
+./run.sh
+```
+
+You will see a message like `MCP server running on port 11000`. Leave this terminal running.
+
+![alt text](/docs/images/codespace-running.png)
+
+### Step 4 — Forward the port and get your public URL
+
+Codespaces automatically detects that port `11000` is in use and shows a notification. You can also find it yourself:
+
+1. Click the **`Ports`** tab at the bottom of the screen (next to Terminal).
+2. Find port **`11000`** in the list.
+3. Right-click the row and choose **`Port Visibility → Public`** so the URL can be used from outside.
+4. Copy the **`Forwarded Address`** URL — it looks like `https://<random-name>-11000.app.github.dev`.
+
+![alt text](/docs/images/codespace-url.png)
+
+> **Tip:** This forwarded URL acts as your public endpoint, just like ngrok would on a local machine. You do **not** need to install ngrok.
+
+### Step 5 — Test the MCP Server
+
+Open a **second terminal** (Terminal → New Terminal) and run:
+
+```bash
+cd mcp
+./test.sh https://<your-forwarded-address>
+```
+
+Replace `<your-forwarded-address>` with the URL you copied in Step 4. The test client will connect, list the available tools, and call the calculator and weather tools.
+
+---
+
+### Running the A2A Server
+
+Follow the same steps, but use the `a2a/` folder and port `10000`:
+
+**Terminal 1 — start the server:**
+
+```bash
+cd a2a
+./run.sh
+```
+
+**Ports tab — make port `10000` public** and copy the forwarded URL.
+
+**Terminal 2 — run the interactive client:**
+
+```bash
+cd a2a
+./test.sh https://<your-forwarded-address-for-10000>
+```
+
+You can now type messages to the agent and see responses in real time.
+
+---
+
+### Connecting through the Trust Gateway from Codespaces
+
+Once you have your Codespaces forwarded URLs, you can use them exactly like ngrok URLs in all the Trust Gateway steps in Part 2:
+
+- When configuring an MCP channel, set the **Target Endpoint URL** to your Codespaces forwarded address for port `11000`.
+- When configuring an A2A channel, set the **Target Endpoint URL** to your Codespaces forwarded address for port `10000`.
+
+![alt text](/docs/images/ATG-codespace.png)
+
+Everything else stays the same — the Codespace keeps the server running while the Trust Gateway routes traffic to it.
+
+> **Note:** The Vertex AI agent (in `a2a-vertex-agent/`) still requires a Google Cloud account and cannot be set up through Codespaces alone. All other demos work fully.
+
+---
+
+## �🔍 Overview
 
 | Component           | Description                                               |
 | ------------------- | --------------------------------------------------------- |
