@@ -9,7 +9,8 @@ kill_port() {
     local port=$1
     if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1 ; then
         echo "⚠️  Port $port is already in use"
-        local pid=$(lsof -Pi :$port -sTCP:LISTEN -t)
+        local pid
+        pid=$(lsof -Pi :$port -sTCP:LISTEN -t)
         echo "Killing process $pid..."
         kill -9 $pid 2>/dev/null
         sleep 1
