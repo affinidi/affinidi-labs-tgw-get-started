@@ -21,6 +21,13 @@ SERVER_INFO = {
 
 
 # Request/Response Models
+class CalculatorRequest(BaseModel):
+    operation: Literal["add", "subtract", "multiply", "divide"] = Field(
+        ..., description="The arithmetic operation to perform")
+    a: float = Field(..., description="First number")
+    b: float = Field(..., description="Second number")
+
+
 class CalculatorResponse(BaseModel):
     result: float = Field(..., description="The result of the calculation")
     expression: str = Field(..., description="The formatted expression")
@@ -57,6 +64,7 @@ async def lifespan(app: FastAPI):
     print(f"🚀 {SERVER_INFO['name']} v{SERVER_INFO['version']}")
     print(f"   Endpoints:")
     print(f"   - POST /calculator")
+    print(f"   - GET /greeting")
     print(f"   - GET /weather/forecast")
     print(f"   - GET /health")
     print(f"{'='*60}\n")
@@ -80,27 +88,26 @@ async def health_check():
     return {"status": "healthy", "server": SERVER_INFO}
 
 
-@app.get("/calculator", 
-         response_model=CalculatorResponse,
-         responses={
-             400: {"model": ErrorResponse, "description": "Invalid request"}
-         },
-         tags=["Calculator"],
-         summary="Perform arithmetic calculation",
-         description="Execute basic arithmetic operations (add, subtract, multiply, divide)",
-         operation_id="calculator")
-async def calculate(
-    operation: Literal["add", "subtract", "multiply", "divide"] = Query(..., description="The arithmetic operation to perform"),
-    a: float = Query(..., description="First number"),
-    b: float = Query(..., description="Second number")
-):
+@app.post("/calculator",
+          response_model=CalculatorResponse,
+          responses={
+              400: {"model": ErrorResponse, "description": "Invalid request"}
+          },
+          tags=["Calculator"],
+          summary="Perform arithmetic calculation",
+          description="Execute basic arithmetic operations (add, subtract, multiply, divide)",
+          operation_id="calculator")
+async def calculate(body: CalculatorRequest):
     """
     Perform a calculation based on the operation and operands.
-    
+
     - **operation**: The arithmetic operation (add, subtract, multiply, divide)
     - **a**: First number
     - **b**: Second number
     """
+    operation = body.operation
+    a = body.a
+    b = body.b
 
     print(f"🔢 Calculator: {operation} {a} and {b}")
 
@@ -122,14 +129,14 @@ async def calculate(
                 )
             result = a / b
             expr = f"{a} ÷ {b}"
-        
+
         print(f"✅ Result: {expr} = {result}")
-        
+
         return CalculatorResponse(
             result=result,
             expression=expr
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -137,6 +144,21 @@ async def calculate(
             status_code=500,
             detail=f"Calculation error: {str(e)}"
         )
+
+
+@app.get("/greeting",
+         tags=["Greeting"],
+         summary="Greet with a name",
+         description="Returns a greeting message for the given name",
+         operation_id="greeting")
+async def greeting(
+    name: str = Query(..., description="The name to greet")
+):
+    """Return a greeting for the provided name."""
+    if not name or name.strip() == "":
+        raise HTTPException(status_code=400, detail="Name is required")
+    print(f"👋 Greeting: {name}")
+    return {"message": f"Hello, {name}!"}
 
 
 @app.get("/weather/forecast",
@@ -150,11 +172,12 @@ async def calculate(
          operation_id="weather_forecast")
 async def get_weather_forecast(
     city: str = Query(..., description="Name of the city"),
-    days: int = Query(1, ge=1, le=7, description="Number of days to forecast (1-7)")
+    days: int = Query(
+        1, ge=1, le=7, description="Number of days to forecast (1-7)")
 ):
     """
     Get weather forecast for a city.
-    
+
     - **city**: Name of the city (required)
     - **days**: Number of days to forecast, between 1 and 7 (default: 1)
     """
@@ -163,23 +186,24 @@ async def get_weather_forecast(
             status_code=400,
             detail="City is required"
         )
-    
+
     print(f"🌤️  Weather forecast: {city} for {days} day(s)")
-    
+
     # Generate mock weather forecast
-    conditions = ["Sunny", "Partly Cloudy", "Cloudy", "Rainy", "Stormy", "Snowy"]
-    
+    conditions = ["Sunny", "Partly Cloudy",
+                  "Cloudy", "Rainy", "Stormy", "Snowy"]
+
     forecast_list = []
-    
+
     for day in range(1, days + 1):
         condition = random.choice(conditions)
         temp_f = random.randint(45, 85)
         temp_c = round((temp_f - 32) * 5/9, 1)
         humidity = random.randint(30, 90)
         wind = random.randint(5, 25)
-        
+
         day_label = "Today" if day == 1 else f"Day {day}"
-        
+
         forecast_day = ForecastDay(
             day=day,
             dayLabel=day_label,
@@ -191,9 +215,9 @@ async def get_weather_forecast(
             humidity=humidity,
             wind=wind
         )
-        
+
         forecast_list.append(forecast_day)
-    
+
     return WeatherForecastResponse(
         city=city,
         days=days,
@@ -206,7 +230,7 @@ if __name__ == "__main__":
     print("Simple Tools REST API Server")
     print("=" * 60)
     print(f"Server: {SERVER_INFO['name']} v{SERVER_INFO['version']}")
-    print(f"Endpoints: 3 (calculator, weather, health)")
+    print(f"Endpoints: 4 (calculator, greeting, weather, health)")
     print("=" * 60)
-    
+
     uvicorn.run(app, host="0.0.0.0", port=12000, log_level="info")

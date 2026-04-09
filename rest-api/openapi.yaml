@@ -17,42 +17,36 @@ tags:
     description: Basic arithmetic operations
   - name: Weather
     description: Weather forecast information
+  - name: Greeting
+    description: Greeting operations
 
 paths:
   /calculator:
-    get:
+    post:
       tags:
         - Calculator
       summary: Perform arithmetic calculation
       description: Execute basic arithmetic operations (add, subtract, multiply, divide)
       operationId: calculator
-      parameters:
-        - name: operation
-          in: query
-          required: true
-          description: The arithmetic operation to perform
-          schema:
-            type: string
-            enum:
-              - add
-              - subtract
-              - multiply
-              - divide
-            example: add
-        - name: a
-          in: query
-          required: true
-          description: First number
-          schema:
-            type: number
-            example: 10
-        - name: b
-          in: query
-          required: true
-          description: Second number
-          schema:
-            type: number
-            example: 5
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CalculatorRequest"
+            examples:
+              addition:
+                summary: Addition
+                value:
+                  operation: add
+                  a: 10
+                  b: 5
+              division:
+                summary: Division
+                value:
+                  operation: divide
+                  a: 100
+                  b: 4
       responses:
         "200":
           description: Calculation successful
@@ -94,6 +88,49 @@ paths:
                   summary: Invalid input type
                   value:
                     error: "Both 'a' and 'b' must be numbers"
+
+  /greeting:
+    get:
+      tags:
+        - Greeting
+      summary: Greet with a name
+      description: Returns a greeting message for the given name
+      operationId: greeting
+      parameters:
+        - name: name
+          in: query
+          required: true
+          description: The name to greet
+          schema:
+            type: string
+            example: World
+      responses:
+        "200":
+          description: Greeting successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Hello, World!"
+              examples:
+                helloWorld:
+                  summary: Greet World
+                  value:
+                    message: "Hello, World!"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                missingName:
+                  summary: Missing name
+                  value:
+                    error: "Name is required"
 
   /weather/forecast:
     get:
@@ -201,6 +238,31 @@ paths:
 
 components:
   schemas:
+    CalculatorRequest:
+      type: object
+      required:
+        - operation
+        - a
+        - b
+      properties:
+        operation:
+          type: string
+          enum:
+            - add
+            - subtract
+            - multiply
+            - divide
+          description: The arithmetic operation to perform
+          example: add
+        a:
+          type: number
+          description: First number
+          example: 10
+        b:
+          type: number
+          description: Second number
+          example: 5
+
     Error:
       type: object
       required:

@@ -120,7 +120,7 @@ def run_test_suite(client: MCPClient):
     result = client.list_tools()
     assert result.get("result"), "List tools failed"
     tools = result["result"].get("tools", [])
-    assert len(tools) == 2, f"Expected 2 tools, got {len(tools)}"
+    assert len(tools) == 3, f"Expected 3 tools, got {len(tools)}"
     print(f"✅ List Tools: PASSED ({len(tools)} tools)")
 
     # Test 3: Calculator - Addition
@@ -162,7 +162,7 @@ def run_test_suite(client: MCPClient):
     # Test 7: Weather - Single day
     print("\n\n[TEST 7] Weather Forecast: Single Day")
     result = client.call_tool(
-        "weather_forecast", {"city": "San Francisco", "days": 1})
+        "weather_forecast",  {"city": "San Francisco", "days": 1})
     assert result.get("result"), "Call tool failed"
     content = result["result"]["content"][0]["text"]
     assert "San Francisco" in content, f"Expected city name in forecast"
