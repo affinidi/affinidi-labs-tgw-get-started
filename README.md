@@ -1,6 +1,6 @@
-# Affinidi Trust Gateway (part of Affinidi Trust Fabric)
+# Agent Trust Gateway (part of Affinidi Trust Fabric)
 
-The Affinidi Trust Gateway (Affinidi TGW) is an enterprise-grade gateway designed specifically for the emerging Agent-to-Agent AI ecosystem. Written in Rust for maximum performance and security, it provides comprehensive trust infrastructure, observability, and governance for AI agent communications across organizational boundaries, in ways that set it apart in the emerging AI observability space.
+The Agent Trust Gateway (Affinidi TGW) is an enterprise-grade gateway designed specifically for the emerging Agent-to-Agent AI ecosystem. Written in Rust for maximum performance and security, it provides comprehensive trust infrastructure, observability, and governance for AI agent communications across organizational boundaries, in ways that set it apart in the emerging AI observability space.
 
 At its core, the Affinidi TGW is a protocol-aware intercepting proxy for the Internet of AI Agents. The Gateway provides three fundamental capabilities:
 
@@ -29,7 +29,7 @@ Establish governed MCP and A2A connections by routing clients through the Trust 
   - [MCP Server (Local)](#mcp-server-local)
   - [A2A Vertex AI Agent](#a2a-vertex-ai-agent)
 - [Part 2: Run Agents With Trust Gateway](#part-2-run-agents-with-trust-gateway)
-  - [What is the Affinidi Trust Gateway?](#what-is-the-affinidi-trust-gateway)
+  - [What is the Agent Trust Gateway?](#what-is-the-agent-trust-gateway)
   - [Prerequisites](#prerequisites-1)
   - [Setup Trust Gateway](#setup-trust-gateway)
   - [MCP Server via Trust Gateway](#mcp-server-via-trust-gateway)
@@ -323,14 +323,14 @@ pip install -r requirements.txt
 
 # Part 2: Run Agents With Trust Gateway
 
-Route your agents through the **Affinidi Trust Gateway** to add identity management, observability, policy enforcement, and governed routing to all agent communications.
+Route your agents through the **Agent Trust Gateway** to add identity management, observability, policy enforcement, and governed routing to all agent communications.
 
 ![Before Trust Gateway](docs/images/before-affinidi-tgw.png)
 ![After Trust Gateway](docs/images/after-affinidi-tgw.png)
 
-## What is the Affinidi Trust Gateway?
+## What is the Agent Trust Gateway?
 
-The Affinidi Trust Gateway (Affinidi TGW) is an enterprise-grade gateway written in Rust for the Agent-to-Agent AI ecosystem. It provides:
+The Agent Trust Gateway (Affinidi TGW) is an enterprise-grade gateway written in Rust for the Agent-to-Agent AI ecosystem. It provides:
 
 - **Protocol inspection** — understands A2A, MCP, UCP, AP2, OpenAI protocols
 - **Identity management** — issues and validates decentralized identities (DIDs) for agents
