@@ -30,8 +30,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Extension URI for agent identity
+# Extension URIs
 IDENTITY_EXT_URI = "https://fabric.affinidi.io/extensions/agent-identity/v1"
+METADATA_EXT_URI = "https://fabric.affinidi.io/extensions/agent-metadata/v1"
+
+# Agent model metadata
+AGENT_MODEL_METADATA = {
+    "name": "A2A Echo Agent",
+    "model": "bedrock/claude-3.5-sonnet",
+    "role": "Echo Agent",
+    "version": "1.0.0"
+}
 
 
 class SimpleAgentExecutor(AgentExecutor):
@@ -84,15 +93,17 @@ class SimpleAgentExecutor(AgentExecutor):
         final_message = new_agent_text_message(response_text)
         final_message.task_id = message.task_id
         final_message.context_id = message.context_id
-        # final_message.extensions = [IDENTITY_EXT_URI]
-        # final_message.metadata = {
-        #     IDENTITY_EXT_URI: {
-        #         "agentIdentity": {
-        #             "name": self.agent_name,
-        #             "version": "1.0.0"
-        #         }
-        #     }
-        # }
+        final_message.extensions = [IDENTITY_EXT_URI]
+        final_message.metadata = {
+            IDENTITY_EXT_URI: {
+                "agentIdentity": {
+                    "name": self.agent_name,
+                    "model": "bedrock/claude-3.5-sonnet",
+                    "role": "agent-server",
+                    "version": "1.0.0"
+                }
+            }
+        }
 
         # Create task status with the message
         final_status = TaskStatus(
@@ -144,15 +155,16 @@ def create_agent_card(port: int, agent_name: str) -> AgentCard:
             streaming=False,
             extensions=[
                 AgentExtension(
-                    uri="https://fabric.affinidi.io/extensions/agent-identity/v1",
+                    uri=IDENTITY_EXT_URI,
                     description='Supports agent identity exchange',
-                    required=False
+                    required=False,
+                    params=AGENT_MODEL_METADATA,
                 ),
-                # AgentExtension(
-                #     uri="https://fabric.affinidi.io/extensions/custom-metadata/v1",
-                #     description='Custom metadata validation',
-                #     required=True
-                # ),
+                AgentExtension(
+                    uri=METADATA_EXT_URI,
+                    description='Exposes agent model and runtime metadata',
+                    required=False,
+                ),
             ]
         ),
         skills=[skill],

@@ -51,6 +51,8 @@ async def send_message(client: A2AClient, message_text: str):
         IDENTITY_EXT_URI: {
             "agentIdentity": {
                 "name": "A2A Test Client",
+                "model": "bedrock",
+                "role": "a2a_client",
                 "version": "1.0.0"
             }
         }
