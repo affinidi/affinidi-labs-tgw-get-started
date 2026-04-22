@@ -1,28 +1,22 @@
 {
   "type": "object",
   "properties": {
-    "agentIdentity": {
-      "type": "object",
-      "properties": {
-        "role": {
-          "type": "string",
-          "x-identity": true
-        },
-        "name": {
-          "type": "string",
-          "x-identity": true
-        },
-        "model": {
-          "type": "string",
-          "x-identity": true
-        }
-      },
-      "required": [
-        "role",
-        "name",
-        "model"
-      ]
+    "role": {
+      "type": "string",
+      "x-identity": true
+    },
+    "name": {
+      "type": "string",
+      "x-identity": true
+    },
+    "model": {
+      "type": "string",
+      "x-identity": true
     }
   },
-  "required": []
+  "required": [
+    "role",
+    "name",
+    "model"
+  ]
 }

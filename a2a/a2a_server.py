@@ -34,13 +34,14 @@ logger = logging.getLogger(__name__)
 IDENTITY_EXT_URI = "https://fabric.affinidi.io/extensions/agent-identity/v1"
 METADATA_EXT_URI = "https://fabric.affinidi.io/extensions/agent-metadata/v1"
 
-# Agent model metadata
-AGENT_MODEL_METADATA = {
-    "name": "A2A Echo Agent",
-    "model": "bedrock/claude-3.5-sonnet",
-    "role": "Echo Agent",
-    "version": "1.0.0"
-}
+
+def get_agent_identity(agent_name: str) -> dict:
+    return {
+        "name": agent_name,
+        "model": "bedrock/claude-3.5-sonnet",
+        "role": f"{agent_name} Server",
+        "version": "1.0.3"
+    }
 
 
 class SimpleAgentExecutor(AgentExecutor):
@@ -95,14 +96,7 @@ class SimpleAgentExecutor(AgentExecutor):
         final_message.context_id = message.context_id
         final_message.extensions = [IDENTITY_EXT_URI]
         final_message.metadata = {
-            IDENTITY_EXT_URI: {
-                "agentIdentity": {
-                    "name": self.agent_name,
-                    "model": "bedrock/claude-3.5-sonnet",
-                    "role": "agent-server",
-                    "version": "1.0.0"
-                }
-            }
+            IDENTITY_EXT_URI: get_agent_identity(self.agent_name)
         }
 
         # Create task status with the message
@@ -158,7 +152,7 @@ def create_agent_card(port: int, agent_name: str) -> AgentCard:
                     uri=IDENTITY_EXT_URI,
                     description='Supports agent identity exchange',
                     required=False,
-                    params=AGENT_MODEL_METADATA,
+                    params=get_agent_identity(agent_name),
                 ),
                 AgentExtension(
                     uri=METADATA_EXT_URI,
