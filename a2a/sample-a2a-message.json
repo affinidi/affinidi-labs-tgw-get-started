@@ -1,0 +1,118 @@
+{
+    "id": "35d38895-5663-4414-b838-7b72becf4e72",
+    "jsonrpc": "2.0",
+    "result": {
+        "contextId": "c257d42b-8043-4560-b41b-bf20c211a7ac",
+        "history": [
+            {
+                "contextId": "c257d42b-8043-4560-b41b-bf20c211a7ac",
+                "extensions": [
+                    "https://fabric.affinidi.io/extensions/agent-identity/v1",
+                    "https://fabric.affinidi.io/extensions/custom-metadata/v1"
+                ],
+                "kind": "message",
+                "messageId": "7e2387adb66640d18d12d7f8b92dd67d",
+                "metadata": {
+                    "https://fabric.affinidi.io/extensions/agent-identity/v1": {
+                        "agentIdentity": {
+                            "name": "A2A Test Client",
+                            "version": "1.0.0"
+                        }
+                    },
+                    "https://fabric.affinidi.io/extensions/custom-metadata/v1": {
+                        "param_inbound": "its a custom injection on inbound request by TG"
+                    }
+                },
+                "parts": [
+                    {
+                        "kind": "text",
+                        "text": "heis"
+                    }
+                ],
+                "role": "user",
+                "taskId": "ae7bdf60-8ecd-4aca-ac97-b6a115fc428b"
+            }
+        ],
+        "id": "ae7bdf60-8ecd-4aca-ac97-b6a115fc428b",
+        "kind": "task",
+        "metadata": {
+            "https://fabric.affinidi.io/extensions/custom-metadata/v1": {
+                "param_outbound": "its a custom injection on outbound response by TG"
+            }
+        },
+        "status": {
+            "message": {
+                "contextId": "c257d42b-8043-4560-b41b-bf20c211a7ac",
+                "extensions": [
+                    "https://fabric.affinidi.io/extensions/agent-identity-credential/v1"
+                ],
+                "kind": "message",
+                "messageId": "5b3381ea-570c-4551-a42a-8f83318ae1b0",
+                "metadata": {
+                    "https://fabric.affinidi.io/extensions/agent-identity-credential/v1": {
+                        "verifiablePresentation": {
+                            "@context": [
+                                "https://www.w3.org/ns/credentials/v2"
+                            ],
+                            "id": "urn:uuid:ba79e268-9466-411c-b512-279fb9714a54",
+                            "type": [
+                                "VerifiablePresentation"
+                            ],
+                            "holder": "did:webvh:zQmcRJTyGjb1jVQQkxmn1n4cEZjqay5LtewuTGcmQJKsuQ2:fabric-gateway-1.octo.affinidi.io:channel:240e7c08-0c65-4fa0-8c5b-15bbb1ea8483",
+                            "verifiableCredential": {
+                                "@context": [
+                                    "https://www.w3.org/ns/credentials/v2",
+                                    "https://d2oeuqaac90cm.cloudfront.net/TAgentIdentityCredentialV1R0.jsonld"
+                                ],
+                                "id": "urn:uuid:45249ff3-6e44-4853-b4e2-fe9b828daf80",
+                                "type": [
+                                    "VerifiableCredential",
+                                    "AgentIdentityCredential"
+                                ],
+                                "credentialSubject": {
+                                    "id": "did:webvh:zQmcRJTyGjb1jVQQkxmn1n4cEZjqay5LtewuTGcmQJKsuQ2:fabric-gateway-1.octo.affinidi.io:channel:240e7c08-0c65-4fa0-8c5b-15bbb1ea8483",
+                                    "identityFields": {
+                                        "model": "bedrock/claude-3.5-sonnet",
+                                        "role": "Simple A2A Agent Server",
+                                        "name": "Simple A2A Agent"
+                                    }
+                                },
+                                "issuer": "did:webvh:zQmNUrm3KNifH2ScneV5d3FNZzHhDhFZUVVuECNqxN4qgPB:fabric-gateway-1.octo.affinidi.io",
+                                "validFrom": "2026-04-29T09:51:28.104250+00:00",
+                                "validUntil": "2027-04-29T09:51:28.104250+00:00",
+                                "proof": {
+                                    "type": "DataIntegrityProof",
+                                    "cryptosuite": "eddsa-rdfc-2022",
+                                    "created": "2026-04-29T09:51:28.104Z",
+                                    "verificationMethod": "did:webvh:zQmNUrm3KNifH2ScneV5d3FNZzHhDhFZUVVuECNqxN4qgPB:fabric-gateway-1.octo.affinidi.io#key-2",
+                                    "proofPurpose": "assertionMethod",
+                                    "proofValue": "z3QueR1G7YGwXVgJhqaWTdtFrvaMHbpUNuBtUuJwMitV3W6tP1ZznVyknKuUjfmyKB8CDr4rYwKGcpeL5yzQWoqfL"
+                                }
+                            },
+                            "proof": {
+                                "type": "DataIntegrityProof",
+                                "cryptosuite": "eddsa-rdfc-2022",
+                                "created": "2026-04-29T09:51:28.11Z",
+                                "verificationMethod": "did:webvh:zQmcRJTyGjb1jVQQkxmn1n4cEZjqay5LtewuTGcmQJKsuQ2:fabric-gateway-1.octo.affinidi.io:channel:240e7c08-0c65-4fa0-8c5b-15bbb1ea8483#key-2",
+                                "proofPurpose": "assertionMethod",
+                                "expires": "2027-01-19T09:51:28.110819+00:00",
+                                "proofValue": "zveVWEEQC6n3SextpSR2FES7sAnpyy33DvF2WmfshPnv8KqANGr2jtUdkjr8VU3rkz61FqJxasRjfrFJoYWWeRF9"
+                            }
+                        },
+                        "did": "did:webvh:zQmcRJTyGjb1jVQQkxmn1n4cEZjqay5LtewuTGcmQJKsuQ2:fabric-gateway-1.octo.affinidi.io:channel:240e7c08-0c65-4fa0-8c5b-15bbb1ea8483"
+                    }
+                },
+                "parts": [
+                    {
+                        "kind": "text",
+                        "text": "Echo from Simple A2A Agent!\n\nYou said: heis\n\n"
+                    }
+                ],
+                "role": "agent",
+                "taskId": "ae7bdf60-8ecd-4aca-ac97-b6a115fc428b"
+            },
+            "state": "completed",
+            "timestamp": "2026-04-29T15:21:28.097981"
+        }
+    }
+}
