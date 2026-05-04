@@ -1,8 +1,19 @@
 # A2A Protected Agent — Decentralized Identity with Affinidi Trust Gateway
 
-## 1. What is this app for?
+## 1. Overview
 
-This lab demonstrates how to give AI agents a **decentralized, verifiable identity** using [Affinidi Trust Gateway (TGW)](https://docs.affinidi.com). Instead of trusting an agent just because it says who it is, the Trust Gateway issues a **Verifiable Presentation (VP)** to the agent — cryptographically proving its identity credentials (name, role, model) to anyone who calls it.
+This lab demonstrates how to give AI agents a **cryptographic, decentralized identity** using [Affinidi Trust Fabric](https://docs.affinidi.com/products/affinidi-trust-fabric/) — a secure proxy infrastructure that provides cryptographic identity, policy enforcement, and observability for AI agent communication.
+
+Instead of trusting an agent just because it says who it is, the Trust Gateway automatically generates a unique **Decentralised Identifier (DID)** for each agent and issues a **Verifiable Presentation (VP)** — cryptographically proving its identity credentials to any caller, verified with Ed25519 signatures.
+
+The identity fields can be **anything you define** — this lab uses `name`, `role`, and `model` as an example. What matters is that the fields declared in your agent card match the schema you configure in the Trust Gateway channel.
+
+The Trust Gateway acts as an intercepting proxy that:
+
+1. **Verifies identity** — assigns a unique DID to each agent based on configurable identity fields
+2. **Enforces policies** — applies access rules, rate limits, and circuit breakers
+3. **Routes traffic** — forwards requests to target agents or services
+4. **Injects metadata** — embeds the signed VP into the agent card response
 
 ### Architecture
 
@@ -48,13 +59,15 @@ Client / Caller
 └─────────────────────────────────────────┘
 ```
 
-The agent's identity schema (defined in `identity-extension.json`) specifies the three credential fields the Trust Gateway will issue:
+The agent's identity fields are **fully customisable** — you define what goes into the credential. This lab uses `name`, `role`, and `model` as the example schema (defined in `identity-extension.json`):
 
 | Field   | Description                 |
 | ------- | --------------------------- |
 | `name`  | Human-readable agent name   |
 | `role`  | The agent's functional role |
 | `model` | The underlying LLM model    |
+
+You can add, remove, or rename these fields — as long as the schema in your agent card extension and the identity schema configured in the Trust Gateway channel match.
 
 ---
 
@@ -190,13 +203,15 @@ You will create **two channels** — one for each agent.
 
 Repeat the following steps for **both** the Personal Agent channel and the Finance Agent channel.
 
+> **Prerequisite:** For the Trust Gateway to issue a VP, your agent card **must** expose the identity extension (`https://fabric.affinidi.io/extensions/agent-identity-credential/v1`) with your chosen identity fields in its `capabilities.extensions`. This is already configured in this app — see `personal_agent.py` and `finance_agent.py`.
+
 1. Open the channel in the Developer Portal.
 2. Click the **Protected Identity** tab.
 
    ![A2A Identity Tab](docs/channel-enable-identity.png)
 
 3. **Enable** Protected Identity.
-4. Paste the identity fields schema from `identity-extension.json`:
+4. Paste the identity schema that matches the fields declared in your agent card. This lab uses the schema from `identity-extension.json`:
 
    ```json
    {
@@ -210,7 +225,12 @@ Repeat the following steps for **both** the Personal Agent channel and the Finan
    }
    ```
 
+   > The fields here must match what your agent card exposes in its identity extension params. You can use any field names — they just need to be consistent between the agent card and this schema.
+
+   ```
+
    This tells the Trust Gateway which fields to read from that agent's card and include in the issued Verifiable Credential.
+   ```
 
 > **Note:** Each channel issues a VP specific to its target agent — the Personal Agent channel issues credentials with `"name": "Personal Assistant"` and the Finance Agent channel issues credentials with `"name": "Finance Agent"`.
 
