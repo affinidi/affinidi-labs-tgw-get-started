@@ -37,6 +37,7 @@ Establish governed MCP and A2A connections by routing clients through the Trust 
   - [A2A Vertex AI Agent via Trust Gateway](#a2a-vertex-ai-agent-via-trust-gateway)
   - [Create Identity for MCP/A2A Client](#create-identity-for-mcpa2a-client)
   - [Sample MCP Request & Response Messages](#sample-mcp-request--response-messages)
+- [Lab: A2A Protected Agent — Decentralized Identity](#lab-a2a-protected-agent--decentralized-identity)
 
 ---
 
@@ -155,12 +156,13 @@ Everything else stays the same — the Codespace keeps the server running while 
 
 ## �🔍 Overview
 
-| Component           | Description                                               |
-| ------------------- | --------------------------------------------------------- |
-| `a2a/`              | Local A2A echo agent server + interactive client          |
-| `mcp/`              | Local MCP server with calculator and weather tools        |
-| `a2a-vertex-agent/` | A2A agent deployed on Google Cloud Vertex AI Agent Engine |
-| `rest-api/`         | REST API server with MCP proxy                            |
+| Component              | Description                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------- |
+| `a2a/`                 | Local A2A echo agent server + interactive client                                      |
+| `mcp/`                 | Local MCP server with calculator and weather tools                                    |
+| `a2a-vertex-agent/`    | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
+| `rest-api/`            | REST API server with MCP proxy                                                        |
+| `a2a-protected-agent/` | Multi-agent server (Personal + Finance) with decentralized identity via Trust Gateway |
 
 ## 📁 Project Structure
 
@@ -192,6 +194,14 @@ affinidi-labs-tgw-get-started/
 │   ├── api_server.py        # REST API server
 │   ├── mcp_client.py        # MCP proxy client
 │   └── run.sh
+├── a2a-protected-agent/
+│   ├── agents.py            # Multi-agent server (Personal + Finance agents)
+│   ├── personal_agent.py    # Personal Assistant agent
+│   ├── finance_agent.py     # Finance agent
+│   ├── identity-extension.json  # Identity schema for TG credential issuance
+│   ├── requirements.txt
+│   ├── run.sh               # Start the server (with optional ngrok)
+│   └── README.MD            # Full lab guide
 └── docs/
     └── images/              # Documentation images
 ```
@@ -706,3 +716,18 @@ Key fields in the injected credential:
 ## Reporting technical issues
 
 If you have a technical issue with the project's codebase, you can also create an issue directly in GitHub.
+
+---
+
+## Lab: A2A Protected Agent — Decentralized Identity
+
+This lab shows how to give AI agents a **cryptographic, verifiable identity** using the Trust Gateway. A multi-agent server (Personal Assistant + Finance Agent) exposes A2A endpoints. When routed through a Trust Gateway A2A channel with Protected Identity enabled, the gateway automatically issues a **Verifiable Presentation (VP)** signed with Ed25519 — injecting it into every agent card and message response.
+
+**What you will learn:**
+
+- How to declare identity fields in an agent card using the `agent-identity-credential` extension
+- How to create A2A channels in Trust Gateway with a custom identity schema
+- How the Trust Gateway issues a `did:webvh` DID and a signed `AgentIdentityCredential` VC for each agent
+- How VPs are injected into A2A agent card responses and message responses
+
+➡️ **[View the full lab guide](a2a-protected-agent/README.MD)**
