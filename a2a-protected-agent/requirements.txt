@@ -1,0 +1,5 @@
+uvicorn>=0.30.0
+a2a-sdk[http-server]==0.3.25
+starlette>=0.37.0
+httpx>=0.27.0
+python-dotenv>=1.0.0

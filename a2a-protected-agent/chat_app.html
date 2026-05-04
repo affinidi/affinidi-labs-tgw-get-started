@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A2A Chat – Personal & Finance Agents</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        personal: { DEFAULT: '#4f46e5', dark: '#3730a3', light: '#eef2ff' },
+                        finance: { DEFAULT: '#0ea5e9', dark: '#0369a1', light: '#f0f9ff' },
+                    },
+                    animation: {
+                        'bounce-dot': 'bounceDot 1.2s infinite',
+                        'pulse-dot': 'pulseDot 2s infinite',
+                    },
+                    keyframes: {
+                        bounceDot: { '0%,80%,100%': { transform: 'translateY(0)' }, '40%': { transform: 'translateY(-6px)' } },
+                        pulseDot: { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.4 } },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .dot2 {
+            animation-delay: .2s;
+        }
+
+        .dot3 {
+            animation-delay: .4s;
+        }
+
+        .bubble {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* Dark theme base overrides */
+        .hint {
+            background: #1f2937;
+            border-color: #374151;
+            color: #9ca3af;
+        }
+
+        .hint:focus {
+            outline: none;
+        }
+
+        #configPanel label {
+            color: #6b7280;
+        }
+
+        #configPanel label span {
+            color: #4b5563;
+        }
+
+        #configPanel input[type=text] {
+            background: #1f2937;
+            color: #f3f4f6;
+            border-color: #374151;
+        }
+
+        #configPanel input[type=text]::placeholder {
+            color: #4b5563;
+        }
+
+        #msgInput {
+            background: #1f2937;
+            color: #f3f4f6;
+            border-color: #374151;
+        }
+
+        #msgInput::placeholder {
+            color: #4b5563;
+        }
+    </style>
+</head>
+
+<body class="h-full bg-gray-950 flex flex-col font-sans text-gray-100">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <header class="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center gap-3 shrink-0">
+        <div
+            class="w-10 h-10 rounded-full bg-gradient-to-br from-personal to-finance flex items-center justify-center text-white text-xl shrink-0">
+            🤖</div>
+        <div>
+            <h1 class="text-sm font-semibold leading-tight">A2A Multi-Agent Chat</h1>
+            <p class="text-xs text-gray-500">Personal Assistant + Finance Agent</p>
+        </div>
+        <div class="ml-auto flex items-center gap-3 text-xs text-gray-400 relative">
+            <!-- ── Server config dropdown ─────────────────────────── -->
+            <div class="relative">
+                <button id="cfgToggle" onclick="toggleConfig()"
+                    class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-400 transition-all">
+                    ⚙️ <span class="hidden sm:inline">Settings</span>
+                </button>
+                <div id="configPanel"
+                    class="hidden absolute right-0 top-8 z-50 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-4 w-96 space-y-4">
+                    <p class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Agent Endpoints</p>
+
+                    <!-- Personal Agent -->
+                    <div class="space-y-1.5 pb-3 border-b border-gray-800">
+                        <p class="text-[11px] font-medium text-personal">👤 Personal Agent</p>
+                        <div class="space-y-1">
+                            <label class="text-[11px] text-slate-400 block">Direct URL</label>
+                            <div class="flex gap-1.5">
+                                <input id="personalUrl" type="text"
+                                    class="flex-1 text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-personal" />
+                                <button onclick="copyInputUrl('personalUrl', this)"
+                                    class="shrink-0 text-[10px] px-2 py-1 rounded border border-gray-600 bg-gray-800 text-gray-400 hover:border-indigo-500 hover:text-indigo-400 transition-all">Copy</button>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] text-slate-400 block">Trust Gateway URL <span
+                                    class="text-slate-300">(optional)</span></label>
+                            <div class="flex gap-1.5">
+                                <input id="personalTgUrl" type="text" placeholder="https://tg.example.com/channel/…"
+                                    class="flex-1 text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-violet-400 placeholder:text-slate-300" />
+                                <button onclick="copyInputUrl('personalTgUrl', this)"
+                                    class="shrink-0 text-[10px] px-2 py-1 rounded border border-gray-600 bg-gray-800 text-gray-400 hover:border-indigo-500 hover:text-indigo-400 transition-all">Copy</button>
+                            </div>
+                        </div>
+                        <div id="tgTogglePersonalRow" class="hidden flex items-center justify-between pt-1">
+                            <span class="text-[11px] text-gray-400">🔒 Route via Trust Gateway</span>
+                            <button id="tgTogglePersonal" onclick="toggleTg('personal')"
+                                class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none"
+                                role="switch" aria-checked="true">
+                                <span id="tgTogglePersonalThumb"
+                                    class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition duration-200 translate-x-4"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Finance Agent -->
+                    <div class="space-y-1.5">
+                        <p class="text-[11px] font-medium text-finance">💰 Finance Agent</p>
+                        <div class="space-y-1">
+                            <label class="text-[11px] text-slate-400 block">Direct URL</label>
+                            <div class="flex gap-1.5">
+                                <input id="financeUrl" type="text"
+                                    class="flex-1 text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-finance" />
+                                <button onclick="copyInputUrl('financeUrl', this)"
+                                    class="shrink-0 text-[10px] px-2 py-1 rounded border border-gray-600 bg-gray-800 text-gray-400 hover:border-indigo-500 hover:text-indigo-400 transition-all">Copy</button>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] text-slate-400 block">Trust Gateway URL <span
+                                    class="text-slate-300">(optional)</span></label>
+                            <div class="flex gap-1.5">
+                                <input id="financeTgUrl" type="text" placeholder="https://tg.example.com/channel/…"
+                                    class="flex-1 text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-violet-400 placeholder:text-slate-300" />
+                                <button onclick="copyInputUrl('financeTgUrl', this)"
+                                    class="shrink-0 text-[10px] px-2 py-1 rounded border border-gray-600 bg-gray-800 text-gray-400 hover:border-indigo-500 hover:text-indigo-400 transition-all">Copy</button>
+                            </div>
+                        </div>
+                        <div id="tgToggleFinanceRow" class="hidden flex items-center justify-between pt-1">
+                            <span class="text-[11px] text-gray-400">🔒 Route via Trust Gateway</span>
+                            <button id="tgToggleFinance" onclick="toggleTg('finance')"
+                                class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none"
+                                role="switch" aria-checked="true">
+                                <span id="tgToggleFinanceThumb"
+                                    class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition duration-200 translate-x-4"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 pt-1">
+                        <button onclick="saveConfig()"
+                            class="flex-1 text-xs px-3 py-1.5 rounded-lg bg-personal text-white hover:bg-personal-dark transition-all">✓
+                            Save</button>
+                        <button onclick="resetConfig()"
+                            class="flex-1 text-xs px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-400 transition-all">↺
+                            Reset</button>
+                    </div>
+                    <p id="cfgMsg" class="text-[10px] text-green-400 hidden">Saved!</p>
+                </div>
+            </div>
+            <button onclick="clearChat()"
+                class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-400 transition-all">🗑
+                <span class="hidden sm:inline">Clear</span></button>
+            <span id="statusDot" class="w-2 h-2 rounded-full bg-gray-600 animate-pulse-dot"></span>
+        </div>
+    </header>
+
+    <!-- ── Agent selector ─────────────────────────────────────────────────── -->
+    <div class="bg-gray-900 border-b border-gray-800 px-6 py-2 flex items-center gap-2 shrink-0 flex-wrap">
+        <span class="text-xs text-gray-500 mr-1">Talk to:</span>
+        <div class="flex items-center gap-1">
+            <button id="btnPersonal" onclick="switchAgent('personal')"
+                class="agent-btn px-3 py-1 rounded-full text-xs border transition-all bg-personal text-white border-personal">👤
+                Personal Agent</button>
+            <button id="tgTogglePersonal" onclick="toggleTg('personal')"
+                class="hidden text-[10px] px-2 py-0.5 rounded-full border transition-all">🔒 TG</button>
+        </div>
+        <div class="flex items-center gap-1">
+            <button id="btnFinance" onclick="switchAgent('finance')"
+                class="agent-btn px-3 py-1 rounded-full text-xs border border-gray-700 text-gray-500 bg-gray-800 hover:border-finance hover:text-finance transition-all">💰
+                Finance Agent</button>
+            <button id="tgToggleFinance" onclick="toggleTg('finance')"
+                class="hidden text-[10px] px-2 py-0.5 rounded-full border transition-all">🔒 TG</button>
+        </div>
+        <span class="text-[11px] text-gray-600 ml-1">Personal Agent auto-routes finance questions ✦</span>
+    </div>
+
+    <!-- ── Chat area ───────────────────────────────────────────────────────── -->
+    <main id="chat" class="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-4 bg-gray-950"></main>
+
+    <!-- ── Footer ─────────────────────────────────────────────────────────── -->
+    <footer class="bg-gray-900 border-t border-gray-800 px-6 py-3 shrink-0">
+
+        <!-- Input row -->
+        <div class="flex gap-2 items-end">
+            <textarea id="msgInput" rows="1"
+                class="flex-1 resize-none border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-personal leading-relaxed max-h-28 transition-all"
+                placeholder="Ask me anything…" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+            <button id="sendBtn" onclick="sendMessage()"
+                class="w-10 h-10 rounded-xl bg-personal text-white flex items-center justify-center text-base shrink-0 hover:bg-personal-dark disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors">
+                ➤
+            </button>
+        </div>
+
+        <!-- Hint chips -->
+        <div class="flex flex-wrap gap-2 mt-2.5 items-center">
+            <span class="text-[10px] font-medium text-personal uppercase tracking-wide">👤 Personal:</span>
+            <button onclick="quickSend('What\'s on my schedule today?')"
+                class="hint text-xs px-3 py-1 rounded-full border border-slate-200 bg-slate-50 hover:border-personal hover:text-personal transition-all">📅
+                My schedule</button>
+            <button onclick="quickSend('What are my pending tasks?')"
+                class="hint text-xs px-3 py-1 rounded-full border border-slate-200 bg-slate-50 hover:border-personal hover:text-personal transition-all">✅
+                My tasks</button>
+            <button onclick="quickSend('Set a reminder for me')"
+                class="hint text-xs px-3 py-1 rounded-full border border-slate-200 bg-slate-50 hover:border-personal hover:text-personal transition-all">⏰
+                Reminder</button>
+            <button onclick="quickSend('What\'s the weather like today?')"
+                class="hint text-xs px-3 py-1 rounded-full border border-slate-200 bg-slate-50 hover:border-personal hover:text-personal transition-all">☀️
+                Weather</button>
+            <button onclick="quickSend('What can you do?')"
+                class="hint text-xs px-3 py-1 rounded-full border border-slate-200 bg-slate-50 hover:border-personal hover:text-personal transition-all">🤖
+                Capabilities</button>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-1.5 items-center">
+            <span class="text-[10px] font-medium text-finance uppercase tracking-wide">💰 Finance:</span>
+            <button onclick="quickSend('What\'s my account balance?')"
+                class="hint text-xs px-3 py-1 rounded-full border border-slate-200 bg-slate-50 hover:border-finance hover:text-finance transition-all">💳
+                Balance</button>
+            <button onclick="quickSend('Show my recent transactions')"
+                class="hint text-xs px-3 py-1 rounded-full border border-slate-200 bg-slate-50 hover:border-finance hover:text-finance transition-all">📋
+                Transactions</button>
+            <button onclick="quickSend('How are my investments doing?')"
+                class="hint text-xs px-3 py-1 rounded-full border border-slate-200 bg-slate-50 hover:border-finance hover:text-finance transition-all">📈
+                Investments</button>
+            <button onclick="quickSend('What\'s my credit score?')"
+                class="hint text-xs px-3 py-1 rounded-full border border-slate-200 bg-slate-50 hover:border-finance hover:text-finance transition-all">🏦
+                Credit score</button>
+            <button onclick="quickSend('Show my spending by category')"
+                class="hint text-xs px-3 py-1 rounded-full border border-slate-200 bg-slate-50 hover:border-finance hover:text-finance transition-all">📊
+                Spending</button>
+        </div>
+    </footer>
+
+    <script>
+        // ─── State ────────────────────────────────────────────────────────────────────
+        const BASE_URL = window.location.origin;
+        const LS_KEY = 'a2a_agent_urls';
+        // Server-side defaults loaded from /config (populated from .env)
+        let SERVER_DEFAULTS = {
+            personal: `${BASE_URL}/a2a/personal-agent/`,
+            finance: `${BASE_URL}/a2a/finance-agent/`,
+            personalTg: '',
+            financeTg: '',
+        };
+
+        function loadUrls() {
+            try { return { ...SERVER_DEFAULTS, ...JSON.parse(localStorage.getItem(LS_KEY) || '{}') }; }
+            catch { return { ...SERVER_DEFAULTS }; }
+        }
+        // effective endpoint for sending messages: TG URL if useTg[key] is on, else direct
+        function agentUrl(key) {
+            const u = loadUrls();
+            const tg = (u[key + 'Tg'] || '').trim();
+            return (tg && useTg[key]) ? tg : u[key];
+        }
+        // agent card always from the direct URL
+        function cardUrl(key) { return loadUrls()[key].replace(/\/$/, '') + '/.well-known/agent.json'; }
+        function tgUrl(key) {
+            const tg = (loadUrls()[key + 'Tg'] || '').trim();
+            return (tg && useTg[key]) ? tg : '';
+        }
+
+        function initInputs() {
+            const u = loadUrls();
+            document.getElementById('personalUrl').value = u.personal;
+            document.getElementById('financeUrl').value = u.finance;
+            document.getElementById('personalTgUrl').value = u.personalTg || '';
+            document.getElementById('financeTgUrl').value = u.financeTg || '';
+            renderTgToggle('personal');
+            renderTgToggle('finance');
+        }
+        function saveConfig() {
+            const urls = {
+                personal: document.getElementById('personalUrl').value.trim(),
+                finance: document.getElementById('financeUrl').value.trim(),
+                personalTg: document.getElementById('personalTgUrl').value.trim(),
+                financeTg: document.getElementById('financeTgUrl').value.trim(),
+            };
+            localStorage.setItem(LS_KEY, JSON.stringify(urls));
+            const msg = document.getElementById('cfgMsg');
+            msg.classList.remove('hidden');
+            setTimeout(() => msg.classList.add('hidden'), 1500);
+            renderTgToggle('personal');
+            renderTgToggle('finance');
+            prefetchAgentCards();
+        }
+        function resetConfig() {
+            localStorage.removeItem(LS_KEY);
+            initInputs();
+            const msg = document.getElementById('cfgMsg');
+            msg.textContent = 'Reset to defaults!';
+            msg.classList.remove('hidden');
+            setTimeout(() => { msg.classList.add('hidden'); msg.textContent = 'Saved!'; }, 1500);
+            prefetchAgentCards();
+        }
+
+        let mode = 'personal';
+        let contextIds = { personal: null, finance: null };
+        let useTg = { personal: true, finance: true };
+        const msgStore = {};
+        const agentCardCache = { personal: null, finance: null }; // { card, fetchedWithTg, tgCardUrl, directCardUrl }
+
+        function renderTgToggle(key) {
+            const hasTg = !!(loadUrls()[key + 'Tg'] || '').trim();
+            const cap = key.charAt(0).toUpperCase() + key.slice(1);
+            const row = document.getElementById('tgToggle' + cap + 'Row');
+            const btn = document.getElementById('tgToggle' + cap);
+            const thumb = document.getElementById('tgToggle' + cap + 'Thumb');
+            if (!row || !btn || !thumb) return;
+            if (!hasTg) { row.classList.add('hidden'); return; }
+            row.classList.remove('hidden');
+            const on = useTg[key];
+            btn.setAttribute('aria-checked', on ? 'true' : 'false');
+            btn.className = `relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${on ? 'bg-violet-600' : 'bg-gray-600'}`;
+            thumb.className = `pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition duration-200 ${on ? 'translate-x-4' : 'translate-x-0'}`;
+        }
+        function toggleTg(key) {
+            useTg[key] = !useTg[key];
+            renderTgToggle(key);
+            agentCardCache[key] = null; // invalidate so next open re-fetches with new TG state
+            fetchAgentCard(key);        // prefetch in background
+            if (key === mode) appendConnected(key);
+        }
+
+        // ─── Mode buttons ─────────────────────────────────────────────────────────────
+        const BTN_ACTIVE = {
+            personal: 'bg-personal text-white border-personal',
+            finance: 'bg-finance  text-white border-finance',
+        };
+        const BTN_RESET = 'border-gray-700 text-gray-500 bg-gray-800';
+
+        function setMode(m) {
+            mode = m;
+            ['personal', 'finance'].forEach(id => {
+                const btn = document.getElementById('btn' + id.charAt(0).toUpperCase() + id.slice(1));
+                btn.className = 'agent-btn px-3 py-1 rounded-full text-xs border transition-all ' +
+                    (mode === id ? BTN_ACTIVE[id] : BTN_RESET + (id === 'finance' ? ' hover:border-finance hover:text-finance' : ' hover:border-personal hover:text-personal'));
+            });
+        }
+        function switchAgent(key) {
+            if (key === mode) return; // already on this agent
+            setMode(key);
+            document.getElementById('chat').innerHTML = '';
+            contextIds = { personal: null, finance: null };
+            appendConnected(key);
+            openAgentModal(key);
+        }
+
+        // ─── Helpers ──────────────────────────────────────────────────────────────────
+        function clearChat() {
+            document.getElementById('chat').innerHTML = '';
+            contextIds = { personal: null, finance: null };
+            appendConnected(mode);
+        }
+        function toggleConfig() {
+            document.getElementById('configPanel').classList.toggle('hidden');
+        }
+        // close dropdown when clicking outside
+        document.addEventListener('click', e => {
+            const panel = document.getElementById('configPanel');
+            const toggle = document.getElementById('cfgToggle');
+            if (!panel.contains(e.target) && !toggle.contains(e.target)) panel.classList.add('hidden');
+        });
+        function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 112) + 'px'; }
+        function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+        function quickSend(t) { document.getElementById('msgInput').value = t; sendMessage(); }
+        function scrollBottom() { const c = document.getElementById('chat'); c.scrollTop = c.scrollHeight; }
+        function ts() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+        function escHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+        function uuidv4() { return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)); }
+
+        // ─── Message renderers ────────────────────────────────────────────────────────
+        function appendUser(text, reqBody) {
+            const msgId = 'um-' + uuidv4();
+            if (reqBody) msgStore[msgId] = { label: 'A2A Request (Sent)', payload: reqBody };
+            const ca = reqBody ? `onclick="openMsgModal('${msgId}')" ` : '';
+            document.getElementById('chat').insertAdjacentHTML('beforeend', `
+    <div class="flex gap-2.5 justify-end">
+      <div class="flex flex-col items-end gap-1 max-w-[75%]">
+        <span class="text-[11px] text-gray-500">${ts()}</span>
+        <div ${ca}class="bubble bg-personal text-white rounded-2xl rounded-br-sm px-4 py-2.5 text-sm leading-relaxed${reqBody ? ' cursor-pointer hover:opacity-90' : ''}">${escHtml(text)}</div>
+        ${reqBody ? `<span class="text-[10px] text-gray-600 hover:text-gray-400 cursor-pointer" onclick="openMsgModal('${msgId}')">{ } inspect</span>` : ''}
+      </div>
+      <div class="w-8 h-8 rounded-full bg-personal flex items-center justify-center text-white text-xs shrink-0 mt-5">You</div>
+    </div>`);
+            scrollBottom();
+        }
+
+        function appendAgent(text, agentType, routedFrom, payload) {
+            const isFinance = agentType === 'finance';
+            const emoji = isFinance ? '💰' : '👤';
+            const label = isFinance ? 'Finance Agent' : 'Personal Assistant';
+            const tagCls = isFinance ? 'bg-sky-900/30 text-sky-400' : 'bg-indigo-900/30 text-indigo-400';
+            const bubCls = isFinance ? 'bg-sky-950/50 border border-sky-800' : 'bg-gray-800 border border-gray-700';
+            const avBg = isFinance ? 'bg-sky-900/30' : 'bg-indigo-900/30';
+            const routeTag = routedFrom
+                ? `<span class="text-[10px] bg-green-900/20 border border-green-700 text-green-400 rounded px-1.5 py-0.5">🔀 routed from Personal Agent</span>`
+                : '';
+            const msgId = 'am-' + uuidv4();
+            if (payload) msgStore[msgId] = { label: 'A2A Exchange', sections: [{ title: '📤 Request (Sent)', data: payload.request }, { title: '📥 Response (Received)', data: payload.response }] };
+            const ca = payload ? `onclick="openMsgModal('${msgId}')" ` : '';
+            document.getElementById('chat').insertAdjacentHTML('beforeend', `
+    <div class="flex gap-2.5 items-start max-w-[80%]">
+      <div class="w-8 h-8 rounded-full ${avBg} flex items-center justify-center text-base shrink-0 mt-5">${emoji}</div>
+      <div class="flex flex-col gap-1">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded ${tagCls}">${label}</span>
+          ${routeTag}
+          <span class="text-[11px] text-gray-500">${ts()}</span>
+        </div>
+        <div ${ca}class="bubble ${bubCls} rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm leading-relaxed${payload ? ' cursor-pointer hover:opacity-90' : ''}">${escHtml(text)}</div>
+        ${payload ? `<span class="text-[10px] text-gray-600 hover:text-gray-400 cursor-pointer" onclick="openMsgModal('${msgId}')">{ } inspect</span>` : ''}
+      </div>
+    </div>`);
+            scrollBottom();
+        }
+
+        function appendTyping(id) {
+            document.getElementById('chat').insertAdjacentHTML('beforeend', `
+    <div id="${id}" class="flex gap-2.5 items-start">
+      <div class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-base shrink-0">⏳</div>
+      <div class="bg-gray-800 border border-gray-700 rounded-2xl rounded-tl-sm px-4 py-3">
+        <div class="flex gap-1 items-center">
+          <span class="w-1.5 h-1.5 rounded-full bg-gray-500 animate-bounce-dot"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-gray-500 animate-bounce-dot dot2"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-gray-500 animate-bounce-dot dot3"></span>
+        </div>
+      </div>
+    </div>`);
+            scrollBottom();
+        }
+
+        function removeTyping(id) { const el = document.getElementById(id); if (el) el.remove(); }
+
+        function appendSystem(text) {
+            document.getElementById('chat').insertAdjacentHTML('beforeend', `
+    <div class="flex gap-2.5 items-start max-w-[80%]">
+      <div class="w-8 h-8 rounded-full bg-amber-900/20 flex items-center justify-center text-base shrink-0">ℹ️</div>
+      <div class="bg-amber-900/20 border border-amber-700/50 text-amber-300 rounded-2xl rounded-tl-sm px-4 py-2.5 text-xs leading-relaxed bubble">${escHtml(text)}</div>
+    </div>`);
+            scrollBottom();
+        }
+
+        function appendError(text) {
+            document.getElementById('chat').insertAdjacentHTML('beforeend', `
+    <div class="flex gap-2.5 items-start max-w-[80%]">
+      <div class="w-8 h-8 rounded-full bg-red-900/20 flex items-center justify-center text-base shrink-0">⚠️</div>
+      <div class="bg-red-900/20 border border-red-700/50 text-red-400 rounded-2xl rounded-tl-sm px-4 py-2.5 text-xs leading-relaxed">${escHtml(text)}</div>
+    </div>`);
+            scrollBottom();
+        }
+
+        // appendInfo accepts trusted internal HTML (never put user input here)
+        function appendInfo(html) {
+            document.getElementById('chat').insertAdjacentHTML('beforeend', `
+    <div class="flex gap-2.5 items-start max-w-[80%]">
+      <div class="w-8 h-8 rounded-full bg-amber-900/20 flex items-center justify-center text-base shrink-0">ℹ️</div>
+      <div class="bg-gray-800 border border-gray-700 text-gray-300 rounded-2xl rounded-tl-sm px-4 py-2.5 text-xs leading-relaxed space-y-1">${html}</div>
+    </div>`);
+            scrollBottom();
+        }
+
+        // ─── JSON renderer ───────────────────────────────────────────────────────────────────
+        function renderJson(obj) {
+            const json = JSON.stringify(obj, null, 2);
+            const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const re = /("(?:\\.|[^"\\])*"\s*:?|\b(?:true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g;
+            let html = '', last = 0, m;
+            while ((m = re.exec(json)) !== null) {
+                html += esc(json.slice(last, m.index));
+                const tok = m[0];
+                const isKey = /^".*"\s*:/.test(tok);
+                const isStr = tok[0] === '"' && !isKey;
+                const cls = isKey ? 'text-blue-400' : isStr ? 'text-emerald-400'
+                    : (tok === 'true' || tok === 'false') ? 'text-orange-400'
+                        : tok === 'null' ? 'text-red-400' : 'text-yellow-300';
+                html += `<span class="${cls}">${esc(tok)}</span>`;
+                last = m.index + tok.length;
+            }
+            return `<pre class="text-gray-300 text-[11px] leading-relaxed font-mono">${html + esc(json.slice(last))}</pre>`;
+        }
+
+        // ─── Message inspector modal ─────────────────────────────────────────────────────
+        function openMsgModal(id) {
+            const data = msgStore[id];
+            if (!data) return;
+            document.getElementById('msgModalTitle').textContent = data.label;
+            document.getElementById('msgModalContent').innerHTML = data.sections
+                ? data.sections.map((s, i) =>
+                    `${i > 0 ? '<hr class="border-gray-800 my-3">' : ''}<p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold mb-2">${s.title}</p>${renderJson(s.data)}`
+                ).join('')
+                : renderJson(data.payload);
+            document.getElementById('msgModal').classList.remove('hidden');
+        }
+        function closeMsgModal() { document.getElementById('msgModal').classList.add('hidden'); }
+
+        // ─── Agent info modal ───────────────────────────────────────────────────────────────
+        async function openAgentModal(agentKey) {
+            const a = AGENTS[agentKey];
+            const directUrl = agentUrl(agentKey);
+            const tg = tgUrl(agentKey);
+            const directCardUrl = a.cardUrl;
+            const tgCardUrl = tg ? tg.replace(/\/$/, '') + '/.well-known/agent.json' : null;
+            const viaTag = tg
+                ? `<span class="inline-flex items-center gap-1 text-[10px] bg-violet-900/20 border border-violet-700 text-violet-400 rounded px-1.5 py-0.5">🔒 via Trust Gateway</span>`
+                : '';
+            const cardLinks = tgCardUrl
+                ? `<div class="flex flex-wrap gap-x-3 gap-y-1">
+                    <a href="${tgCardUrl}" target="_blank" class="text-indigo-400 underline hover:text-indigo-300">View Agent Card (TG) →</a>
+                    <a href="${directCardUrl}" target="_blank" class="text-gray-500 underline hover:text-gray-300">View Agent Card (Direct) →</a>
+                   </div>`
+                : `<a href="${directCardUrl}" target="_blank" class="inline-block text-indigo-400 underline hover:text-indigo-300">View Agent Card →</a>`;
+            const cached = agentCardCache[agentKey];
+            const identityHtml = cached ? buildIdentityHtml(cached.card) : `<div class="text-gray-500 italic text-[11px]">Loading identity…</div>`;
+            document.getElementById('agentModalTitle').innerHTML = `${a.emoji} ${escHtml(a.label)}`;
+            document.getElementById('agentModalContent').innerHTML = `
+                <p class="text-gray-300 leading-relaxed">${a.description}</p>
+                ${viaTag ? `<div class="mt-1">${viaTag}</div>` : ''}
+                ${cardLinks}
+                ${identityHtml}
+            `;
+            document.getElementById('agentModal').classList.remove('hidden');
+        }
+        function closeAgentModal() { document.getElementById('agentModal').classList.add('hidden'); }
+
+        // ─── Card fetching ───────────────────────────────────────────────────────────────────
+        async function fetchAgentCard(agentKey) {
+            const a = AGENTS[agentKey];
+            const tg = tgUrl(agentKey);
+            const directCardUrl = a.cardUrl;
+            const tgCardUrl = tg ? tg.replace(/\/$/, '') + '/.well-known/agent.json' : null;
+            const fetchUrl = `${BASE_URL}/proxy?url=${encodeURIComponent(tgCardUrl || directCardUrl)}`;
+            try {
+                const res = await fetch(fetchUrl);
+                const card = await res.json();
+                agentCardCache[agentKey] = { card, tg };
+            } catch {
+                agentCardCache[agentKey] = null;
+            }
+        }
+        function prefetchAgentCards() {
+            fetchAgentCard('personal');
+            fetchAgentCard('finance');
+        }
+
+        function buildIdentityHtml(card) {
+            const exts = card?.capabilities?.extensions || [];
+            const row = (lbl, val) => val
+                ? `<div class="flex gap-2 min-w-0"><span class="w-20 shrink-0 text-gray-500">${lbl}</span><span class="text-gray-200 break-all">${escHtml(String(val))}</span></div>`
+                : '';
+            const shortDid = d => d ? (d.length > 40 ? d.slice(0, 20) + '…' + d.slice(-12) : d) : '';
+            const fmtDate = s => { try { return new Date(s).toLocaleString(); } catch { return s; } };
+            const unverifiedBadge = `<span class="inline-flex items-center gap-1 text-[10px] bg-yellow-900/20 border border-yellow-700/60 text-yellow-500 rounded px-1.5 py-0.5">⚠ Not verified</span>`;
+
+            // ── VP credential (agent-identity-credential/v1)
+            const credExt = exts.find(e => e.uri === IDENTITY_CRED_EXT);
+            if (credExt?.params?.verifiablePresentation) {
+                let vp;
+                try { vp = JSON.parse(credExt.params.verifiablePresentation); } catch { vp = null; }
+                const vc = vp?.verifiableCredential;
+                const cs = vc?.credentialSubject;
+                const tgBadge = `<span class="inline-flex items-center gap-1 text-[10px] bg-green-900/20 border border-green-700/60 text-green-400 rounded px-1.5 py-0.5">✓ Issued by Trust Gateway</span>`;
+                const csTopRows = [], csGroupedSections = [];
+                if (cs) {
+                    for (const [k, v] of Object.entries(cs)) {
+                        if (k === 'id' || k === '@context') continue;
+                        if (v && typeof v === 'object' && !Array.isArray(v)) {
+                            const label = k.charAt(0).toUpperCase() + k.slice(1);
+                            const subRows = Object.entries(v)
+                                .filter(([sk]) => sk !== 'id' && sk !== '@context')
+                                .map(([sk, sv]) => row(sk.charAt(0).toUpperCase() + sk.slice(1), sv))
+                                .join('');
+                            csGroupedSections.push(`
+                                <div class="pt-2 mt-1 border-t border-gray-700/30">
+                                    <p class="text-[10px] uppercase tracking-wide text-gray-600 font-semibold mb-1">${escHtml(label)} Fields</p>
+                                    ${subRows}
+                                </div>`);
+                        } else {
+                            csTopRows.push(row(k.charAt(0).toUpperCase() + k.slice(1), v));
+                        }
+                    }
+                }
+                return `<div class="pt-2 border-t border-gray-700/50 space-y-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">🏅 Credential Identity</p>
+                        ${tgBadge}
+                    </div>
+                    ${csTopRows.join('')}
+                    ${vc?.issuer ? `<div class="flex gap-2 min-w-0"><span class="w-20 shrink-0 text-gray-500">Issuer (TG)</span><span class="text-violet-400 break-all text-[10px] font-mono" title="${escHtml(vc.issuer)}">${escHtml(shortDid(vc.issuer))}</span></div>` : ''}
+                    ${vc?.validFrom ? row('Valid from', fmtDate(vc.validFrom)) : ''}
+                    ${vc?.validUntil ? row('Valid until', fmtDate(vc.validUntil)) : ''}
+                    ${credExt.params.did ? `<div class="flex gap-2 min-w-0"><span class="w-20 shrink-0 text-gray-500">Agent DID</span><span class="text-gray-400 break-all text-[10px] font-mono" title="${escHtml(credExt.params.did)}">${escHtml(shortDid(credExt.params.did))}</span></div>` : ''}
+                    ${vc?.proof?.cryptosuite ? row('Proof', vc.proof.cryptosuite) : ''}
+                    ${csGroupedSections.join('')}
+                </div>`;
+            }
+
+            // ── Plain identity (agent-identity/v1)
+            const ext = exts.find(e => e.uri === IDENTITY_EXT);
+            const p = ext?.params;
+            if (p) {
+                const rowS = (lbl, val) => val
+                    ? `<div class="flex gap-2"><span class="w-16 shrink-0 text-gray-500">${lbl}</span><span class="text-gray-200">${escHtml(String(val))}</span></div>`
+                    : '';
+                return `<div class="pt-2 border-t border-gray-700/50 space-y-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Identity Extension</p>
+                        ${unverifiedBadge}
+                    </div>
+                    ${rowS('Name', p.name)}${rowS('Role', p.role)}${rowS('Model', p.model)}${rowS('Version', p.version)}
+                </div>`;
+            }
+
+            // ── No identity
+            return `<div class="pt-2 border-t border-gray-700/50 space-y-1">
+                <div class="flex items-center gap-2">
+                    <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Identity</p>
+                    ${unverifiedBadge}
+                </div>
+                <p class="text-[11px] text-gray-600 italic">No identity credential found in agent card.</p>
+            </div>`;
+        }
+        function copyAgentUrl(url) {
+            navigator.clipboard.writeText(url);
+        }
+        function copyInputUrl(inputId, btn) {
+            const val = document.getElementById(inputId)?.value?.trim();
+            if (!val) return;
+            navigator.clipboard.writeText(val).then(() => {
+                const orig = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.classList.add('border-green-600', 'text-green-400');
+                btn.classList.remove('border-gray-600', 'text-gray-400');
+                setTimeout(() => {
+                    btn.textContent = orig;
+                    btn.classList.remove('border-green-600', 'text-green-400');
+                    btn.classList.add('border-gray-600', 'text-gray-400');
+                }, 2000);
+            });
+        }
+
+        // ─── Connected banner (chat) ─────────────────────────────────────────────────────────
+        function appendConnected(agentKey) {
+            const a = AGENTS[agentKey];
+            const vt = tgUrl(agentKey) ? ' · 🔒 TG' : '';
+            document.getElementById('chat').insertAdjacentHTML('beforeend', `
+    <div class="flex justify-center my-2">
+      <button onclick="openAgentModal('${agentKey}')"
+        class="text-[11px] text-gray-600 bg-gray-800/40 border border-gray-700/40 rounded-full px-4 py-1 hover:text-gray-300 hover:border-gray-600 transition-all">
+        ${a.emoji} Connected to ${a.label}${vt} &nbsp;·&nbsp; click for info
+      </button>
+    </div>`);
+            scrollBottom();
+        }
+
+        // ─── Agent metadata ───────────────────────────────────────────────────────────
+        const AGENTS = {
+            personal: {
+                label: 'Personal Assistant',
+                emoji: '👤',
+                get cardUrl() { return cardUrl('personal'); },
+                description: 'Helps with your schedule, tasks, reminders, and general questions. Finance queries are automatically routed to the Finance Agent.',
+            },
+            finance: {
+                label: 'Finance Agent',
+                emoji: '💰',
+                get cardUrl() { return cardUrl('finance'); },
+                description: 'Answers questions about your account balance, transactions, investments, credit score, and spending.',
+            },
+        };
+
+        // ─── A2A helpers ──────────────────────────────────────────────────────────────
+        const IDENTITY_EXT = 'https://fabric.affinidi.io/extensions/agent-identity/v1';
+        const IDENTITY_CRED_EXT = 'https://fabric.affinidi.io/extensions/agent-identity-credential/v1';
+        const ROUTING_PREFIX = '🔀 *Routed to Finance Agent*';
+
+        async function sendA2A(baseUrl, text, contextId) {
+            const url = baseUrl.replace(/\/$/, '') + '/';
+            const body = {
+                jsonrpc: '2.0', id: uuidv4(), method: 'message/send',
+                params: {
+                    message: {
+                        role: 'user',
+                        parts: [{ kind: 'text', text }],
+                        messageId: uuidv4(),
+                        ...(contextId ? { contextId } : {}),
+                        extensions: [IDENTITY_EXT],
+                        metadata: { [IDENTITY_EXT]: { name: 'Chat App', version: '1.0.0' } },
+                    }
+                }
+            };
+            const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (!res.ok) throw new Error(`Server error ${res.status}: ${await res.text()}`);
+            return res.json();
+        }
+
+        function extractText(rpc) {
+            const result = rpc?.result;
+            if (!result) throw new Error(JSON.stringify(rpc?.error || 'No result'));
+            const parts = result?.status?.message?.parts || result?.message?.parts || result?.parts || [];
+            return parts.map(p => p.root || p).filter(p => p.kind === 'text').map(p => p.text).join('\n') || JSON.stringify(result);
+        }
+
+        function extractContextId(rpc) {
+            const r = rpc?.result;
+            return r?.contextId || r?.status?.message?.contextId || null;
+        }
+
+        // ─── Send ─────────────────────────────────────────────────────────────────────
+        async function sendMessage() {
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = ''; input.style.height = 'auto';
+            document.getElementById('sendBtn').disabled = true;
+            const target = mode;
+            const baseUrl = agentUrl(target);
+            const reqBody = {
+                jsonrpc: '2.0', id: uuidv4(), method: 'message/send',
+                params: {
+                    message: {
+                        role: 'user',
+                        parts: [{ kind: 'text', text }],
+                        messageId: uuidv4(),
+                        ...(contextIds[target] ? { contextId: contextIds[target] } : {}),
+                        extensions: [IDENTITY_EXT],
+                        metadata: { [IDENTITY_EXT]: { name: 'Chat App', version: '1.0.0' } },
+                    }
+                }
+            };
+            appendUser(text, reqBody);
+            const typingId = 'typing-' + uuidv4();
+            appendTyping(typingId);
+            try {
+                // Route cross-origin URLs (e.g. external TG) through the server proxy
+                const targetUrl = baseUrl.replace(/\/$/, '') + '/';
+                const isCrossOrigin = !targetUrl.startsWith(BASE_URL);
+                const fetchUrl = isCrossOrigin
+                    ? `${BASE_URL}/proxy?url=${encodeURIComponent(targetUrl)}`
+                    : targetUrl;
+                const fetchRes = await fetch(fetchUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(reqBody),
+                });
+                if (!fetchRes.ok) throw new Error(`Server error ${fetchRes.status}: ${await fetchRes.text()}`);
+                const rpc = await fetchRes.json();
+                removeTyping(typingId);
+                const ctx = extractContextId(rpc);
+                if (ctx) contextIds[target] = ctx;
+                let replyText = extractText(rpc);
+                const wasRouted = replyText.startsWith(ROUTING_PREFIX);
+                if (wasRouted) replyText = replyText.slice(ROUTING_PREFIX.length).replace(/^\n+/, '');
+                appendAgent(replyText, wasRouted ? 'finance' : target, wasRouted, { request: reqBody, response: rpc });
+            } catch (err) {
+                removeTyping(typingId);
+                appendError('Failed to reach agent: ' + err.message);
+            } finally {
+                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('msgInput').focus();
+            }
+        }
+
+        // ─── Init ─────────────────────────────────────────────────────────────────────
+        async function init() {
+            const dot = document.getElementById('statusDot');
+            // Load server-side defaults from .env via /config
+            try {
+                const cfgRes = await fetch(`${BASE_URL}/config`);
+                if (cfgRes.ok) {
+                    const cfg = await cfgRes.json();
+                    SERVER_DEFAULTS = {
+                        personal: cfg.personalUrl || SERVER_DEFAULTS.personal,
+                        finance: cfg.financeUrl || SERVER_DEFAULTS.finance,
+                        personalTg: cfg.personalTgUrl || '',
+                        financeTg: cfg.financeTgUrl || '',
+                    };
+                }
+            } catch { /* silently fall back to BASE_URL-derived defaults */ }
+            initInputs();
+            prefetchAgentCards();
+            try {
+                const res = await fetch(`${BASE_URL}/health`);
+                if (res.ok) {
+                    dot.className = 'w-2 h-2 rounded-full bg-green-400 animate-pulse-dot';
+                    appendConnected(mode);
+                } else throw new Error();
+            } catch {
+                dot.className = 'w-2 h-2 rounded-full bg-red-400';
+                appendSystem(`⚠️  Could not connect to the agent server at ${BASE_URL}.\nStart the server first:\n  cd a2a-trusted-agent\n  python agents.py`);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+    <!-- ── Agent Info Modal ────────────────────────────────────────────── -->
+    <div id="agentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+        onclick="if(event.target===this)closeAgentModal()">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeAgentModal()"></div>
+        <div class="relative bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3 border-b border-gray-800">
+                <h2 id="agentModalTitle" class="text-sm font-semibold text-gray-200">Agent Info</h2>
+                <button onclick="closeAgentModal()"
+                    class="text-gray-500 hover:text-gray-200 text-xl leading-none">×</button>
+            </div>
+            <div id="agentModalContent" class="p-5 text-xs space-y-3 max-h-[70vh] overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- ── Message Inspector Modal ─────────────────────────────────────── -->
+    <div id="msgModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+        onclick="if(event.target===this)closeMsgModal()">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeMsgModal()"></div>
+        <div
+            class="relative bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3 border-b border-gray-800 shrink-0">
+                <h2 id="msgModalTitle" class="text-sm font-semibold text-gray-200">A2A Message</h2>
+                <button onclick="closeMsgModal()"
+                    class="text-gray-500 hover:text-gray-200 text-xl leading-none">×</button>
+            </div>
+            <div id="msgModalContent" class="overflow-y-auto flex-1 p-4 bg-gray-950"></div>
+        </div>
+    </div>
+</body>
+
+</html>
