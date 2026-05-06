@@ -112,4 +112,4 @@ With the Trust Gateway configured, you can now:
 - **Set up A2A channels** to route Agent-to-Agent traffic through the gateway.
 - **Enable decentralized identities** for your inbound MCP/A2A clients.
 
-Refer to the [Trust Gateway guide](docs/TRUST_GATEWAY.md) and the [README](README.md) for detailed instructions on configuring channels and running agents through the Trust Gateway.
+Refer to the [README](README.md) for detailed instructions on configuring channels and running agents through the Trust Gateway.
