@@ -35,9 +35,9 @@ Establish governed MCP and A2A connections by routing clients through the Trust 
   - [MCP Server via Trust Gateway](#mcp-server-via-trust-gateway)
   - [A2A Server via Trust Gateway](#a2a-server-via-trust-gateway)
   - [A2A Vertex AI Agent via Trust Gateway](#a2a-vertex-ai-agent-via-trust-gateway)
-  - [Create Identity for MCP/A2A Client](#create-identity-for-mcpa2a-client)
+  - [Create Identity for Your Agent or MCP Server](#create-identity-for-your-agent-or-mcp-server)
   - [Sample MCP Request & Response Messages](#sample-mcp-request--response-messages)
-- [Lab: A2A Protected Agent — Decentralized Identity](#lab-a2a-protected-agent--decentralized-identity)
+- [Part 3: A2A Protected Agent — Decentralized Identity](#part-3-a2a-protected-agent--decentralized-identity)
 
 ---
 
@@ -608,29 +608,34 @@ View traffic metrics and logs in the channel dashboard after testing.
 
 ---
 
-## Create Identity for MCP/A2A Client
+## Create Identity for Your Agent or MCP Server
 
-The Trust Gateway can issue decentralized identities (DIDs) for your clients on every request.
+The Trust Gateway can issue a decentralized identity (DID) for the **agent or MCP server itself** — a cryptographically signed Verifiable Presentation (VP) that is automatically injected into responses:
 
-### Enable Identity for Inbound Clients
+- **A2A channel** — VP is injected into the agent card response and every A2A message response
+- **MCP channel** — VP is injected into every MCP response
 
-1. Edit the MCP/A2A channel you created
-2. Click on the `Inbound` tab
-3. Under `agentIdentity` meta field, click the `+` button
-4. Enter JSON attribute name as `name`, select the `Identity` checkbox, and click save
+### Enable Protected Identity
+
+1. Edit the A2A or MCP channel you created
+2. Click on the `Protected Identity` tab
+3. Enable **Protected Identity** and paste the identity schema matching the fields declared in your agent card extension
+4. Save the configuration
 
    ![Alt text](docs/images/channel-mcp-identity.png)
 
-5. Test your client again — the Trust Gateway will now create a decentralized identity for each request
+5. Call the agent card or send a message through the Trust Gateway — the VP carrying the agent's identity will be injected automatically into each response
 
    ![Alt text](docs/images/channel-mcp-identity2.png)
    ![Alt text](docs/images/channel-mcp-identity-dashboard.png)
+
+> For a detailed walkthrough with identity schema configuration and sample request/response messages, see the **[A2A Protected Agent lab](a2a-protected-agent/README.MD)**.
 
 ---
 
 ## Sample MCP Request & Response Messages
 
-This section shows the complete message flow through the Trust Gateway and how requests are enriched with identity credentials.
+This section shows the complete message flow through the Trust Gateway and how responses are enriched with the **agent's** identity credentials.
 
 ### 1. Client Sends MCP Request
 
@@ -639,12 +644,6 @@ This section shows the complete message flow through the Trust Gateway and how r
   "jsonrpc": "2.0",
   "id": 3,
   "method": "tools/call",
-  "_meta": {
-    "agentIdentity": {
-      "name": "MCP Test Client",
-      "version": "1.0.0"
-    }
-  },
   "params": {
     "name": "calculator",
     "arguments": { "operation": "add", "a": 15, "b": 27 }
@@ -652,53 +651,9 @@ This section shows the complete message flow through the Trust Gateway and how r
 }
 ```
 
-### 2. Server Receives Request with Verifiable Identity
+### 2. Client Receives Response with Agent's Verifiable Identity
 
-The Trust Gateway intercepts the request and injects a cryptographically signed W3C Verifiable Credential proving the agent's identity:
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 3,
-  "method": "tools/call",
-  "_meta": {
-    "https://fabric.affinidi.io/extensions/agent-identity-credential/v1": {
-      "verifiablePresentation": {
-        "@context": ["https://www.w3.org/ns/credentials/v2"],
-        "type": ["VerifiablePresentation"],
-        "holder": "did:web:pillar-channel.trustgateway.affinidi.io:channel:c034ebb9-2f02-488c-ac77-7d59862748da",
-        "verifiableCredential": {
-          "type": ["VerifiableCredential", "AgentIdentityCredential"],
-          "credentialSubject": {
-            "id": "did:web:pillar-channel.trustgateway.affinidi.io:channel:c034ebb9-...",
-            "identityFields": { "agentIdentity.name": "MCP Test Client" }
-          },
-          "issuer": "did:web:pillar-channel.trustgateway.affinidi.io",
-          "proof": {
-            "type": "DataIntegrityProof",
-            "cryptosuite": "eddsa-rdfc-2022",
-            "...": "..."
-          }
-        }
-      },
-      "did": "did:web:pillar-channel.trustgateway.affinidi.io:channel:c034ebb9-..."
-    }
-  },
-  "params": {
-    "name": "calculator",
-    "arguments": { "operation": "add", "a": 15, "b": 27 }
-  }
-}
-```
-
-Key fields in the injected credential:
-
-- `holder` — the agent's DID (Decentralized Identifier)
-- `credentialSubject.identityFields` — identity metadata from the original request
-- `issuer` — the Trust Gateway's DID
-- `proof` — cryptographic signature ensuring authenticity
-
-### 3. Server Returns Response
+The Trust Gateway intercepts the response from the agent and injects a cryptographically signed W3C Verifiable Presentation proving the **agent's** identity:
 
 ```json
 {
@@ -708,10 +663,37 @@ Key fields in the injected credential:
     "content": [{ "type": "text", "text": "Calculation: 15 + 27 = 42" }]
   },
   "_meta": {
-    "agentIdentity": { "name": "Simple MCP Server" }
+    "https://fabric.affinidi.io/extensions/agent-identity-credential/v1": {
+      "verifiablePresentation": {
+        "@context": ["https://www.w3.org/ns/credentials/v2"],
+        "type": ["VerifiablePresentation"],
+        "holder": "did:webvh:pillar-channel.trustgateway.affinidi.io:channel:c034ebb9-...",
+        "verifiableCredential": {
+          "type": ["VerifiableCredential", "AgentIdentityCredential"],
+          "credentialSubject": {
+            "id": "did:webvh:pillar-channel.trustgateway.affinidi.io:channel:c034ebb9-...",
+            "identityFields": { "name": "Simple MCP Server" }
+          },
+          "issuer": "did:webvh:pillar-channel.trustgateway.affinidi.io",
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "eddsa-rdfc-2022",
+            "...": "..."
+          }
+        }
+      },
+      "did": "did:webvh:pillar-channel.trustgateway.affinidi.io:channel:c034ebb9-..."
+    }
   }
 }
 ```
+
+Key fields in the injected credential:
+
+- `holder` — the **agent's** DID (Decentralized Identifier) issued by the Trust Gateway
+- `credentialSubject.identityFields` — identity metadata from the **agent's** card or response
+- `issuer` — the Trust Gateway's DID
+- `proof` — cryptographic signature ensuring authenticity
 
 ## Reporting technical issues
 
@@ -719,7 +701,7 @@ If you have a technical issue with the project's codebase, you can also create a
 
 ---
 
-## Lab: A2A Protected Agent — Decentralized Identity
+## Part 3: A2A Protected Agent — Decentralized Identity
 
 This lab shows how to give AI agents a **cryptographic, verifiable identity** using the Trust Gateway. A multi-agent server (Personal Assistant + Finance Agent) exposes A2A endpoints. When routed through a Trust Gateway A2A channel with Protected Identity enabled, the gateway automatically issues a **Verifiable Presentation (VP)** signed with Ed25519 — injecting it into every agent card and message response.
 
