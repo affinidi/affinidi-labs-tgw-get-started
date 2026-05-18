@@ -1,0 +1,7 @@
+# Local Prometheus config — contains your real Trust Gateway hostnames.
+# Recreate it with `./run.sh <TGW_HOST>` or by copying prometheus.yml.template.
+prometheus.yml
+
+# Generated Grafana dashboards — created from dashboard-template.json,
+# one per Trust Gateway. Keep the template, ignore the renders.
+grafana/provisioning/dashboards/tgw-*.json

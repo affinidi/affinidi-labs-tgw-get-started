@@ -38,6 +38,7 @@ Establish governed MCP and A2A connections by routing clients through the Trust 
   - [Create Identity for Your Agent or MCP Server](#create-identity-for-your-agent-or-mcp-server)
   - [Sample MCP Request & Response Messages](#sample-mcp-request--response-messages)
 - [Part 3: A2A Protected Agent — Decentralized Identity](#part-3-a2a-protected-agent--decentralized-identity)
+- [Part 4: Observability — Visualise Trust Gateway Metrics](#part-4-observability--visualise-trust-gateway-metrics)
 
 ---
 
@@ -156,13 +157,14 @@ Everything else stays the same — the Codespace keeps the server running while 
 
 ## �🔍 Overview
 
-| Component              | Description                                                                           |
-| ---------------------- | ------------------------------------------------------------------------------------- |
-| `a2a/`                 | Local A2A echo agent server + interactive client                                      |
-| `mcp/`                 | Local MCP server with calculator and weather tools                                    |
-| `a2a-vertex-agent/`    | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
-| `rest-api/`            | REST API server with MCP proxy                                                        |
-| `a2a-protected-agent/` | Multi-agent server (Personal + Finance) with decentralized identity via Trust Gateway |
+| Component                     | Description                                                                           |
+| ----------------------------- | ------------------------------------------------------------------------------------- |
+| `a2a/`                        | Local A2A echo agent server + interactive client                                      |
+| `mcp/`                        | Local MCP server with calculator and weather tools                                    |
+| `a2a-vertex-agent/`           | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
+| `rest-api/`                   | REST API server with MCP proxy                                                        |
+| `a2a-protected-agent/`        | Multi-agent server (Personal + Finance) with decentralized identity via Trust Gateway |
+| `tgw-prometheus-integration/` | Scrape the Trust Gateway's native Prometheus endpoint and visualise it in Grafana     |
 
 ## 📁 Project Structure
 
@@ -202,6 +204,13 @@ affinidi-labs-tgw-get-started/
 │   ├── requirements.txt
 │   ├── run.sh               # Start the server (with optional ngrok)
 │   └── README.MD            # Full lab guide
+├── tgw-prometheus-integration/
+│   ├── docker-compose.yml          # Prometheus + Grafana stack
+│   ├── prometheus.yml.template     # Scrape-config template (committed)
+│   ├── dashboard-template.json     # Grafana dashboard template
+│   ├── run.sh                      # Configure & start, supports N TGs
+│   ├── grafana/provisioning/       # Auto-provisioned datasource + dashboards
+│   └── readme.md                   # Full integration guide
 └── docs/
     └── images/              # Documentation images
 ```
@@ -713,3 +722,41 @@ This lab shows how to give AI agents a **cryptographic, verifiable identity** us
 - How VPs are injected into A2A agent card responses and message responses
 
 ➡️ **[View the full lab guide](a2a-protected-agent/README.MD)**
+
+---
+
+## Part 4: Observability — Visualise Trust Gateway Metrics
+
+The Trust Gateway exposes a **native Prometheus endpoint** at
+`https://<YOUR_TGW_HOST>/api/v1/metrics/prometheus` covering request
+volume, success/fault rates, latency histograms, throughput, active
+connections, and unique agent identities.
+
+The [`tgw-prometheus-integration/`](tgw-prometheus-integration/) folder
+is a self-contained, customer-shareable bring-up: Prometheus scrapes
+the Trust Gateway directly (no agent, no OTel Collector, no tunnels)
+and Grafana auto-provisions a dashboard per Trust Gateway.
+
+**What you get:**
+
+- `docker compose` stack — Prometheus + Grafana, ready in seconds
+- One scrape job and one Grafana dashboard **per Trust Gateway**,
+  named automatically from the host's subdomain
+  (e.g. `acme-demo.trustgateway.affinidi.io` → dashboard
+  _Trust Gateway — acme-demo.trustgateway_)
+- Supports **any number of Trust Gateways** in one stack
+- `prometheus.yml` and the generated dashboards are gitignored so real
+  hostnames stay local
+
+**Quick start:**
+
+```bash
+cd tgw-prometheus-integration
+./run.sh <YOUR_TGW_HOST>                  # e.g. acme-demo.trustgateway.affinidi.io
+# or several at once:
+./run.sh <YOUR_TGW_HOST_1> <YOUR_TGW_HOST_2>
+```
+
+Then open Grafana at http://localhost:3000 (admin / admin).
+
+➡️ **[View the full integration guide](tgw-prometheus-integration/readme.md)**

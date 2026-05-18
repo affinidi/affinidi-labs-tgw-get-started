@@ -1,0 +1,42 @@
+# Prometheus scrape config TEMPLATE for Trust Gateway native /metrics endpoints.
+#
+# This file is committed; the real config lives in prometheus.yml (gitignored).
+#
+# How to use this template:
+#
+#   • EASY:   ./run.sh <TGW_HOST_1> [TGW_HOST_2 ...]
+#             run.sh copies this template to prometheus.yml (if missing),
+#             REGENERATES the scrape_configs section with one job per host,
+#             derives names from each host's subdomain, and generates
+#             the matching Grafana dashboards from dashboard-template.json.
+#
+#   • MANUAL: cp prometheus.yml.template prometheus.yml
+#             $EDITOR prometheus.yml      # fill in placeholders below
+#             Then generate dashboards with the sed command in readme.md
+#             and run `./run.sh` with no args.
+#
+# IMPORTANT: prometheus.yml is gitignored. Do NOT commit it once it
+# contains your real Trust Gateway hostnames. See readme.md "Security notice".
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# ──────────────────────────────────────────────────────────────────────
+# run.sh regenerates everything between BEGIN MANAGED and END MANAGED.
+# Don't put anything you want to keep inside that block.
+# ──────────────────────────────────────────────────────────────────────
+scrape_configs:
+  # ─── BEGIN MANAGED ───────────────────────────────────────────────────
+  # Example — one scrape job per Trust Gateway.
+  # When you run `./run.sh <host1> <host2> …` this block is rewritten
+  # automatically. For manual edits, follow this exact shape:
+  #
+  - job_name: "tgw-<your-subdomain>" # e.g. "tgw-acme-demo-trustgateway"
+    scheme: https
+    metrics_path: /api/v1/metrics/prometheus
+    static_configs:
+      - targets: ["<your.tgw.host>"] # e.g. "acme-demo.trustgateway.affinidi.io"
+        labels:
+          instance_name: "<your-subdomain>" # e.g. "acme-demo.trustgateway"
+  # ─── END MANAGED ─────────────────────────────────────────────────────
