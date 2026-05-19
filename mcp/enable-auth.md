@@ -32,11 +32,11 @@
 The Trust Gateway sits between the MCP client and your upstream MCP server. Authentication can be enforced on either side of the gateway, independently:
 
 ```
-        ┌────────────────── Source Auth ──────────────────┐    ┌──── Target Auth ────┐
-        │ (client must present a key to call the channel) │    │ (gateway injects a  │
-        │                                                 │    │  secret upstream)   │
-        ▼                                                 ▼    ▼                     ▼
-  MCP Client  ───►  Trust Gateway MCP Channel  ───►  Your MCP Server
+        ┌──────── Source Auth ────────┐   ┌────────── Target Auth ──────────┐
+        │ client must present a key   │   │ gateway injects a secret        │
+        │ to call the channel route   │   │ to the upstream server          │
+        ▼                             ▼   ▼                                 ▼
+  MCP Client  ──────────►  Trust Gateway MCP Channel  ──────────►  Your MCP Server
 ```
 
 | Mode                      | Where the secret lives      | Who presents it                  | Use case                                                                     |
