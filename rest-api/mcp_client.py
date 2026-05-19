@@ -14,11 +14,12 @@ from typing import Any, Dict, Optional
 class MCPClient:
     """Simple MCP client for testing"""
 
-    def __init__(self, base_url: str = "http://localhost:12000", agent_identity: Optional[Dict] = None):
+    def __init__(self, base_url: str = "http://localhost:12000", agent_identity: Optional[Dict] = None, extra_headers: Optional[Dict] = None):
         self.base_url = base_url
         self.request_id = 0
         self.initialized = False
         self.agent_identity = agent_identity
+        self.extra_headers = extra_headers or {}
 
     def _get_next_id(self) -> int:
         """Generate next request ID"""
@@ -47,10 +48,12 @@ class MCPClient:
         print(json.dumps(payload, indent=2))
 
         try:
+            headers = {"Content-Type": "application/json"}
+            headers.update(self.extra_headers)
             response = requests.post(
                 self.base_url,
                 json=payload,
-                headers={"Content-Type": "application/json"}
+                headers=headers
             )
 
             # Check status and print response body on error
@@ -95,9 +98,15 @@ class MCPClient:
 
     def call_tool(self, name: str, arguments: Dict) -> Dict:
         """Call a tool"""
+        # Inject custom (X-*) headers as header_* prefixed arguments (TGW convention)
+        # Standard headers (e.g. Authorization) are sent as normal HTTP headers
+        merged_arguments = {**arguments}
+        for k, v in self.extra_headers.items():
+            if k.lower().startswith("x-"):
+                merged_arguments[f"header_{k}"] = v
         params = {
             "name": name,
-            "arguments": arguments
+            "arguments": merged_arguments
         }
         return self._send_request("tools/call", params)
 
@@ -196,8 +205,15 @@ if __name__ == "__main__":
         "version": "1.0.0"
     }
 
-    client = MCPClient(server_url,
-                       agent_identity=agent_identity)
+    client = MCPClient(
+        server_url,
+        agent_identity=agent_identity,
+        extra_headers={
+            "X-HEG-User": "test-user",
+            "X-HEG-Token": "tokentest",
+            "Authorization": "Bearer test-token-abc"
+        }
+    )
 
     try:
         run_test_suite(client)

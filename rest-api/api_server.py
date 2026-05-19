@@ -6,8 +6,9 @@ A REST API providing calculator and weather forecast endpoints.
 """
 
 import random
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Literal, List
 import uvicorn
@@ -67,6 +68,7 @@ async def lifespan(app: FastAPI):
     print(f"   - GET /greeting")
     print(f"   - GET /weather/forecast")
     print(f"   - GET /health")
+    print(f"   - GET /headers  (echo all received headers)")
     print(f"{'='*60}\n")
     yield
     # Shutdown
@@ -79,6 +81,26 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+
+class HeaderLoggerMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        print(f"\n{'='*60}")
+        print(f"Incoming {request.method} {request.url.path}")
+        print(f"Headers received:")
+        for name, value in request.headers.items():
+            print(f"  {name}: {value}")
+        print(f"{'='*60}")
+        return await call_next(request)
+
+
+app.add_middleware(HeaderLoggerMiddleware)
+
+
+@app.get("/headers", tags=["Debug"], summary="Echo all received headers")
+async def echo_headers(request: Request):
+    """Returns all headers received by the API server — useful to verify TGW header pass-through."""
+    return {"headers": dict(request.headers)}
 
 
 @app.get("/health", tags=["Health"])

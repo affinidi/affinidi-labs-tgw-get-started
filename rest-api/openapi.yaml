@@ -20,6 +20,9 @@ tags:
   - name: Greeting
     description: Greeting operations
 
+security:
+  - bearerAuth: []
+
 paths:
   /calculator:
     post:
@@ -28,6 +31,23 @@ paths:
       summary: Perform arithmetic calculation
       description: Execute basic arithmetic operations (add, subtract, multiply, divide)
       operationId: calculator
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-HEG-User
+          in: header
+          required: false
+          description: HEG user identifier forwarded from MCP client
+          schema:
+            type: string
+            example: test-user
+        - name: X-HEG-Token
+          in: header
+          required: false
+          description: HEG token forwarded from MCP client
+          schema:
+            type: string
+            example: tokentest
       requestBody:
         required: true
         content:
@@ -96,7 +116,23 @@ paths:
       summary: Greet with a name
       description: Returns a greeting message for the given name
       operationId: greeting
+      security:
+        - bearerAuth: []
       parameters:
+        - name: X-HEG-User
+          in: header
+          required: false
+          description: HEG user identifier forwarded from MCP client
+          schema:
+            type: string
+            example: test-user
+        - name: X-HEG-Token
+          in: header
+          required: false
+          description: HEG token forwarded from MCP client
+          schema:
+            type: string
+            example: tokentest
         - name: name
           in: query
           required: true
@@ -139,7 +175,23 @@ paths:
       summary: Get weather forecast
       description: Retrieve weather forecast for a specified city
       operationId: weather_forecast
+      security:
+        - bearerAuth: []
       parameters:
+        - name: X-HEG-User
+          in: header
+          required: false
+          description: HEG user identifier forwarded from MCP client
+          schema:
+            type: string
+            example: test-user
+        - name: X-HEG-Token
+          in: header
+          required: false
+          description: HEG token forwarded from MCP client
+          schema:
+            type: string
+            example: tokentest
         - name: city
           in: query
           required: true
@@ -237,6 +289,13 @@ paths:
                     error: "Days must be a number between 1 and 7"
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token passed as Authorization header
+
   schemas:
     CalculatorRequest:
       type: object

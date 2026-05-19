@@ -33,6 +33,7 @@ Establish governed MCP and A2A connections by routing clients through the Trust 
   - [Prerequisites](#prerequisites-1)
   - [Setup Trust Gateway](#setup-trust-gateway)
   - [MCP Server via Trust Gateway](#mcp-server-via-trust-gateway)
+    - [Optional: Enable Authentication on the MCP Channel](#optional-enable-authentication-on-the-mcp-channel)
   - [A2A Server via Trust Gateway](#a2a-server-via-trust-gateway)
   - [A2A Vertex AI Agent via Trust Gateway](#a2a-vertex-ai-agent-via-trust-gateway)
   - [Create Identity for Your Agent or MCP Server](#create-identity-for-your-agent-or-mcp-server)
@@ -477,6 +478,14 @@ View traffic metrics and logs in the channel dashboard after testing.
 
 ![Alt text](docs/images/channel-mcp-2.png)
 ![Alt text](docs/images/channel-mcp-3.png)
+
+### Optional: Enable Authentication on the MCP Channel
+
+By default the MCP channel route is open. If you need to **lock down the channel** so only authorised clients can call it, and/or **inject an API key** from the Trust Gateway to a protected upstream MCP server, follow the optional guide:
+
+➡️ **[Enable Authentication on a Trust Gateway MCP Channel](mcp/enable-auth.md)**
+
+Covers Source Authentication (client → gateway) and Target Authentication (gateway → upstream) with screenshots and `curl` test commands. The same pattern applies to A2A channels.
 
 ---
 

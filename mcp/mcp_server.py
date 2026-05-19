@@ -131,6 +131,10 @@ async def health_check():
 @app.post("/")
 async def mcp_endpoint(request: Request):
     """Main MCP JSON-RPC endpoint"""
+    print("📋 Request headers:")
+    for name, value in request.headers.items():
+        print(f"   {name}: {value}")
+
     try:
         body = await request.json()
     except Exception as e:
