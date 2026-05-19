@@ -1,0 +1,48 @@
+{
+    "_comment": "Copy this file to endpoints.json and fill in your endpoint details. endpoints.json is gitignored.",
+    "endpoints": [
+        {
+            "_comment": "MCP server example — sends JSON-RPC 2.0 calls in the order listed",
+            "name": "my_mcp_endpoint",
+            "active": true,
+            "type": "mcp",
+            "url": "<TG_MCP_CHANNEL_URL>",
+            "calls": [
+                {
+                    "method": "initialize",
+                    "params": {
+                        "protocolVersion": "2024-11-05",
+                        "capabilities": {},
+                        "clientInfo": {
+                            "name": "load-test",
+                            "version": "1.0"
+                        }
+                    }
+                },
+                {
+                    "method": "tools/list",
+                    "params": {}
+                },
+                {
+                    "method": "tools/call",
+                    "params": {
+                        "name": "<tool-name>",
+                        "arguments": {}
+                    }
+                }
+            ]
+        },
+        {
+            "_comment": "A2A agent example — sends one message chosen at random from the list",
+            "name": "my_a2a_agent",
+            "active": true,
+            "type": "a2a",
+            "url": "<TG_A2A_AGENT_URL>",
+            "messages": [
+                "Hello, what can you help me with?",
+                "Give me a summary of today's news.",
+                "What is the weather in London?"
+            ]
+        }
+    ]
+}

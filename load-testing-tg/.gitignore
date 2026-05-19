@@ -1,0 +1,4 @@
+*.log
+.DS_Store
+# endpoints.json is local — use data/endpoints.template.json as the base
+data/endpoints.json

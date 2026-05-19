@@ -14,11 +14,12 @@ from typing import Any, Dict, Optional
 class MCPClient:
     """Simple MCP client for testing"""
 
-    def __init__(self, base_url: str = "http://localhost:11000", agent_identity: Optional[Dict] = None):
+    def __init__(self, base_url: str = "http://localhost:11000", agent_identity: Optional[Dict] = None, api_key: Optional[str] = None):
         self.base_url = base_url
         self.request_id = 0
         self.initialized = False
         self.agent_identity = agent_identity
+        self.api_key = api_key
 
     def _get_next_id(self) -> int:
         """Generate next request ID"""
@@ -47,10 +48,13 @@ class MCPClient:
         print(json.dumps(payload, indent=2))
 
         try:
+            headers = {"Content-Type": "application/json"}
+            if self.api_key:
+                headers["X-API-Key"] = self.api_key
             response = requests.post(
                 self.base_url,
                 json=payload,
-                headers={"Content-Type": "application/json"}
+                headers=headers
             )
 
             # Check status and print response body on error
@@ -183,12 +187,14 @@ def run_test_suite(client: MCPClient):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python mcp_client.py <server_url>")
-        print("Example: python mcp_client.py http://localhost:11000")
-        sys.exit(1)
+    import argparse
+    parser = argparse.ArgumentParser(description="MCP Test Client")
+    parser.add_argument("server_url", help="MCP server URL")
+    parser.add_argument("--api-key", dest="api_key",
+                        default=None, help="X-API-Key header value")
+    args = parser.parse_args()
 
-    server_url = sys.argv[1]
+    server_url = args.server_url
 
     # Create agent identity
     agent_identity = {
@@ -197,7 +203,8 @@ if __name__ == "__main__":
     }
 
     client = MCPClient(server_url,
-                       agent_identity=agent_identity)
+                       agent_identity=agent_identity,
+                       api_key=args.api_key)
 
     try:
         run_test_suite(client)

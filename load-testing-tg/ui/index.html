@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Trust Gateway — Load Tester</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --text: #e6edf3;
+            --muted: #8b949e;
+            --dim: #484f58;
+            --blue: #58a6ff;
+            --green: #3fb950;
+            --red: #f85149;
+            --yellow: #d29922;
+            --purple: #bc8cff;
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden
+        }
+
+        /* Topbar */
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 20px;
+            height: 48px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0
+        }
+
+        .topbar h1 {
+            font-size: .95rem;
+            font-weight: 700;
+            white-space: nowrap
+        }
+
+        .nav {
+            display: flex;
+            gap: 2px;
+            margin-left: 6px
+        }
+
+        .nav-btn {
+            padding: 5px 16px;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--muted);
+            font-size: .83rem;
+            cursor: pointer
+        }
+
+        .nav-btn:hover {
+            color: var(--text)
+        }
+
+        .nav-btn.active {
+            background: var(--surface);
+            border-color: var(--border);
+            color: var(--text)
+        }
+
+        .spacer {
+            flex: 1
+        }
+
+        .dot-s {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--dim);
+            flex-shrink: 0
+        }
+
+        .dot-s.run {
+            background: var(--green);
+            animation: blink 1s ease-in-out infinite
+        }
+
+        .dot-s.done {
+            background: var(--blue)
+        }
+
+        .dot-s.err {
+            background: var(--red)
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .3
+            }
+        }
+
+        #statusText {
+            font-size: .78rem;
+            color: var(--muted)
+        }
+
+        .btn-stop {
+            padding: 4px 14px;
+            border: 1px solid var(--red);
+            background: transparent;
+            color: var(--red);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: .78rem;
+            font-weight: 600
+        }
+
+        .btn-stop:hover {
+            background: #f8514922
+        }
+
+        /* Pages */
+        .page {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column
+        }
+
+        /* PAGE 1 — Endpoints */
+        .ep-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px
+        }
+
+        .ep-scroll::-webkit-scrollbar {
+            width: 6px
+        }
+
+        .ep-scroll::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px
+        }
+
+        .ep-tbl {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .82rem
+        }
+
+        .ep-tbl thead th {
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            padding: 8px 12px;
+            text-align: left;
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--muted);
+            white-space: nowrap
+        }
+
+        .ep-row td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #21262d;
+            vertical-align: middle
+        }
+
+        .ep-row:hover td {
+            background: var(--surface)
+        }
+
+        .ep-row.open td {
+            background: var(--surface);
+            border-bottom: none
+        }
+
+        .xbtn {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: .75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .xbtn:hover {
+            color: var(--blue);
+            border-color: var(--blue)
+        }
+
+        .ep-detail td {
+            padding: 0 12px 14px 44px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .calls-tbl {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .77rem;
+            background: #010409;
+            border-radius: 6px;
+            overflow: hidden
+        }
+
+        .calls-tbl th {
+            text-align: left;
+            color: var(--dim);
+            font-size: .67rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 6px 12px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .calls-tbl td {
+            padding: 6px 12px;
+            border-bottom: 1px solid #21262d;
+            vertical-align: top
+        }
+
+        .calls-tbl tr:last-child td {
+            border-bottom: none
+        }
+
+        .payload {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: .71rem;
+            color: var(--muted);
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 80px;
+            overflow-y: auto;
+            background: #0d1117;
+            border-radius: 4px;
+            padding: 4px 6px;
+            border: 1px solid var(--border)
+        }
+
+        /* PAGE 2 — Run Tests */
+        .run-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden
+        }
+
+        .sel-panel {
+            width: 230px;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden
+        }
+
+        .sel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--muted)
+        }
+
+        .sel-acts {
+            display: flex;
+            gap: 4px
+        }
+
+        .sel-acts button {
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-size: .72rem;
+            cursor: pointer
+        }
+
+        .sel-acts button:hover {
+            color: var(--text);
+            border-color: var(--muted)
+        }
+
+        .ep-chk-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 6px 0
+        }
+
+        .ep-chk-list::-webkit-scrollbar {
+            width: 4px
+        }
+
+        .ep-chk-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px
+        }
+
+        .ep-chk {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 14px;
+            cursor: pointer
+        }
+
+        .ep-chk:hover {
+            background: var(--surface)
+        }
+
+        .ep-chk input {
+            accent-color: var(--blue);
+            width: 14px;
+            height: 14px;
+            margin-top: 2px;
+            cursor: pointer;
+            flex-shrink: 0
+        }
+
+        .ep-chk-name {
+            font-size: .83rem;
+            color: var(--text);
+            font-weight: 500
+        }
+
+        .ep-chk-meta {
+            font-size: .7rem;
+            color: var(--muted);
+            margin-top: 2px
+        }
+
+        .run-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden
+        }
+
+        .cfg-strip {
+            display: flex;
+            align-items: flex-end;
+            gap: 14px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            flex-wrap: wrap
+        }
+
+        .cfg-g {
+            display: flex;
+            flex-direction: column;
+            gap: 4px
+        }
+
+        .cfg-lbl {
+            font-size: .72rem;
+            color: var(--muted);
+            font-weight: 500
+        }
+
+        .cfg-in {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            color: var(--text);
+            padding: 5px 10px;
+            font-size: .83rem;
+            outline: none
+        }
+
+        .cfg-in:focus {
+            border-color: var(--blue)
+        }
+
+        .w100 {
+            width: 100px
+        }
+
+        .w70 {
+            width: 70px
+        }
+
+        .mode-row {
+            display: flex
+        }
+
+        .mbtn {
+            padding: 5px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: .78rem;
+            cursor: pointer;
+            transition: all .12s
+        }
+
+        .mbtn:first-child {
+            border-radius: 5px 0 0 5px
+        }
+
+        .mbtn:last-child {
+            border-radius: 0 5px 5px 0;
+            border-left: none
+        }
+
+        .mbtn.active {
+            background: #21262d;
+            color: var(--blue);
+            border-color: var(--blue);
+            z-index: 1
+        }
+
+        .btn-run {
+            padding: 7px 22px;
+            background: #238636;
+            border: none;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: .85rem;
+            font-weight: 600
+        }
+
+        .btn-run:hover:not(:disabled) {
+            background: #2ea043
+        }
+
+        .btn-run:disabled {
+            background: #21262d;
+            color: var(--dim);
+            cursor: not-allowed
+        }
+
+        .live-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden
+        }
+
+        .lr-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 20px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0
+        }
+
+        .lr-head>.lh-title {
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--muted)
+        }
+
+        #liveCount {
+            font-size: .78rem;
+            color: var(--muted)
+        }
+
+        .lr-body {
+            flex: 1;
+            overflow-y: auto
+        }
+
+        .lr-body::-webkit-scrollbar {
+            width: 6px
+        }
+
+        .lr-body::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px
+        }
+
+        .empty-msg {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 120px;
+            color: var(--dim);
+            font-size: .82rem
+        }
+
+        .live-tbl {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .82rem
+        }
+
+        .live-tbl thead th {
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            padding: 7px 16px;
+            text-align: left;
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--muted);
+            white-space: nowrap
+        }
+
+        .live-tbl tbody tr {
+            border-bottom: 1px solid #21262d
+        }
+
+        .live-tbl tbody tr:hover {
+            background: var(--surface)
+        }
+
+        .live-tbl tbody td {
+            padding: 9px 16px
+        }
+
+        .live-foot {
+            border-top: 1px solid var(--border);
+            padding: 8px 20px;
+            font-size: .78rem;
+            color: var(--muted);
+            display: flex;
+            gap: 24px;
+            flex-shrink: 0
+        }
+
+        .live-foot b {
+            color: var(--text)
+        }
+
+        /* Progress bar */
+        .prog-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 7px 20px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0
+        }
+
+        .prog-track {
+            flex: 1;
+            height: 5px;
+            background: var(--surface);
+            border-radius: 3px;
+            overflow: hidden
+        }
+
+        .prog-fill {
+            height: 100%;
+            background: var(--blue);
+            border-radius: 3px;
+            width: 0%;
+            transition: width .25s
+        }
+
+        .prog-fill.done {
+            background: var(--green)
+        }
+
+        .prog-label {
+            font-size: .75rem;
+            color: var(--muted);
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: 80px;
+            text-align: right
+        }
+
+        /* Log panel */
+        .log-panel {
+            border-top: 1px solid var(--border);
+            flex-shrink: 0
+        }
+
+        .log-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 20px;
+            cursor: pointer;
+            user-select: none;
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--dim)
+        }
+
+        .log-toggle:hover {
+            color: var(--muted)
+        }
+
+        .log-body {
+            max-height: 140px;
+            overflow-y: auto;
+            padding: 4px 20px 8px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: .72rem;
+            background: #010409;
+            border-top: 1px solid var(--border)
+        }
+
+        .log-body::-webkit-scrollbar {
+            width: 4px
+        }
+
+        .log-body::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px
+        }
+
+        .log-line {
+            padding: 1px 0;
+            color: var(--muted);
+            white-space: pre-wrap;
+            word-break: break-all
+        }
+
+        .log-line.warn {
+            color: var(--yellow)
+        }
+
+        .log-line.err {
+            color: var(--red)
+        }
+
+        /* Shared */
+        .badge {
+            display: inline-block;
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: .67rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em
+        }
+
+        .b-mcp {
+            background: #1f3d6e;
+            color: var(--blue)
+        }
+
+        .b-a2a {
+            background: #2d1f6e;
+            color: var(--purple)
+        }
+
+        .b-on {
+            background: #1a3a1f;
+            color: var(--green)
+        }
+
+        .b-off {
+            background: #2a1a1a;
+            color: var(--red)
+        }
+
+        .ok {
+            color: var(--green)
+        }
+
+        .er {
+            color: var(--red)
+        }
+
+        .hidden {
+            display: none !important
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <h1>Trust Gateway Load Tester</h1>
+        <div class="nav">
+            <button class="nav-btn active" id="nav-ep" onclick="showPage('ep')">Endpoints</button>
+            <button class="nav-btn" id="nav-run" onclick="showPage('run')">Run Tests</button>
+        </div>
+        <div class="spacer"></div>
+        <span class="dot-s" id="dot"></span>
+        <span id="statusText">Idle</span>
+        <button class="btn-stop hidden" id="stopBtn" onclick="stopTest()">&#9632; Stop</button>
+    </div>
+
+    <!-- PAGE 1: Endpoints -->
+    <div class="page" id="page-ep">
+        <div class="ep-scroll">
+            <table class="ep-tbl">
+                <thead>
+                    <tr>
+                        <th style="width:36px"></th>
+                        <th style="width:170px">Name</th>
+                        <th style="width:72px">Type</th>
+                        <th>URL</th>
+                        <th style="width:72px">Calls</th>
+                        <th style="width:80px">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="epTbody">
+                    <tr>
+                        <td colspan="6" style="padding:20px;text-align:center;color:var(--dim)">Loading&#8230;</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PAGE 2: Run Tests -->
+    <div class="page hidden" id="page-run">
+        <div class="run-layout">
+
+            <!-- Left: endpoint selector -->
+            <div class="sel-panel">
+                <div class="sel-head">
+                    Endpoints
+                    <div class="sel-acts">
+                        <button onclick="selAll()">All</button>
+                        <button onclick="selNone()">None</button>
+                    </div>
+                </div>
+                <div class="ep-chk-list" id="epChks"></div>
+            </div>
+
+            <!-- Right: config + results -->
+            <div class="run-main">
+                <div class="cfg-strip">
+                    <div class="cfg-g">
+                        <span class="cfg-lbl">Mode</span>
+                        <div class="mode-row">
+                            <button class="mbtn active" id="modeIter" onclick="setMode('iter')">Iterations</button>
+                            <button class="mbtn" id="modeRate" onclick="setMode('rate')">Rate</button>
+                        </div>
+                    </div>
+                    <div class="cfg-g" id="cgIter">
+                        <span class="cfg-lbl">Total Requests</span>
+                        <input class="cfg-in w100" type="number" id="iterations" value="20" min="1">
+                    </div>
+                    <div class="cfg-g hidden" id="cgRps">
+                        <span class="cfg-lbl">Target RPS</span>
+                        <input class="cfg-in w70" type="number" id="totalRps" value="10" min="1">
+                    </div>
+                    <div class="cfg-g">
+                        <span class="cfg-lbl">Users (VUs)</span>
+                        <input class="cfg-in w70" type="number" id="vus" value="5" min="1">
+                    </div>
+                    <div class="cfg-g hidden" id="cgDur">
+                        <span class="cfg-lbl">Duration</span>
+                        <input class="cfg-in w70" type="text" id="duration" value="1m">
+                    </div>
+                    <div class="cfg-g" style="justify-content:flex-end">
+                        <span class="cfg-lbl">&nbsp;</span>
+                        <button class="btn-run" id="runBtn" onclick="runTest()">&#9654; Run</button>
+                    </div>
+                </div>
+
+                <div class="live-area">
+                    <div class="lr-head">
+                        <span class="lh-title">Results</span>
+                        <span id="liveCount"></span>
+                    </div>
+                    <div class="prog-wrap hidden" id="progWrap">
+                        <div class="prog-track">
+                            <div class="prog-fill" id="progFill"></div>
+                        </div>
+                        <span class="prog-label" id="progLabel">0 / 0</span>
+                    </div>
+                    <div class="lr-body">
+                        <div class="empty-msg" id="liveEmpty">Select endpoints above and press Run</div>
+                        <table class="live-tbl hidden" id="liveTbl">
+                            <thead>
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Requests</th>
+                                    <th>Errors</th>
+                                    <th>Err %</th>
+                                    <th>Avg (ms)</th>
+                                    <th>p95 (ms)</th>
+                                    <th>Min (ms)</th>
+                                    <th>Max (ms)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="liveBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="live-foot hidden" id="liveFoot">
+                        <span>Total <b id="ftTotal">0</b> requests</span>
+                        <span>Errors <b id="ftErrs" class="ok">0</b></span>
+                        <span>Avg <b id="ftAvg">&#8212;</b> ms</span>
+                        <span>p95 <b id="ftP95">&#8212;</b> ms</span>
+                    </div>
+                    <div class="log-panel hidden" id="logPanel">
+                        <div class="log-toggle" onclick="toggleLogs()">
+                            <span id="logToggleTxt">&#9654; Logs</span>
+                            <span id="logCount" style="font-weight:400;color:var(--dim)"></span>
+                        </div>
+                        <div class="log-body hidden" id="logBody"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let _cfg = null;
+        let _mode = 'iter';
+        let _totalIter = 0;  // expected total in iterations mode (0 = rate mode)
+        const _S = {};      // ep -> { reqs, errors, latencies[] }
+        const _logs = [];    // raw log lines from locust
+
+        const el = id => document.getElementById(id);
+
+        function setStatus(cls, txt) {
+            el('dot').className = 'dot-s ' + (cls || '');
+            el('statusText').textContent = txt;
+        }
+
+        async function getCfg() {
+            if (!_cfg) _cfg = await fetch('/api/config').then(r => r.json());
+            return _cfg;
+        }
+
+        // Navigation
+        function showPage(name) {
+            el('page-ep').classList.toggle('hidden', name !== 'ep');
+            el('page-run').classList.toggle('hidden', name !== 'run');
+            el('nav-ep').classList.toggle('active', name === 'ep');
+            el('nav-run').classList.toggle('active', name === 'run');
+            if (name === 'ep') renderEndpoints();
+            if (name === 'run') renderRunPage();
+        }
+
+        // PAGE 1: Endpoints
+        let _epRendered = false;
+        async function renderEndpoints() {
+            if (_epRendered) return;
+            _epRendered = true;
+            const cfg = await getCfg();
+            const tbody = el('epTbody');
+            tbody.innerHTML = '';
+            for (const ep of cfg.endpoints) {
+                const n = ep.calls ? ep.calls.length : (ep.messages ? ep.messages.length : 0);
+                const tr = document.createElement('tr');
+                tr.className = 'ep-row';
+                tr.id = 'epr-' + ep.name;
+                tr.innerHTML =
+                    '<td><button class="xbtn" id="xb-' + ep.name + '" onclick="toggleEp(\'' + ep.name + '\')">&#9654;</button></td>' +
+                    '<td style="font-weight:600">' + ep.name + '</td>' +
+                    '<td><span class="badge b-' + ep.type + '">' + ep.type.toUpperCase() + '</span></td>' +
+                    '<td style="font-size:.75rem;color:var(--muted);max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + ep.url + '">' + ep.url + '</td>' +
+                    '<td style="color:var(--muted)">' + n + '</td>' +
+                    '<td><span class="badge ' + (ep.active === false ? 'b-off">inactive' : 'b-on">active') + '</span></td>';
+                tbody.appendChild(tr);
+
+                const dtr = document.createElement('tr');
+                dtr.className = 'ep-detail hidden';
+                dtr.id = 'epd-' + ep.name;
+                let inner = '';
+                if (ep.type === 'mcp') {
+                    inner = '<table class="calls-tbl"><thead><tr><th>#</th><th>Method</th><th>Variant / Tool</th><th>Payload (params)</th></tr></thead><tbody>';
+                    (ep.calls || []).forEach((c, i) => {
+                        const tool = (c.params || {}).name || '';
+                        const variant = tool ? c.method + ':' + tool : c.method + '#' + i;
+                        const full = JSON.stringify(c.params || {}, null, 2);
+                        inner += '<tr>' +
+                            '<td style="color:var(--dim);width:32px">' + (i + 1) + '</td>' +
+                            '<td style="color:var(--blue);white-space:nowrap">' + c.method + '</td>' +
+                            '<td style="color:var(--text);white-space:nowrap">' + variant + '</td>' +
+                            '<td><div class="payload">' + full.replace(/</g, '&lt;') + '</div></td>' +
+                            '</tr>';
+                    });
+                    inner += '</tbody></table>';
+                } else {
+                    inner = '<table class="calls-tbl"><thead><tr><th>#</th><th>Message Text</th></tr></thead><tbody>';
+                    (ep.messages || []).forEach((m, i) => {
+                        inner += '<tr><td style="color:var(--dim);width:32px">' + (i + 1) + '</td><td>' + m + '</td></tr>';
+                    });
+                    inner += '</tbody></table>';
+                }
+                dtr.innerHTML = '<td colspan="6">' + inner + '</td>';
+                tbody.appendChild(dtr);
+            }
+        }
+
+        function toggleEp(name) {
+            const d = el('epd-' + name);
+            const btn = el('xb-' + name);
+            const row = el('epr-' + name);
+            const hidden = d.classList.toggle('hidden');
+            btn.innerHTML = hidden ? '&#9654;' : '&#9660;';
+            row.classList.toggle('open', !hidden);
+        }
+
+        // PAGE 2: Run Tests
+        let _runRendered = false;
+        async function renderRunPage() {
+            if (_runRendered) return;
+            _runRendered = true;
+            const cfg = await getCfg();
+            const c = el('epChks');
+            for (const ep of cfg.endpoints) {
+                if (ep.active === false) continue;
+                const n = ep.calls ? ep.calls.length : (ep.messages ? ep.messages.length : 0);
+                const lbl = document.createElement('label');
+                lbl.className = 'ep-chk';
+                lbl.innerHTML =
+                    '<input type="checkbox" name="ep" value="' + ep.name + '" checked>' +
+                    '<div>' +
+                    '<div class="ep-chk-name">' + ep.name + '</div>' +
+                    '<div class="ep-chk-meta">' + ep.type.toUpperCase() + ' &middot; ' + n + ' calls</div>' +
+                    '</div>';
+                c.appendChild(lbl);
+            }
+        }
+
+        function selAll() { document.querySelectorAll('input[name=ep]').forEach(b => b.checked = true); }
+        function selNone() { document.querySelectorAll('input[name=ep]').forEach(b => b.checked = false); }
+
+        function setMode(m) {
+            _mode = m;
+            el('modeIter').classList.toggle('active', m === 'iter');
+            el('modeRate').classList.toggle('active', m === 'rate');
+            el('cgIter').classList.toggle('hidden', m !== 'iter');
+            el('cgRps').classList.toggle('hidden', m !== 'rate');
+            el('cgDur').classList.toggle('hidden', m !== 'rate');
+        }
+
+        // Log panel
+        function toggleLogs() {
+            const body = el('logBody');
+            const hidden = body.classList.toggle('hidden');
+            el('logToggleTxt').textContent = (hidden ? '\u25BA' : '\u25BC') + ' Logs';
+        }
+
+        function addLog(line) {
+            _logs.push(line);
+            const body = el('logBody');
+            const div = document.createElement('div');
+            div.className = 'log-line' +
+                (/error|exception|traceback|critical/i.test(line) ? ' err' :
+                    /warn/i.test(line) ? ' warn' : '');
+            div.textContent = line;
+            body.appendChild(div);
+            body.scrollTop = body.scrollHeight;
+            el('logCount').textContent = _logs.length + ' line' + (_logs.length !== 1 ? 's' : '');
+        }
+
+        // Live stats
+        function initLive(eps, totalIter) {
+            _totalIter = totalIter || 0;
+            Object.keys(_S).forEach(k => delete _S[k]);
+            _logs.length = 0;
+            el('logBody').innerHTML = '';
+            el('logCount').textContent = '';
+            el('logToggleTxt').textContent = '\u25BA Logs';
+            el('logBody').classList.add('hidden');
+            el('logPanel').classList.remove('hidden');
+            el('liveBody').innerHTML = '';
+            el('liveTbl').classList.remove('hidden');
+            el('liveEmpty').style.display = 'none';
+            el('liveFoot').classList.remove('hidden');
+            el('liveCount').textContent = '';
+            // Progress bar
+            if (_totalIter > 0) {
+                el('progWrap').classList.remove('hidden');
+                el('progFill').style.width = '0%';
+                el('progFill').classList.remove('done');
+                el('progLabel').textContent = '0 / ' + _totalIter;
+            } else {
+                el('progWrap').classList.add('hidden');
+            }
+            for (const name of eps) {
+                _S[name] = { reqs: 0, errors: 0, latencies: [] };
+                const tr = document.createElement('tr');
+                tr.id = 'lr-' + name;
+                tr.innerHTML =
+                    '<td style="font-weight:600">' + name + '</td>' +
+                    '<td id="lc-r-' + name + '">0</td>' +
+                    '<td id="lc-e-' + name + '" class="ok">0</td>' +
+                    '<td id="lc-ep-' + name + '" class="ok">0.0%</td>' +
+                    '<td id="lc-av-' + name + '">\u2014</td>' +
+                    '<td id="lc-p9-' + name + '">\u2014</td>' +
+                    '<td id="lc-mn-' + name + '">\u2014</td>' +
+                    '<td id="lc-mx-' + name + '">\u2014</td>';
+                el('liveBody').appendChild(tr);
+            }
+            refreshFooter();
+        }
+
+        function updateRow(name) {
+            const s = _S[name]; if (!s) return;
+            const errPct = (s.errors / Math.max(s.reqs, 1) * 100).toFixed(1);
+            const lats = s.latencies;
+            const avg = lats.length ? Math.round(lats.reduce((a, b) => a + b, 0) / lats.length) : null;
+            const sorted = [...lats].sort((a, b) => a - b);
+            const p95 = sorted.length ? sorted[Math.floor(sorted.length * .95)] : null;
+            const min = sorted.length ? sorted[0] : null;
+            const max = sorted.length ? sorted[sorted.length - 1] : null;
+            const setEl = (id, v) => { const e = el(id); if (e) e.textContent = v; };
+            const setCls = (id, ok) => { const e = el(id); if (e) e.className = ok ? 'ok' : 'er'; };
+            setEl('lc-r-' + name, s.reqs);
+            setEl('lc-e-' + name, s.errors);
+            setEl('lc-ep-' + name, errPct + '%');
+            setEl('lc-av-' + name, avg != null ? avg : '\u2014');
+            setEl('lc-p9-' + name, p95 != null ? p95 : '\u2014');
+            setEl('lc-mn-' + name, min != null ? min : '\u2014');
+            setEl('lc-mx-' + name, max != null ? max : '\u2014');
+            setCls('lc-e-' + name, s.errors === 0);
+            setCls('lc-ep-' + name, s.errors === 0);
+        }
+
+        function refreshFooter() {
+            let tr = 0, te = 0, all = [];
+            for (const s of Object.values(_S)) { tr += s.reqs; te += s.errors; all = all.concat(s.latencies); }
+            const avg = all.length ? Math.round(all.reduce((a, b) => a + b, 0) / all.length) : null;
+            const s95 = [...all].sort((a, b) => a - b);
+            const p95 = s95.length ? s95[Math.floor(s95.length * .95)] : null;
+            el('ftTotal').textContent = tr;
+            el('ftErrs').textContent = te;
+            el('ftErrs').className = te > 0 ? 'er' : 'ok';
+            el('ftAvg').textContent = avg != null ? avg : '\u2014';
+            el('ftP95').textContent = p95 != null ? p95 : '\u2014';
+            el('liveCount').textContent = tr + ' request' + (tr !== 1 ? 's' : '');
+            // Update progress bar
+            if (_totalIter > 0) {
+                const pct = Math.min(tr / _totalIter * 100, 100);
+                el('progFill').style.width = pct.toFixed(1) + '%';
+                el('progLabel').textContent = tr + ' / ' + _totalIter;
+                if (tr >= _totalIter) el('progFill').classList.add('done');
+            }
+        }
+
+        function recordReq(req) {
+            const n = req.endpoint;
+            if (!_S[n]) _S[n] = { reqs: 0, errors: 0, latencies: [] };
+            _S[n].reqs++;
+            if (!req.ok) _S[n].errors++;
+            _S[n].latencies.push(req.latency);
+            updateRow(n);
+            refreshFooter();
+        }
+
+        // Run / Stop
+        async function runTest() {
+            const checked = [...document.querySelectorAll('input[name=ep]:checked')].map(b => b.value);
+            if (!checked.length) { alert('Select at least one endpoint.'); return; }
+
+            initLive(checked, _mode === 'iter' ? parseInt(el('iterations').value, 10) : 0);
+            setRunning(true);
+            setStatus('run', 'Running \u2014 ' + (checked.length === 1 ? checked[0] : checked.length + ' endpoints'));
+
+            const body = { endpoints: checked, vus: el('vus').value };
+            if (_mode === 'iter') body.iterations = el('iterations').value;
+            else { body.totalRps = el('totalRps').value; body.duration = el('duration').value; }
+
+            let resp;
+            try {
+                resp = await fetch('/run/locust', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+                });
+            } catch (e) { setStatus('err', 'Connection failed'); setRunning(false); return; }
+
+            const reader = resp.body.getReader();
+            const decoder = new TextDecoder();
+            let buf = '', lastEvt = '';
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buf += decoder.decode(value, { stream: true });
+                const parts = buf.split('\n\n'); buf = parts.pop();
+                for (const part of parts) {
+                    let evtType = lastEvt, dataLine = '';
+                    for (const line of part.split('\n')) {
+                        if (line.startsWith('event: ')) { evtType = line.slice(7); lastEvt = evtType; }
+                        if (line.startsWith('data: ')) { dataLine = line.slice(6); }
+                    }
+                    if (!dataLine) continue;
+                    if (evtType === 'request') {
+                        try { recordReq(JSON.parse(dataLine)); } catch (_) { }
+                    } else if (evtType === 'log') {
+                        try { addLog(JSON.parse(dataLine)); } catch (_) { addLog(dataLine); }
+                    } else if (evtType === 'done') {
+                        try {
+                            const d = JSON.parse(dataLine);
+                            let tr = 0, te = 0;
+                            for (const s of Object.values(_S)) { tr += s.reqs; te += s.errors; }
+                            if (d.exit === 0 && te === 0) {
+                                setStatus('done', 'Completed');
+                            } else if (tr > 0) {
+                                // Test ran; non-zero exit is normal when Locust sees HTTP errors
+                                setStatus(te > 0 ? 'err' : 'done',
+                                    'Completed' + (te > 0 ? ' \u2014 ' + te + ' error' + (te !== 1 ? 's' : '') : ''));
+                            } else {
+                                // No requests sent at all — likely a startup crash
+                                setStatus('err', 'Failed to start \u2014 expand Logs below');
+                                el('logBody').classList.remove('hidden');
+                                el('logToggleTxt').textContent = '\u25BC Logs';
+                            }
+                        } catch (_) { }
+                        setRunning(false);
+                    }
+                }
+            }
+            setRunning(false);
+        }
+
+        function setRunning(r) {
+            el('runBtn').disabled = r;
+            el('stopBtn').classList.toggle('hidden', !r);
+        }
+
+        async function stopTest() {
+            await fetch('/stop', { method: 'POST' });
+            setStatus('', 'Stopped');
+            setRunning(false);
+        }
+
+        // Init
+        renderEndpoints();
+    </script>
+</body>
+
+</html>
