@@ -41,6 +41,7 @@ app = Flask(__name__, static_folder=_UI_DIR)
 
 _proc_lock = threading.Lock()
 _current_proc: subprocess.Popen | None = None
+_suite_stop_requested: bool = False
 
 
 def _strip_ansi(text: str) -> str:
@@ -161,12 +162,103 @@ def run_locust():
 
 @app.route('/stop', methods=['POST'])
 def stop():
+    global _suite_stop_requested
+    _suite_stop_requested = True
     with _proc_lock:
         proc = _current_proc
     if proc and proc.poll() is None:
         proc.terminate()
         return jsonify({'ok': True})
     return jsonify({'ok': False, 'message': 'No running process'})
+
+
+@app.route('/run/scenario-suite', methods=['POST'])
+def run_scenario_suite():
+    """Run a list of scenarios sequentially, emitting SSE events per scenario."""
+    global _suite_stop_requested
+    _suite_stop_requested = False
+    data = request.get_json(force=True) or {}
+    scenarios = data.get('scenarios', [])
+    endpoint_filter = data.get('endpoints', [])
+
+    def generate():
+        global _current_proc, _suite_stop_requested
+        for i, sc in enumerate(scenarios):
+            if _suite_stop_requested:
+                break
+            sc_id = sc.get('id', f'scenario_{i}')
+            sc_name = sc.get('name', sc_id)
+            yield (
+                f'event: scenario_start\n'
+                f'data: {json.dumps({"id": sc_id, "name": sc_name, "index": i, "total": len(scenarios)})}\n\n'
+            )
+            extra_env: dict[str, str] = {}
+            if endpoint_filter:
+                extra_env['ENDPOINTS'] = ','.join(
+                    str(e) for e in endpoint_filter)
+            mode = sc.get('mode', 'rate')
+            if mode == 'iter':
+                extra_env['ITERATIONS'] = str(sc.get('iterations', 10))
+                runtime = '24h'
+            else:
+                extra_env['TOTAL_RPS'] = str(sc.get('totalRps', 5))
+                runtime = str(sc.get('duration', '60s'))
+            vus = str(sc.get('vus', 5))
+            spawn_rate = str(sc.get('spawnRate', sc.get('vus', 5)))
+            cmd = [
+                _LOCUST_BIN, '-f', 'locust/locustfile.py',
+                '--headless',
+                '--users', vus,
+                '--spawn-rate', spawn_rate,
+                '--run-time', runtime,
+            ]
+            env = {**os.environ, **extra_env}
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                cwd=_ROOT,
+                env=env,
+                bufsize=1,
+            )
+            with _proc_lock:
+                _current_proc = proc
+            try:
+                for raw in proc.stdout:
+                    if _suite_stop_requested:
+                        proc.terminate()
+                        break
+                    line = _strip_ansi(raw.rstrip())
+                    if not line:
+                        continue
+                    if line.startswith('REQUEST_JSON:'):
+                        payload = line[len('REQUEST_JSON:'):]
+                        yield f'event: request\ndata: {payload}\n\n'
+                    else:
+                        yield f'event: log\ndata: {json.dumps(line)}\n\n'
+                proc.wait()
+            except GeneratorExit:
+                proc.terminate()
+                proc.wait()
+                with _proc_lock:
+                    _current_proc = None
+                return
+            with _proc_lock:
+                _current_proc = None
+            yield (
+                f'event: scenario_end\n'
+                f'data: {json.dumps({"id": sc_id, "exit": proc.returncode})}\n\n'
+            )
+            if _suite_stop_requested:
+                break
+        yield f'event: done\ndata: {json.dumps({"exit": 0})}\n\n'
+
+    return Response(
+        generate(),
+        mimetype='text/event-stream',
+        headers={'X-Accel-Buffering': 'no', 'Cache-Control': 'no-cache'},
+    )
 
 
 @app.route('/status')
