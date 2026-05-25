@@ -28,7 +28,7 @@ DNS Resolution enabled on both sides
 
 ---
 
-## Before the Call — Actions Required from You
+## Before the Setup Session — Actions Required from You
 
 There are two things we need from you before the scheduled call.
 
@@ -94,11 +94,11 @@ Once created, please share the **IAM Role ARN** with us (e.g. `arn:aws:iam::1234
 | **VPC ID**         | Your VPC ID                                          | `vpc-0abc123def456`                                    |
 | **VPC CIDR Block** | Your VPC CIDR — must not overlap with `10.42.0.0/24` | `10.100.0.0/16`                                        |
 
-> Once we have these details, we will prepare and send the VPC Peering request during our scheduled call.
+> Once we have these details, we will prepare and send the VPC Peering request during our setup session.
 
 ---
 
-## Thursday Call — Step by Step
+## Setup Session — Step by Step
 
 ### 1. We Send the VPC Peering Request
 
@@ -143,9 +143,9 @@ Once all steps above are complete, we will test end-to-end connectivity between 
 
 ---
 
-## Pre-Call Checklist
+## Pre-Session Checklist
 
-**Customer — complete before the call:**
+**Customer — complete before the session:**
 
 - [ ] IAM Role created with the trust and permission policies above
 - [ ] IAM Role ARN shared with us
@@ -155,7 +155,7 @@ Once all steps above are complete, we will test end-to-end connectivity between 
 - [ ] VPC CIDR Block shared (confirmed no overlap with `10.42.0.0/24`)
 - [ ] AWS Console access available during the call
 
-**Us — ready before the call:**
+**Us — ready before the session:**
 
 - [ ] Affinidi AWS Account ID shared with customer (needed for trust policy)
 - [ ] All customer details received and validated
