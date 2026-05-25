@@ -36,13 +36,13 @@ There are two things we need from you before the scheduled call.
 
 ### Step 1: Create an IAM Role in Your AWS Account
 
-**Why this is needed:** Our deployment stack runs in our AWS account and uses AWS CloudFormation to manage the VPC Peering connection. AWS requires that the requester account is able to assume a role in the accepter account in order to manage cross-account peering resources. Without this role, our stack cannot initiate or manage the peering connection to your VPC.
+**Why this is needed:** Our deployment stack uses AWS CloudFormation to manage the VPC Peering connection. When peering across accounts, CloudFormation (running in our account) needs to assume a role in your account in order to accept the peering connection. This is a standard AWS requirement for cross-account VPC peering via CloudFormation.
 
-In simple terms: the role is a secure way of granting our AWS account permission to request the VPC Peering connection with your VPC.
+> Reference: [AWS CloudFormation — Peer with a VPC in another account](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/peer-with-vpc-in-another-account.html)
 
 #### Trust Policy
 
-This tells AWS which account is allowed to assume the role. Create the role with the following trust policy:
+This grants our AWS account permission to assume the role. Use the following:
 
 ```json
 {
@@ -63,36 +63,15 @@ This tells AWS which account is allowed to assume the role. Create the role with
 
 #### Permission Policy
 
-Attach the following permission policy to the role:
+The only permission required is to accept the VPC Peering connection on our behalf:
 
 ```json
 {
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "VpcPeeringAcceptance",
       "Effect": "Allow",
-      "Action": [
-        "ec2:CreateVpcPeeringConnection",
-        "ec2:AcceptVpcPeeringConnection",
-        "ec2:RejectVpcPeeringConnection",
-        "ec2:DeleteVpcPeeringConnection",
-        "ec2:ModifyVpcPeeringConnectionOptions",
-        "ec2:DescribeVpcPeeringConnections",
-        "ec2:DescribeVpcs",
-        "ec2:DescribeSubnets"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "VpcPeeringRouteManagement",
-      "Effect": "Allow",
-      "Action": [
-        "ec2:CreateRoute",
-        "ec2:ReplaceRoute",
-        "ec2:DeleteRoute",
-        "ec2:DescribeRouteTables"
-      ],
+      "Action": "ec2:AcceptVpcPeeringConnection",
       "Resource": "*"
     }
   ]
