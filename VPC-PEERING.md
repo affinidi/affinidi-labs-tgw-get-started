@@ -28,18 +28,94 @@ DNS Resolution enabled on both sides
 
 ---
 
-## Before the Call — Information Required from You
+## Before the Call — Actions Required from You
 
-Please share the following details with us **before the scheduled call**. This is all we need from you upfront — no AWS configuration changes required beforehand.
+There are two things we need from you before the scheduled call.
 
-| Field              | Description                                          | Example             |
-| ------------------ | ---------------------------------------------------- | ------------------- |
-| **AWS Account ID** | Your 12-digit AWS Account ID                         | `123456789012`      |
-| **AWS Region**     | Region where your VPC resides                        | `eu-west-1`         |
-| **VPC ID**         | Your VPC ID                                          | `vpc-0abc123def456` |
-| **VPC CIDR Block** | Your VPC CIDR — must not overlap with `10.42.0.0/24` | `10.100.0.0/16`     |
+---
 
-> Once we have these details, we will prepare and send the VPC Peering request during our Thursday call.
+### Step 1: Create an IAM Role in Your AWS Account
+
+**Why this is needed:** Our deployment stack runs in our AWS account and uses AWS CloudFormation to manage the VPC Peering connection. AWS requires that the requester account is able to assume a role in the accepter account in order to manage cross-account peering resources. Without this role, our stack cannot initiate or manage the peering connection to your VPC.
+
+In simple terms: the role is a secure way of granting our AWS account permission to request the VPC Peering connection with your VPC.
+
+#### Trust Policy
+
+This tells AWS which account is allowed to assume the role. Create the role with the following trust policy:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::AFFINIDI_ACCOUNT_ID:root"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+```
+
+> Replace `AFFINIDI_ACCOUNT_ID` with the account ID we will share with you.
+
+#### Permission Policy
+
+Attach the following permission policy to the role:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "VpcPeeringAcceptance",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateVpcPeeringConnection",
+        "ec2:AcceptVpcPeeringConnection",
+        "ec2:RejectVpcPeeringConnection",
+        "ec2:DeleteVpcPeeringConnection",
+        "ec2:ModifyVpcPeeringConnectionOptions",
+        "ec2:DescribeVpcPeeringConnections",
+        "ec2:DescribeVpcs",
+        "ec2:DescribeSubnets"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "VpcPeeringRouteManagement",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateRoute",
+        "ec2:ReplaceRoute",
+        "ec2:DeleteRoute",
+        "ec2:DescribeRouteTables"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+You can name the role anything descriptive, e.g. `affinidi-peering-role`.
+
+Once created, please share the **IAM Role ARN** with us (e.g. `arn:aws:iam::123456789012:role/affinidi-peering-role`).
+
+---
+
+### Step 2: Share the Following Details with Us
+
+| Field              | Description                                          | Example                                                |
+| ------------------ | ---------------------------------------------------- | ------------------------------------------------------ |
+| **IAM Role ARN**   | ARN of the role created above                        | `arn:aws:iam::123456789012:role/affinidi-peering-role` |
+| **AWS Account ID** | Your 12-digit AWS Account ID                         | `123456789012`                                         |
+| **AWS Region**     | Region where your VPC resides                        | `eu-west-1`                                            |
+| **VPC ID**         | Your VPC ID                                          | `vpc-0abc123def456`                                    |
+| **VPC CIDR Block** | Your VPC CIDR — must not overlap with `10.42.0.0/24` | `10.100.0.0/16`                                        |
+
+> Once we have these details, we will prepare and send the VPC Peering request during our scheduled call.
 
 ---
 
@@ -90,18 +166,21 @@ Once all steps above are complete, we will test end-to-end connectivity between 
 
 ## Pre-Call Checklist
 
-**Customer — share before the call:**
+**Customer — complete before the call:**
 
-- [ ] AWS Account ID
-- [ ] AWS Region
-- [ ] VPC ID
-- [ ] VPC CIDR Block (confirmed no overlap with `10.42.0.0/24`)
+- [ ] IAM Role created with the trust and permission policies above
+- [ ] IAM Role ARN shared with us
+- [ ] AWS Account ID shared
+- [ ] AWS Region shared
+- [ ] VPC ID shared
+- [ ] VPC CIDR Block shared (confirmed no overlap with `10.42.0.0/24`)
 - [ ] AWS Console access available during the call
 
 **Us — ready before the call:**
 
-- [ ] All Customer details received and validated
-- [ ] Stack deployment prepared with Customer's configuration
+- [ ] Affinidi AWS Account ID shared with customer (needed for trust policy)
+- [ ] All customer details received and validated
+- [ ] Stack deployment prepared with customer's configuration
 
 ---
 
