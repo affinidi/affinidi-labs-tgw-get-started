@@ -1,14 +1,25 @@
 # Trust Gateway — Load Testing
 
-![Test Scenarios](docs/test-scenarios.png)
-![Test Run](docs/test-run.png)
+A [Locust](https://locust.io)-based load testing harness for Affinidi Trust Gateway endpoints (MCP servers and A2A agents), with a built-in web UI for configuring and running tests.
 
-A [Locust](https://locust.io)-based load testing harness for Affinidi Trust Gateway endpoints (MCP servers and A2A agents), with a built-in web UI for running and monitoring tests.
+## Screenshots
+
+**Endpoints** — add, edit and toggle MCP / A2A endpoints; inactive endpoints sort to the bottom. Changes are stored in browser localStorage without touching the config file.
+
+![Endpoints](docs/test-endpoints.png)
+
+**Scenarios** — manage load test scenarios ordered by type (smoke → load → stress → spike → soak → ramp). Add custom scenarios or reset to built-in defaults at any time.
+
+![Scenarios](docs/test-scenarios.png)
+
+**Test Suite** — select scenarios, set error and latency thresholds, and run sequentially. Results update live; a breaking-point banner flags the first scenario that exceeds a threshold.
+
+![Test Run](docs/test-run.png)
 
 ## Project structure
 
 ```
-load-testing-tg/
+tg-test-harness/
 ├── data/
 │   ├── endpoints.template.json  # Template — copy this to endpoints.json
 │   └── endpoints.json           # Your config (gitignored — not committed)
@@ -16,7 +27,7 @@ load-testing-tg/
 │   ├── locustfile.py            # Locust test harness
 │   └── requirements.txt
 ├── ui/
-│   ├── index.html               # Two-page web UI
+│   ├── index.html               # Single-page web UI (3-tab navigation)
 │   ├── server.py                # Flask backend (SSE streaming + config API)
 │   └── requirements.txt
 └── run.sh                       # One-shot setup + launch script
@@ -45,20 +56,33 @@ load-testing-tg/
 
 ## Web UI
 
-### Endpoints page
+The UI has three pages accessible from the top navigation bar.
 
-All configured endpoints in a table. Click **▶** to expand a row and inspect every call variant with its full JSON-RPC payload.
+### 1. Endpoints
 
-### Run Tests page
+Manage the endpoints under test. Changes are saved in browser `localStorage` and override the server-side `endpoints.json` without modifying the file.
 
-1. Check/uncheck endpoints to include
-2. Choose mode:
-   - **Iterations** — run exactly N requests total across all users
-   - **Rate** — run at a target RPS for a fixed duration
-3. Set **Users (VUs)** — parallel virtual users
-4. Press **▶ Run**
+- **Add / Edit** — configure name, URL, type (MCP or A2A), and individual calls/messages via a modal
+- **Toggle active** — enable or disable an endpoint without deleting it; inactive endpoints are sorted to the bottom
+- **Reset Defaults** — discard all browser overrides and reload from `data/endpoints.json`
 
-Results update live per endpoint (Requests, Errors, Err %, Avg ms, p95 ms).
+### 2. Scenarios
+
+Manage load test scenarios. Scenarios are sorted by type (smoke → load → stress → spike → soak → ramp). Changes are saved in browser `localStorage`.
+
+- **Add / Edit** — configure name, type, mode (iterations / rate / ramp), VUs, spawn rate, RPS, and duration via a modal
+- **Reset Defaults** — discard all browser overrides including any custom scenarios you added
+
+### 3. Test Suite
+
+Run one or more scenarios sequentially against your configured endpoints.
+
+- Select scenarios from the left panel (Smoke Test is selected by default); use **All / None** to quickly change the selection
+- Set **Error threshold** (%) and **p95 Latency threshold** (ms) — used to grade each scenario pass / degraded / fail
+- Press **▶ Run Selected** or **▶ Run All**
+- Results appear in the table as each scenario completes; a breaking-point banner highlights the first scenario that exceeds a threshold
+- **Export JSON** — machine-readable results for CI or further analysis
+- **Download Report** — self-contained HTML report with per-call breakdown
 
 ## CLI usage
 
