@@ -11,6 +11,37 @@ At its core, the Affinidi TGW is a protocol-aware intercepting proxy for the Int
 Built on top of these foundations are advanced features for production deployments including circuit breakers, retry logic, rate limiting, real-time metrics and logging for traffic observability and management; metadata inspection and injection for use-cases such as API key
 management.
 
+## Overview
+
+This repository is designed to help you get started with Agent Gateway, introducing the core concepts and patterns for governing, coordinating, and managing agent-based workflows at scale.
+
+Beyond a simple "hello world", this repo also includes a set of supporting tools and examples that allow you to explore how agent interactions behave under realistic conditions. In particular, these assets are intended to help you:
+
+- Understand the end-to-end lifecycle of agent governance and coordination
+- Assess how routing, policy enforcement, and interaction management contribute to overall system characteristics
+- Experiment with different governance patterns and system configurations
+- Begin forming a view of how this approach aligns with your non-functional requirements (e.g., latency, throughput, reliability)
+
+> **Important Notes**
+>
+> This repository is provided as a learning and evaluation resource.
+>
+> - The included tools (e.g., scaffolding, test harnesses, sample workloads) are meant to simulate and surface governance and orchestration behaviour, not to represent production-ready implementations.
+> - Results observed here should be used to inform your architecture decisions, particularly around coordination overhead, control points, and system trade-offs.
+> - As this is an evolving space, patterns and implementations may change over time.
+
+> **Feedback & Contributions**
+>
+> Your feedback is an important part of improving this experience. If you:
+>
+> - identify gaps, issues, or unexpected behaviours
+> - want to propose improvements or additional scenarios
+> - have insights from your own evaluations
+>
+> please share them through Issues or Pull Requests.
+
+> This repo is not just about getting started—it's about helping you evaluate how to effectively govern and scale agent ecosystems in real-world scenarios.
+
 ## Goal: What you will build
 
 Establish governed MCP and A2A connections by routing clients through the Trust Gateway, which manages identity, policy enforcement, and observability before forwarding requests to your local servers or cloud-deployed agents (e.g., Vertex AI Agent Engine).
