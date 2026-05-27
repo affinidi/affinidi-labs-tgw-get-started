@@ -124,6 +124,9 @@ ITERATIONS=10 ENDPOINTS=mcp_airlines locust --headless \
       "active": true,
       "type": "mcp",
       "url": "<Trust_Gateway_MCP_Channel_Route>",
+      "headers": {
+        "x-api-key": "<YOUR_API_KEY>"
+      },
       "calls": [
         { "method": "initialize", "params": { "protocolVersion": "2024-11-05", ... } },
         { "method": "tools/list", "params": {} },
@@ -135,6 +138,9 @@ ITERATIONS=10 ENDPOINTS=mcp_airlines locust --headless \
       "active": true,
       "type": "a2a",
       "url": "<Trust_Gateway_Agent_Channel_Route>",
+      "headers": {
+        "x-api-key": "<YOUR_API_KEY>"
+      },
       "messages": [
         "Hello, what can you help me with?",
         "Give me a summary of today's news."
@@ -144,4 +150,5 @@ ITERATIONS=10 ENDPOINTS=mcp_airlines locust --headless \
 }
 ```
 
-Set `"active": false` to exclude an endpoint from runs without removing it.
+- `"headers"` — optional object of request headers sent with every call to that endpoint (e.g. `x-api-key`, `Authorization`). Omit the field if the endpoint needs no auth.
+- `"active": false` — exclude an endpoint from runs without removing it.

@@ -1,4 +1,5 @@
 *.log
 .DS_Store
-# endpoints.json is local — use data/endpoints.template.json as the base
-data/endpoints.json
+# All endpoint configs are local — only endpoints.template.json is committed
+data/endpoints*.json
+!data/endpoints.template.json

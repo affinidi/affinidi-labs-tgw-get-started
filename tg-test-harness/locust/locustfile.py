@@ -107,6 +107,7 @@ for _ep in _raw_config["endpoints"]:
                     "url": _ep["url"],
                     "variant": f"msg_{_i}",
                     "a2aText": _msg,
+                    "headers": _ep.get("headers") or {},
                 }
             )
     elif _ep["type"] == "mcp":
@@ -121,6 +122,7 @@ for _ep in _raw_config["endpoints"]:
                     "variant": _label,
                     "mcpMethod": _call["method"],
                     "mcpParams": _call.get("params") or {},
+                    "headers": _ep.get("headers") or {},
                 }
             )
     else:
@@ -273,6 +275,7 @@ class TrustGatewayUser(HttpUser):
             headers={
                 "Content-Type": "application/json",
                 "Accept": "application/json, text/event-stream",
+                **(v.get("headers") or {}),
             },
             timeout=30,
             name=name,

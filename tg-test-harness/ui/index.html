@@ -1836,9 +1836,9 @@
                 id: 'smoke',
                 name: 'Smoke Test',
                 type: 'smoke',
-                tagline: '1 VU · 5 requests',
-                desc: 'Sanity check — 5 requests, 1 user. Verifies the gateway is reachable before any real load. At your scale (1k tx/day = 0.012 RPS) even this exceeds your average rate.',
-                vus: 1, mode: 'iter', iterations: 5
+                tagline: '1 VU · 100 requests',
+                desc: 'Sanity check — 100 requests, 1 user. Verifies the gateway is reachable before any real load. At your scale (1k tx/day = 0.012 RPS) even this exceeds your average rate.',
+                vus: 1, mode: 'iter', iterations: 100
             },
             {
                 id: 'customer_daily',
@@ -2750,6 +2750,7 @@ ${scDetail}
         let _epEdit = null;  // working copy of endpoints
         let _epModalIdx = -1;    // -1 = new, ≥0 = editing existing
         let _epModalCalls = [];  // mutable call/msg list inside open modal
+        let _epModalHeaders = []; // [{k, v}] auth headers for open modal
 
         async function _epCfgInit() {
             const local = localStorage.getItem('tgw_endpoint_cfg');
@@ -2785,6 +2786,7 @@ ${scDetail}
     </label>
     <span class="ep-list-name" title="${escHtml(ep.url)}">${escHtml(ep.name)}</span>
     <span class="badge" style="background:${bg};color:${fg}">${ep.type.toUpperCase()}</span>
+    ${ep.headers && Object.keys(ep.headers).length ? `<span style="font-size:.68rem;padding:1px 6px;border-radius:3px;background:#3d281a;color:#d29922" title="${Object.keys(ep.headers).join(', ')}">🔑 ${Object.keys(ep.headers).length} header${Object.keys(ep.headers).length > 1 ? 's' : ''}</span>` : ''}
     <span class="ep-list-meta">${count} ${isA2a ? 'msg' : 'call'}${count !== 1 ? 's' : ''}</span>
     <div class="ep-list-acts">
         <button class="btn-cfg-ghost" style="font-size:.78rem;padding:3px 10px" onclick="epCfgEdit(${i})">Edit</button>
@@ -2815,6 +2817,7 @@ ${scDetail}
             _epModalIdx = idx;
             if (idx < 0) {
                 _epModalCalls = [{ method: 'tools/list', params: {} }];
+                _epModalHeaders = [];
                 el('epMName').value = '';
                 el('epMUrl').value = '';
                 el('epMType').value = 'mcp';
@@ -2825,6 +2828,7 @@ ${scDetail}
                 _epModalCalls = JSON.parse(JSON.stringify(
                     ep.type === 'a2a' ? (ep.messages || []) : (ep.calls || [])
                 ));
+                _epModalHeaders = Object.entries(ep.headers || {}).map(([k, v]) => ({ k, v }));
                 el('epMName').value = ep.name;
                 el('epMUrl').value = ep.url;
                 el('epMType').value = ep.type;
@@ -2832,6 +2836,7 @@ ${scDetail}
                 el('epMTitle').textContent = 'Edit: ' + ep.name;
             }
             _renderModalCalls();
+            _renderModalHeaders();
             el('epModal').classList.remove('hidden');
         }
 
@@ -2892,8 +2897,43 @@ ${scDetail}
             _renderModalCalls();
         }
 
+        function _renderModalHeaders() {
+            el('epMHeadersList').innerHTML = _epModalHeaders.length
+                ? _epModalHeaders.map((h, i) => `<div class="ep-call-row">
+    <div class="cfg-fg" style="flex:0 0 160px;min-width:0"><label>Header name</label><input id="epmhk-${i}" value="${escHtml(h.k)}" style="font-family:monospace;font-size:.78rem" placeholder="x-api-key" /></div>
+    <div class="cfg-fg" style="flex:1;min-width:0"><label>Value</label><input id="epmhv-${i}" value="${escHtml(h.v)}" style="font-family:monospace;font-size:.78rem" placeholder="your-secret" /></div>
+    <button class="btn-del" onclick="epMDeleteHeader(${i})" title="Remove">&#215;</button>
+</div>`).join('')
+                : '<div style="color:var(--dim);font-size:.78rem;padding:6px 0">No auth headers. Click + Add.</div>';
+        }
+
+        function _epReadModalHeaders() {
+            _epModalHeaders = _epModalHeaders.map((_, i) => {
+                const kEl = el('epmhk-' + i);
+                if (!kEl) return null;
+                return { k: kEl.value.trim(), v: (el('epmhv-' + i) || {}).value || '' };
+            }).filter(h => h && h.k);
+        }
+
+        function epMAddHeader() {
+            _epReadModalHeaders();
+            _epModalHeaders.push({ k: '', v: '' });
+            _renderModalHeaders();
+            setTimeout(() => {
+                const inputs = el('epMHeadersList').querySelectorAll('input');
+                if (inputs.length) inputs[inputs.length - 2].focus();
+            }, 50);
+        }
+
+        function epMDeleteHeader(i) {
+            _epReadModalHeaders();
+            _epModalHeaders.splice(i, 1);
+            _renderModalHeaders();
+        }
+
         function epCfgSaveModal() {
             _epReadModalCalls();
+            _epReadModalHeaders();
             const isA2a = el('epMType').value === 'a2a';
             const ep = {
                 name: el('epMName').value.trim() || 'unnamed',
@@ -2901,6 +2941,9 @@ ${scDetail}
                 type: el('epMType').value,
                 active: el('epMAct').checked
             };
+            if (_epModalHeaders.length) {
+                ep.headers = Object.fromEntries(_epModalHeaders.map(h => [h.k, h.v]));
+            }
             if (isA2a) { ep.messages = _epModalCalls; }
             else { ep.calls = _epModalCalls; }
             if (_epModalIdx < 0) { _epEdit.push(ep); }
@@ -3032,6 +3075,17 @@ ${scDetail}
                             Add</button>
                     </div>
                     <div id="epMCallsList"></div>
+                </div>
+                <div class="ep-calls-section" style="margin-top:12px">
+                    <div class="ep-calls-head">
+                        <span style="font-size:.8rem;font-weight:600">Auth Headers</span>
+                        <button class="btn-cfg-ghost" style="font-size:.75rem;padding:3px 10px"
+                            onclick="epMAddHeader()">+ Add</button>
+                    </div>
+                    <div id="epMHeadersList"></div>
+                    <div style="font-size:.72rem;color:var(--dim);margin-top:4px">e.g. <code>x-api-key</code> /
+                        <code>Authorization: Bearer &hellip;</code>
+                    </div>
                 </div>
             </div>
             <div class="ep-modal-foot">
