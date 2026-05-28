@@ -4,7 +4,7 @@
 
 We will establish a **VPC Peering connection** between your AWS account and our AWS environment to enable private communication.
 
-- Our VPC CIDR: `10.42.0.0/24`
+- Our VPC CIDR: `10.42.0.0/16`
 - Your VPC CIDR must **not overlap** with this range
 
 ---
@@ -15,12 +15,12 @@ We will establish a **VPC Peering connection** between your AWS account and our 
 +------------------------+          +------------------------+
 |   Customer AWS Account |          |   Affinidi AWS Account |
 |                        |          |                        |
-|   VPC (Customer CIDR)  |<-------->|   VPC (10.42.0.0/24)  |
+|   VPC (Customer CIDR)  |<-------->|   VPC (10.42.0.0/16)  |
 |                        |  Peering |                        |
 |   Route Tables         |          |   Route Tables         |
 +------------------------+          +------------------------+
 
-Customer adds route   ---> 10.42.0.0/24 via Peering Connection
+Customer adds route   ---> 10.42.0.0/16 via Peering Connection
 We add route          ---> Customer CIDR via Peering Connection
 
 DNS Resolution enabled on both sides
@@ -92,7 +92,7 @@ Once created, please share the **IAM Role ARN** with us (e.g. `arn:aws:iam::1234
 | **AWS Account ID** | Your 12-digit AWS Account ID                         | `123456789012`                                         |
 | **AWS Region**     | Region where your VPC resides                        | `eu-west-1`                                            |
 | **VPC ID**         | Your VPC ID                                          | `vpc-0abc123def456`                                    |
-| **VPC CIDR Block** | Your VPC CIDR — must not overlap with `10.42.0.0/24` | `10.100.0.0/16`                                        |
+| **VPC CIDR Block** | Your VPC CIDR — must not overlap with `10.42.0.0/16` | `10.100.0.0/16`                                        |
 
 > Once we have these details, we will prepare and send the VPC Peering request during our setup session.
 
@@ -121,7 +121,7 @@ For each relevant route table (typically private subnets that need to reach our 
 1. Go to **VPC → Route Tables**
 2. Select the route table → **Routes → Edit Routes**
 3. Add a new route:
-   - **Destination:** `10.42.0.0/24`
+   - **Destination:** `10.42.0.0/16`
    - **Target:** The VPC Peering Connection accepted above
 4. Save
 
@@ -152,7 +152,7 @@ Once all steps above are complete, we will test end-to-end connectivity between 
 - [ ] AWS Account ID shared
 - [ ] AWS Region shared
 - [ ] VPC ID shared
-- [ ] VPC CIDR Block shared (confirmed no overlap with `10.42.0.0/24`)
+- [ ] VPC CIDR Block shared (confirmed no overlap with `10.42.0.0/16`)
 - [ ] AWS Console access available during the call
 
 **Us — ready before the session:**
