@@ -1,5 +1,7 @@
 {
-  "annotations": { "list": [] },
+  "annotations": {
+    "list": []
+  },
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -8,112 +10,414 @@
   "liveNow": false,
   "panels": [
     {
+      "id": 100,
+      "type": "stat",
+      "title": "Scrape Status",
+      "description": "Shows whether Prometheus can successfully scrape this Trust Gateway metrics endpoint. RED = scraping is failing (e.g. 401 Unauthorized \u2014 check basic_auth in prometheus.yml).",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center",
+        "orientation": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "DOWN",
+                  "color": "red",
+                  "index": 0
+                },
+                "1": {
+                  "text": "UP",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "DOWN"
+        }
+      },
+      "targets": [
+        {
+          "expr": "up{job=\"__JOB__\"}",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
       "id": 1,
       "type": "stat",
       "title": "Total Requests",
-      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "colorMode": "value",
         "graphMode": "area",
         "textMode": "auto",
         "justifyMode": "center"
       },
       "fieldConfig": {
-        "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } }
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        }
       },
       "targets": [
-        { "expr": "agent_trust_gateway_requests_total{job=\"__JOB__\"}", "refId": "A", "legendFormat": "total" }
+        {
+          "expr": "agent_trust_gateway_requests_total{job=\"__JOB__\"}",
+          "refId": "A",
+          "legendFormat": "total"
+        }
       ]
     },
     {
       "id": 2,
       "type": "stat",
       "title": "Successful Requests",
-      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "area"
+      },
       "fieldConfig": {
-        "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
       },
       "targets": [
-        { "expr": "agent_trust_gateway_requests_success_total{job=\"__JOB__\"}", "refId": "A" }
+        {
+          "expr": "agent_trust_gateway_requests_success_total{job=\"__JOB__\"}",
+          "refId": "A"
+        }
       ]
     },
     {
       "id": 3,
       "type": "stat",
       "title": "Gateway Faults",
-      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "area"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 50 }] }
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          }
         }
       },
       "targets": [
-        { "expr": "agent_trust_gateway_requests_gateway_fault_total{job=\"__JOB__\"}", "refId": "A" }
+        {
+          "expr": "agent_trust_gateway_requests_gateway_fault_total{job=\"__JOB__\"}",
+          "refId": "A"
+        }
       ]
     },
     {
       "id": 4,
       "type": "stat",
       "title": "Active Connections",
-      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "area"
+      },
       "targets": [
-        { "expr": "agent_trust_gateway_active_connections{job=\"__JOB__\"}", "refId": "A" }
+        {
+          "expr": "agent_trust_gateway_active_connections{job=\"__JOB__\"}",
+          "refId": "A"
+        }
       ]
     },
     {
       "id": 5,
       "type": "stat",
       "title": "Unique Identities",
-      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "area"
+      },
       "targets": [
-        { "expr": "agent_trust_gateway_unique_identities{job=\"__JOB__\"}", "refId": "A" }
+        {
+          "expr": "agent_trust_gateway_unique_identities{job=\"__JOB__\"}",
+          "refId": "A"
+        }
       ]
     },
     {
       "id": 6,
       "type": "stat",
       "title": "Connections / min",
-      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
-      "fieldConfig": { "defaults": { "unit": "cpm" } },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 24,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cpm"
+        }
+      },
       "targets": [
-        { "expr": "agent_trust_gateway_connections_per_minute{job=\"__JOB__\"}", "refId": "A" }
+        {
+          "expr": "agent_trust_gateway_connections_per_minute{job=\"__JOB__\"}",
+          "refId": "A"
+        }
       ]
     },
     {
       "id": 10,
       "type": "timeseries",
       "title": "Request Rate (req/s)",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } } },
-      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
       "targets": [
-        { "expr": "rate(agent_trust_gateway_requests_total{job=\"__JOB__\"}[5m])", "refId": "A", "legendFormat": "total" },
-        { "expr": "rate(agent_trust_gateway_requests_success_total{job=\"__JOB__\"}[5m])", "refId": "B", "legendFormat": "success" },
-        { "expr": "rate(agent_trust_gateway_requests_gateway_fault_total{job=\"__JOB__\"}[5m])", "refId": "C", "legendFormat": "fault" }
+        {
+          "expr": "rate(agent_trust_gateway_requests_total{job=\"__JOB__\"}[5m])",
+          "refId": "A",
+          "legendFormat": "total"
+        },
+        {
+          "expr": "rate(agent_trust_gateway_requests_success_total{job=\"__JOB__\"}[5m])",
+          "refId": "B",
+          "legendFormat": "success"
+        },
+        {
+          "expr": "rate(agent_trust_gateway_requests_gateway_fault_total{job=\"__JOB__\"}[5m])",
+          "refId": "C",
+          "legendFormat": "fault"
+        }
       ]
     },
     {
       "id": 11,
       "type": "timeseries",
       "title": "Success Ratio (%)",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1, "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } } },
-      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "min"] } },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "min"
+          ]
+        }
+      },
       "targets": [
         {
           "expr": "rate(agent_trust_gateway_requests_success_total{job=\"__JOB__\"}[5m]) / clamp_min(rate(agent_trust_gateway_requests_total{job=\"__JOB__\"}[5m]), 1e-9)",
@@ -126,64 +430,214 @@
       "id": 20,
       "type": "timeseries",
       "title": "Average Latency (ms)",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "ms", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } } },
-      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
       "targets": [
-        { "expr": "agent_trust_gateway_avg_request_latency_ms{job=\"__JOB__\"}", "refId": "A", "legendFormat": "request (client→target)" },
-        { "expr": "agent_trust_gateway_avg_response_latency_ms{job=\"__JOB__\"}", "refId": "B", "legendFormat": "response (target→client)" }
+        {
+          "expr": "agent_trust_gateway_avg_request_latency_ms{job=\"__JOB__\"}",
+          "refId": "A",
+          "legendFormat": "request (client\u2192target)"
+        },
+        {
+          "expr": "agent_trust_gateway_avg_response_latency_ms{job=\"__JOB__\"}",
+          "refId": "B",
+          "legendFormat": "response (target\u2192client)"
+        }
       ]
     },
     {
       "id": 21,
       "type": "timeseries",
       "title": "Request Duration Percentiles (s)",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } } },
-      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
       "targets": [
-        { "expr": "histogram_quantile(0.50, sum by (le) (rate(agent_trust_gateway_request_duration_seconds_bucket{job=\"__JOB__\"}[5m])))", "refId": "A", "legendFormat": "p50" },
-        { "expr": "histogram_quantile(0.95, sum by (le) (rate(agent_trust_gateway_request_duration_seconds_bucket{job=\"__JOB__\"}[5m])))", "refId": "B", "legendFormat": "p95" },
-        { "expr": "histogram_quantile(0.99, sum by (le) (rate(agent_trust_gateway_request_duration_seconds_bucket{job=\"__JOB__\"}[5m])))", "refId": "C", "legendFormat": "p99" }
+        {
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(agent_trust_gateway_request_duration_seconds_bucket{job=\"__JOB__\"}[5m])))",
+          "refId": "A",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(agent_trust_gateway_request_duration_seconds_bucket{job=\"__JOB__\"}[5m])))",
+          "refId": "B",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(agent_trust_gateway_request_duration_seconds_bucket{job=\"__JOB__\"}[5m])))",
+          "refId": "C",
+          "legendFormat": "p99"
+        }
       ]
     },
     {
       "id": 30,
       "type": "timeseries",
       "title": "Throughput (bytes/sec)",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "Bps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } } },
-      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
       "targets": [
-        { "expr": "agent_trust_gateway_throughput_bytes_per_sec{job=\"__JOB__\"}", "refId": "A", "legendFormat": "throughput" }
+        {
+          "expr": "agent_trust_gateway_throughput_bytes_per_sec{job=\"__JOB__\"}",
+          "refId": "A",
+          "legendFormat": "throughput"
+        }
       ]
     },
     {
       "id": 31,
       "type": "timeseries",
       "title": "Bytes Rate (sent / received)",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "Bps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } } },
-      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
       "targets": [
-        { "expr": "rate(agent_trust_gateway_bytes_sent_total{job=\"__JOB__\"}[5m])", "refId": "A", "legendFormat": "sent" },
-        { "expr": "rate(agent_trust_gateway_bytes_received_total{job=\"__JOB__\"}[5m])", "refId": "B", "legendFormat": "received" }
+        {
+          "expr": "rate(agent_trust_gateway_bytes_sent_total{job=\"__JOB__\"}[5m])",
+          "refId": "A",
+          "legendFormat": "sent"
+        },
+        {
+          "expr": "rate(agent_trust_gateway_bytes_received_total{job=\"__JOB__\"}[5m])",
+          "refId": "B",
+          "legendFormat": "received"
+        }
       ]
     },
     {
       "id": 40,
       "type": "heatmap",
       "title": "Request Duration Distribution",
-      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 28 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "options": {
         "calculate": false,
-        "yAxis": { "unit": "s" },
-        "color": { "mode": "scheme", "scheme": "Spectral", "steps": 64 }
+        "yAxis": {
+          "unit": "s"
+        },
+        "color": {
+          "mode": "scheme",
+          "scheme": "Spectral",
+          "steps": 64
+        }
       },
       "targets": [
         {
@@ -197,12 +651,20 @@
   ],
   "refresh": "15s",
   "schemaVersion": 39,
-  "tags": ["trust-gateway", "__JOB__"],
-  "templating": { "list": [] },
-  "time": { "from": "now-1h", "to": "now" },
+  "tags": [
+    "trust-gateway",
+    "__JOB__"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
   "timepicker": {},
   "timezone": "",
-  "title": "Trust Gateway — __TITLE__",
+  "title": "Trust Gateway \u2014 __TITLE__",
   "uid": "__UID__",
   "version": 1,
   "weekStart": ""

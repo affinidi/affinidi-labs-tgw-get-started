@@ -271,12 +271,13 @@ EOF
   echo "▶ Using $CONF as-is (no host arguments provided)."
 fi
 
-# ── Bring up the stack ───────────────────────────────────────────────
+# ── Bring up / restart the stack ────────────────────────────────────
 echo
-echo "▶ Starting Prometheus + Grafana…"
+echo "▶ Restarting Prometheus + Grafana…"
 docker compose up -d
+docker compose restart prometheus grafana
 
-# Hot-reload Prometheus in case it was already running.
+# Hot-reload Prometheus config after restart.
 docker compose kill -s HUP prometheus 2>/dev/null || true
 
 echo
