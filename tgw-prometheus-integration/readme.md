@@ -17,14 +17,19 @@ plus a matching Grafana dashboard for it automatically. The job /
 dashboard name is **derived from the host's subdomain**, so each
 TG ends up with its own clearly labelled view.
 
-> ⚠️ **Security notice — endpoint is currently unauthenticated**
+> 🔒 **Optional: Basic Auth for the metrics endpoint**
 >
-> The Trust Gateway `/api/v1/metrics/prometheus` endpoint is **not
-> protected** at the moment. Anyone with the URL can read raw metrics
-> (request counts, latencies, byte volumes, unique-identity counts).
+> The Trust Gateway `/api/v1/metrics/prometheus` endpoint supports
+> **HTTP Basic Authentication** (disabled by default). If you enable it,
+> Prometheus must supply the credentials or scraping will return 401.
 >
-> Authentication (API Key / mTLS) for the Trust Gateway metrics
-> endpoint is on the roadmap.
+> **Enable in the Trust Gateway UI:**
+> **Settings → Admin tab → Prometheus Authentication → toggle on → set username & password**
+>
+> ![Prometheus Authentication setting in Trust Gateway UI](docs/tg-promethus-auth.png)
+>
+> If enabled, supply the credentials in `prometheus.yml` via the
+> `basic_auth` block (see steps below). If disabled, omit the block entirely.
 
 ## Prerequisites
 
@@ -39,7 +44,11 @@ Before bringing the stack up, confirm the endpoint is reachable from
 your machine and returns Prometheus-format text:
 
 ```bash
+# Without auth (if Prometheus Authentication is disabled in the TG UI)
 curl -s https://<YOUR_TGW_HOST>/api/v1/metrics/prometheus | head -20
+
+# With Basic Auth (if Prometheus Authentication is enabled in the TG UI)
+curl -s -u '<USERNAME>:<PASSWORD>' https://<YOUR_TGW_HOST>/api/v1/metrics/prometheus | head -20
 ```
 
 You should see lines like:
@@ -62,12 +71,23 @@ nothing downstream will work until this `curl` succeeds.
 ```bash
 cd tgw-prometheus-integration
 
-# One Trust Gateway
-./run.sh acme-demo.trustgateway.affinidi.io
+# One Trust Gateway — credentials set via environment variables
+TGW_USERNAME=prometheus TGW_PASSWORD=secret \
+  ./run.sh acme-demo.trustgateway.affinidi.io
 
-# Multiple Trust Gateways — each gets its own scrape job + dashboard
-./run.sh acme-demo.trustgateway.affinidi.io acme-prod.trustgateway.affinidi.io
+# Multiple Trust Gateways sharing the same credentials
+TGW_USERNAME=prometheus TGW_PASSWORD=secret \
+  ./run.sh acme-demo.trustgateway.affinidi.io acme-prod.trustgateway.affinidi.io
+
+# Multiple Trust Gateways with different credentials (comma-separated, same order as hosts)
+TGW_USERNAMES=user1,user2 TGW_PASSWORDS=pass1,pass2 \
+  ./run.sh acme-demo.trustgateway.affinidi.io acme-prod.trustgateway.affinidi.io
 ```
+
+> `TGW_USERNAME` / `TGW_PASSWORD` are **optional**. Only set them if
+> you have enabled **Settings → Admin tab → Prometheus Authentication**
+> in the Trust Gateway UI. If omitted, `run.sh` writes the scrape job
+> without a `basic_auth` block.
 
 What `./run.sh <host1> [host2 ...]` does:
 
@@ -111,6 +131,9 @@ In the `BEGIN MANAGED` / `END MANAGED` block, replace each placeholder:
 - job_name: "tgw-<your-subdomain>" # e.g. "tgw-acme-demo-trustgateway"
   scheme: https
   metrics_path: /api/v1/metrics/prometheus
+  basic_auth:
+    username: "<YOUR_USERNAME>"
+    password: "<YOUR_PASSWORD>"
   static_configs:
     - targets: ["<your.tgw.host>"] # e.g. "acme-demo.trustgateway.affinidi.io"
       labels:
@@ -126,6 +149,10 @@ sed -e 's/__JOB__/tgw-acme-demo-trustgateway/g' \
     dashboard-template.json \
   > grafana/provisioning/dashboards/tgw-acme-demo-trustgateway.json
 ```
+
+> If you have enabled **Settings → Admin → Prometheus Authentication**
+> in the Trust Gateway UI, add the `basic_auth` block above with the
+> username and password you configured. If auth is disabled, omit it.
 
 Repeat the scrape-job block and the `sed` for as many Trust Gateways
 as you need. Then start the stack:
@@ -193,13 +220,14 @@ Dashboard layout (same for every TG instance):
 
 ## Troubleshooting
 
-| Symptom                             | Check                                                               |
-| ----------------------------------- | ------------------------------------------------------------------- |
-| Target shows `DOWN` in Prometheus   | `curl -v https://<YOUR_TGW_HOST>/api/v1/metrics/prometheus`         |
-| Panels show "No data"               | Dashboard's `job=` filter must equal `job_name` in `prometheus.yml` |
-| Dashboard doesn't appear in Grafana | `docker logs tgw-prom-grafana \| grep -i provisioning`              |
-| Want to wipe storage                | `docker compose down -v`                                            |
-| Changed `prometheus.yml`            | `docker compose restart prometheus`                                 |
+| Symptom                             | Check                                                                                                                                             |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Target shows `DOWN` in Prometheus   | `curl -v -u '<USERNAME>:<PASSWORD>' https://<YOUR_TGW_HOST>/api/v1/metrics/prometheus`                                                            |
+| Target shows `401 Unauthorized`     | Basic Auth is enabled in the TG UI but `basic_auth` is missing/wrong in `prometheus.yml` — check **Settings → Admin → Prometheus Authentication** |
+| Panels show "No data"               | Dashboard's `job=` filter must equal `job_name` in `prometheus.yml`                                                                               |
+| Dashboard doesn't appear in Grafana | `docker logs tgw-prom-grafana \| grep -i provisioning`                                                                                            |
+| Want to wipe storage                | `docker compose down -v`                                                                                                                          |
+| Changed `prometheus.yml`            | `docker compose restart prometheus`                                                                                                               |
 
 ## Files
 

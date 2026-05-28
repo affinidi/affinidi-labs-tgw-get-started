@@ -35,9 +35,9 @@ scrape_configs:
   - job_name: "tgw-<your-subdomain>" # e.g. "tgw-acme-demo-trustgateway"
     scheme: https
     metrics_path: /api/v1/metrics/prometheus
-    # basic_auth:
-    #   username: "prometheus"
-    #   password: "YOUR_PASSWORD" 
+    # basic_auth:                        # optional — only needed if enabled in TG UI:
+    #   username: "<YOUR_USERNAME>"      # Settings → Admin → Prometheus Authentication
+    #   password: "<YOUR_PASSWORD>"
     static_configs:
       - targets: ["<your.tgw.host>"] # e.g. "acme-demo.trustgateway.affinidi.io"
         labels:

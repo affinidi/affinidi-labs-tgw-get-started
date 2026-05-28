@@ -23,6 +23,12 @@
 # Override the strippable domain:
 #   STRIPPABLE_DOMAIN=example.com ./run.sh tgw.example.com
 #
+# Credentials (Basic Auth — optional):
+#   TGW_USERNAME / TGW_PASSWORD          — same credentials for all hosts
+#   TGW_USERNAMES / TGW_PASSWORDS        — comma-separated, one per host (same order)
+#   If neither is set the job is written without basic_auth (correct when
+#   Prometheus Authentication is disabled in TG: Settings → Admin tab).
+#
 # Accepted host forms (scheme/path/query are stripped):
 #   tgw.example.com
 #   https://tgw.example.com
@@ -104,14 +110,36 @@ for h in hosts:
     sl = slug(ident)
     jobs.append((sl, ident, h))
 
+# Resolve per-host credentials from env vars.
+# Priority: TGW_USERNAMES/TGW_PASSWORDS (comma-separated) > TGW_USERNAME/TGW_PASSWORD
+import os
+usernames_csv = os.environ.get("TGW_USERNAMES", "")
+passwords_csv = os.environ.get("TGW_PASSWORDS", "")
+single_user   = os.environ.get("TGW_USERNAME", "")
+single_pass   = os.environ.get("TGW_PASSWORD", "")
+
+if usernames_csv and passwords_csv:
+    cred_users = [u.strip() for u in usernames_csv.split(",")]
+    cred_passes = [p.strip() for p in passwords_csv.split(",")]
+else:
+    cred_users  = [single_user]  * len(jobs)
+    cred_passes = [single_pass] * len(jobs)
+
 block_lines = []
-for sl, ident, h in jobs:
+for i, (sl, ident, h) in enumerate(jobs):
+    u = cred_users[i]  if i < len(cred_users)  else single_user
+    p = cred_passes[i] if i < len(cred_passes) else single_pass
     block_lines.append(f'  - job_name: "tgw-{sl}"')
     block_lines.append( '    scheme: https')
     block_lines.append( '    metrics_path: /api/v1/metrics/prometheus')
-    block_lines.append( '    # basic_auth:')
-    block_lines.append( '    #   username: "prometheus"')
-    block_lines.append( '    #   password: "YOUR_PASSWORD"')
+    if u and p:
+        block_lines.append( '    basic_auth:')
+        block_lines.append(f'      username: "{u}"')
+        block_lines.append(f'      password: "{p}"')
+    else:
+        block_lines.append( '    # basic_auth:  ← set TGW_USERNAME / TGW_PASSWORD env vars, or edit manually')
+        block_lines.append( '    #   username: "YOUR_USERNAME"')
+        block_lines.append( '    #   password: "YOUR_PASSWORD"')
     block_lines.append( '    static_configs:')
     block_lines.append(f'      - targets: ["{h}"]')
     block_lines.append( '        labels:')
