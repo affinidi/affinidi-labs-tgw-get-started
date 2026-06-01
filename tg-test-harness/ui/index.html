@@ -1852,41 +1852,41 @@
                 id: 'load_light',
                 name: 'Light Load',
                 type: 'load',
-                tagline: '1 RPS · 2 VUs · 60s',
+                tagline: '1 RPS · 2 VUs · 2m',
                 desc: '1 req/s sustained = ~86k tx/day (86× your current volume). Comfortable operating headroom. Establishes clean latency baseline.',
-                vus: 2, mode: 'rate', totalRps: 1, duration: '60s'
+                vus: 2, mode: 'rate', totalRps: 1, duration: '2m'
             },
             {
                 id: 'load_normal',
                 name: 'Normal Load',
                 type: 'load',
-                tagline: '5 RPS · 5 VUs · 60s',
+                tagline: '5 RPS · 5 VUs · 2m',
                 desc: '5 req/s = ~432k tx/day (432× your current volume). Target capacity for near-term growth. Should show zero errors and stable latency.',
-                vus: 5, mode: 'rate', totalRps: 5, duration: '60s'
+                vus: 5, mode: 'rate', totalRps: 5, duration: '2m'
             },
             {
                 id: 'load_peak',
                 name: 'Peak Load',
                 type: 'load',
-                tagline: '10 RPS · 10 VUs · 60s',
+                tagline: '10 RPS · 10 VUs · 2m',
                 desc: '10 req/s = ~864k tx/day (864× your current volume). Represents a future high-traffic production environment. Metrics here are your SLA ceiling.',
-                vus: 10, mode: 'rate', totalRps: 10, duration: '60s'
+                vus: 10, mode: 'rate', totalRps: 10, duration: '2m'
             },
             {
                 id: 'stress_high',
                 name: 'High Stress',
                 type: 'stress',
-                tagline: '20 RPS · 20 VUs · 60s',
+                tagline: '20 RPS · 20 VUs · 2m',
                 desc: '20 req/s = ~1.7M tx/day. Double peak load. Tests graceful degradation — errors should remain minimal and the gateway stay responsive.',
-                vus: 20, mode: 'rate', totalRps: 20, duration: '60s'
+                vus: 20, mode: 'rate', totalRps: 20, duration: '2m'
             },
             {
                 id: 'stress_extreme',
                 name: 'Extreme Stress',
                 type: 'stress',
-                tagline: '50 RPS · 50 VUs · 60s',
+                tagline: '50 RPS · 50 VUs · 2m',
                 desc: '50 req/s = ~4.3M tx/day. Designed to find the absolute ceiling. Expect failures here — the goal is to see how the system fails, not if.',
-                vus: 50, mode: 'rate', totalRps: 50, duration: '60s'
+                vus: 50, mode: 'rate', totalRps: 50, duration: '2m'
             },
             {
                 id: 'spike',
@@ -2253,9 +2253,10 @@
                 gradeHtml = '<span style="color:var(--dim)">Pending</span>';
             }
 
+            const isExpanded = !el('scrd-' + id)?.classList.contains('hidden');
             row.innerHTML =
                 '<td style="font-weight:600">' +
-                '<button class="xbtn" id="scx-' + id + '" onclick="toggleScDetail(\'' + id + '\')" title="Per-call breakdown">+</button>' +
+                '<button class="xbtn" id="scx-' + id + '" onclick="toggleScDetail(\'' + id + '\')" title="Per-call breakdown">' + (isExpanded ? '&#8722;' : '+') + '</button>' +
                 (sc ? sc.name : id) +
                 '</td>' +
                 '<td>' + (sc ? '<span class="badge sc-b-' + sc.type + '">' + sc.type.toUpperCase() + '</span>' : '') + '</td>' +
