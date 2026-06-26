@@ -1,0 +1,5 @@
+# UI dependencies for oauth_chat_app.py and ngrok_tunnel.py
+flask>=3.0.0
+requests>=2.31.0
+pyngrok>=7.0.0
+python-dotenv>=1.0.0
