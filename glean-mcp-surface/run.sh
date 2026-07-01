@@ -3,9 +3,9 @@
 #  test-agent-surface / run.sh
 #
 #  Usage:
-#    ./run.sh              — show this help
-#    ./run.sh ui           — start the Google OAuth chat UI (port 8081)
-#    ./run.sh ngrok        — start a new ngrok tunnel for the OAuth callback
+#    ./run.sh              — start the OAuth chat app
+#    ./run.sh start        — start the OAuth chat app
+#    ./run.sh help         — show this help
 # ──────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
@@ -13,7 +13,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 VENV_DIR=".venv"
-COMMAND="${1:-help}"
+COMMAND="${1:-start}"
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -46,10 +46,8 @@ print_help() {
   echo "  test-agent-surface — run.sh"
   echo ""
   echo "  Commands:"
-  echo "    ui           Start the Google OAuth + MCP Gateway chat UI"
-  echo "    ngrok        Start a ngrok tunnel for the OAuth redirect URI"
-  echo ""
-  echo "  Environment variables are loaded from .env automatically."
+  echo "    start        Start the Google OAuth + MCP Gateway chat UI"
+  echo "    help         Show this help text"
   echo ""
 }
 
@@ -57,7 +55,7 @@ print_help() {
 
 case "$COMMAND" in
 
-  ui)
+  start|run)
     load_env
     ensure_venv
     install_deps requirements_ui.txt
@@ -66,21 +64,6 @@ case "$COMMAND" in
     echo "Redirect URI: ${REDIRECT_URI:-http://localhost:8081/callback}"
     echo ""
     python3 oauth_chat_app.py
-    ;;
-
-  ngrok)
-    load_env
-    ensure_venv
-    install_deps requirements_ui.txt
-    TOKEN="${NGROK_AUTH_TOKEN:-${2:-}}"
-    if [ -z "$TOKEN" ]; then
-      echo "ERROR: NGROK_AUTH_TOKEN is not set."
-      echo "  Set it in .env or pass as argument: ./run.sh ngrok <token>"
-      exit 1
-    fi
-    echo ""
-    echo "Starting ngrok tunnel → localhost:${PORT:-8081} ..."
-    python3 ngrok_tunnel.py "$TOKEN" "${PORT:-8081}"
     ;;
 
   help|--help|-h|"")

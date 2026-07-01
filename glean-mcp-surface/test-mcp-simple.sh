@@ -1,7 +1,7 @@
 #!/bin/bash
 
 API_KEY="atgs_n-qY5BvLcwo5H890eFVygySiJwM8w3klzWE-9_rRKkI"
-URL="https://nonblasphemous-fermentable-olimpia.ngrok-free.dev/payments/emotion/icon"
+URL="https://sa-primary.trustgateway.affinidi.io/routes/white/athlete"
 
 do_request() {
   local body="$1"
