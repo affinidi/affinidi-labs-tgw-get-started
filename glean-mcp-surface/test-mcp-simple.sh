@@ -1,7 +1,7 @@
 #!/bin/bash
 
-API_KEY="atgs_n-qY5BvLcwo5H890eFVygySiJwM8w3klzWE-9_rRKkI"
-URL="https://sa-primary.trustgateway.affinidi.io/routes/white/athlete"
+API_KEY=""
+URL=""
 
 do_request() {
   local body="$1"
