@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Trust Gateway → Prometheus → Grafana — bring-up script.
+# Agent Gateway → Prometheus → Grafana — bring-up script.
 #
 # Usage:
 #   ./run.sh <TGW_HOST_1> [TGW_HOST_2 ...]
@@ -202,7 +202,7 @@ if [[ $# -ge 1 ]]; then
     echo "▶ Created $CONF from $CONF_TEMPLATE."
   fi
   HOSTS=()
-  echo "▶ Configuring Trust Gateways (strippable domain = $STRIPPABLE_DOMAIN):"
+  echo "▶ Configuring Agent Gateways (strippable domain = $STRIPPABLE_DOMAIN):"
   for arg in "$@"; do
     H="$(normalize_host "$arg")"
     ID="$(host_to_identifier "$H")"
@@ -308,7 +308,7 @@ cat <<EOF
   Prometheus  →  http://localhost:9090
   Grafana     →  http://localhost:3000   (admin / admin)
 
-Open the "Trust Gateway" folder in Grafana to see the dashboards.
+Open the "Agent Gateway" folder in Grafana to see the dashboards.
 
 To stop:  docker compose down
 EOF

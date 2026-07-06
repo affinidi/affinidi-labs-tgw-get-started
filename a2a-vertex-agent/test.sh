@@ -4,14 +4,14 @@
 # Tests the deployed agent using A2A client
 # Usage: ./test.sh [base_url]
 # Example (direct Vertex AI):   ./test.sh
-# Example (Trust Gateway):      ./test.sh https://your-trust-gateway.com/agents/native/bandit
+# Example (Agent Gateway):      ./test.sh https://your-trust-gateway.com/agents/native/bandit
 
 # Optional base URL arg — passed through to a2a_client.py
 BASE_URL=${1:-""}
 
 echo "=================================================="
 if [ -n "$BASE_URL" ]; then
-    echo "A2A Vertex Agent - Client Test (via Trust Gateway)"
+    echo "A2A Vertex Agent - Client Test (via Agent Gateway)"
 else
     echo "A2A Vertex Agent - Client Test (direct Vertex AI)"
 fi
@@ -19,7 +19,7 @@ echo "=================================================="
 echo ""
 
 if [ -n "$BASE_URL" ]; then
-    echo "Trust Gateway URL : $BASE_URL (Trust Gateway)"
+    echo "Agent Gateway URL : $BASE_URL (Agent Gateway)"
 else
     echo "Base URL : Vertex AI default"
 fi

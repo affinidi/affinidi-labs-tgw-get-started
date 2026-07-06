@@ -1,5 +1,5 @@
 """
-Trust Gateway load test — Locust edition.
+Agent Gateway load test — Locust edition.
 
 Mirrors the k6 harness (k6/load-test.js):
   - Reads data/endpoints.json (shared endpoint configuration)

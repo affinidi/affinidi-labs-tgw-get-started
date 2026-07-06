@@ -1,6 +1,6 @@
-# Trust Gateway — Load Testing
+# Agent Gateway — Load Testing
 
-A [Locust](https://locust.io)-based load testing harness for Affinidi Trust Gateway endpoints (MCP servers and A2A agents), with a built-in web UI for configuring and running tests.
+A [Locust](https://locust.io)-based load testing harness for Agent Gateway endpoints (MCP servers and A2A agents), with a built-in web UI for configuring and running tests.
 
 ## Screenshots
 

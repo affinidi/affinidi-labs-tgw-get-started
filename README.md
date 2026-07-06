@@ -1,6 +1,6 @@
-# Agent Trust Gateway (part of Affinidi Trust Fabric)
+# Agent Gateway (part of Affinidi Trust Fabric)
 
-The Agent Trust Gateway (Affinidi TGW) is an enterprise-grade gateway designed specifically for the emerging Agent-to-Agent AI ecosystem. Written in Rust for maximum performance and security, it provides comprehensive trust infrastructure, observability, and governance for AI agent communications across organizational boundaries, in ways that set it apart in the emerging AI observability space.
+The Agent Gateway (Affinidi TGW) is an enterprise-grade gateway designed specifically for the emerging Agent-to-Agent AI ecosystem. Written in Rust for maximum performance and security, it provides comprehensive trust infrastructure, observability, and governance for AI agent communications across organizational boundaries, in ways that set it apart in the emerging AI observability space.
 
 At its core, the Affinidi TGW is a protocol-aware intercepting proxy for the Internet of AI Agents. The Gateway provides three fundamental capabilities:
 
@@ -44,7 +44,7 @@ Beyond a simple "hello world", this repo also includes a set of supporting tools
 
 ## Goal: What you will build
 
-Establish governed MCP and A2A connections by routing clients through the Trust Gateway, which manages identity, policy enforcement, and observability before forwarding requests to your local servers or cloud-deployed agents (e.g., Vertex AI Agent Engine).
+Establish governed MCP and A2A connections by routing clients through the Agent Gateway, which manages identity, policy enforcement, and observability before forwarding requests to your local servers or cloud-deployed agents (e.g., Vertex AI Agent Engine).
 
 ![Alt text](docs/images/before-affinidi-tgw.png)
 ![Alt text](docs/images/after-affinidi-tgw.png)
@@ -54,23 +54,23 @@ Establish governed MCP and A2A connections by routing clients through the Trust 
 - [Try it in GitHub Codespaces](#-try-it-in-github-codespaces-no-local-setup-required)
 - [Overview](#overview)
 - [Project Structure](#project-structure)
-- [Part 1: Run Agents Without Trust Gateway](#part-1-run-agents-without-trust-gateway)
+- [Part 1: Run Agents Without Agent Gateway](#part-1-run-agents-without-trust-gateway)
   - [Prerequisites](#prerequisites)
   - [A2A Server (Local)](#a2a-server-local)
   - [MCP Server (Local)](#mcp-server-local)
   - [A2A Vertex AI Agent](#a2a-vertex-ai-agent)
-- [Part 2: Run Agents With Trust Gateway](#part-2-run-agents-with-trust-gateway)
-  - [What is the Agent Trust Gateway?](#what-is-the-agent-trust-gateway)
+- [Part 2: Run Agents With Agent Gateway](#part-2-run-agents-with-trust-gateway)
+  - [What is the Agent Gateway?](#what-is-the-agent-trust-gateway)
   - [Prerequisites](#prerequisites-1)
-  - [Setup Trust Gateway](#setup-trust-gateway)
-  - [MCP Server via Trust Gateway](#mcp-server-via-trust-gateway)
+  - [Setup Agent Gateway](#setup-trust-gateway)
+  - [MCP Server via Agent Gateway](#mcp-server-via-trust-gateway)
     - [Optional: Enable Authentication on the MCP Channel](#optional-enable-authentication-on-the-mcp-channel)
-  - [A2A Server via Trust Gateway](#a2a-server-via-trust-gateway)
-  - [A2A Vertex AI Agent via Trust Gateway](#a2a-vertex-ai-agent-via-trust-gateway)
+  - [A2A Server via Agent Gateway](#a2a-server-via-trust-gateway)
+  - [A2A Vertex AI Agent via Agent Gateway](#a2a-vertex-ai-agent-via-trust-gateway)
   - [Create Identity for Your Agent or MCP Server](#create-identity-for-your-agent-or-mcp-server)
   - [Sample MCP Request & Response Messages](#sample-mcp-request--response-messages)
 - [Part 3: A2A Protected Agent — Decentralized Identity](#part-3-a2a-protected-agent--decentralized-identity)
-- [Part 4: Observability — Visualise Trust Gateway Metrics](#part-4-observability--visualise-trust-gateway-metrics)
+- [Part 4: Observability — Visualise Agent Gateway Metrics](#part-4-observability--visualise-trust-gateway-metrics)
 
 ---
 
@@ -172,16 +172,16 @@ You can now type messages to the agent and see responses in real time.
 
 ---
 
-### Connecting through the Trust Gateway from Codespaces
+### Connecting through the Agent Gateway from Codespaces
 
-Once you have your Codespaces forwarded URLs, you can use them exactly like ngrok URLs in all the Trust Gateway steps in Part 2:
+Once you have your Codespaces forwarded URLs, you can use them exactly like ngrok URLs in all the Agent Gateway steps in Part 2:
 
 - When configuring an MCP channel, set the **Target Endpoint URL** to your Codespaces forwarded address for port `11000`.
 - When configuring an A2A channel, set the **Target Endpoint URL** to your Codespaces forwarded address for port `10000`.
 
 ![alt text](/docs/images/ATG-codespace.png)
 
-Everything else stays the same — the Codespace keeps the server running while the Trust Gateway routes traffic to it.
+Everything else stays the same — the Codespace keeps the server running while the Agent Gateway routes traffic to it.
 
 > **Note:** The Vertex AI agent (in `a2a-vertex-agent/`) still requires a Google Cloud account and cannot be set up through Codespaces alone. All other demos work fully.
 
@@ -195,8 +195,8 @@ Everything else stays the same — the Codespace keeps the server running while 
 | `mcp/`                        | Local MCP server with calculator and weather tools                                    |
 | `a2a-vertex-agent/`           | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
 | `rest-api/`                   | REST API server with MCP proxy                                                        |
-| `a2a-protected-agent/`        | Multi-agent server (Personal + Finance) with decentralized identity via Trust Gateway |
-| `tgw-prometheus-integration/` | Scrape the Trust Gateway's native Prometheus endpoint and visualise it in Grafana     |
+| `a2a-protected-agent/`        | Multi-agent server (Personal + Finance) with decentralized identity via Agent Gateway |
+| `tgw-prometheus-integration/` | Scrape the Agent Gateway's native Prometheus endpoint and visualise it in Grafana     |
 
 ## 📁 Project Structure
 
@@ -249,7 +249,7 @@ affinidi-labs-tgw-get-started/
 
 ---
 
-# Part 1: Run Agents Without Trust Gateway
+# Part 1: Run Agents Without Agent Gateway
 
 Run the agents locally or on Vertex AI and test them directly — no gateway involved.
 
@@ -372,16 +372,16 @@ pip install -r requirements.txt
 
 ---
 
-# Part 2: Run Agents With Trust Gateway
+# Part 2: Run Agents With Agent Gateway
 
-Route your agents through the **Agent Trust Gateway** to add identity management, observability, policy enforcement, and governed routing to all agent communications.
+Route your agents through the **Agent Gateway** to add identity management, observability, policy enforcement, and governed routing to all agent communications.
 
-![Before Trust Gateway](docs/images/before-affinidi-tgw.png)
-![After Trust Gateway](docs/images/after-affinidi-tgw.png)
+![Before Agent Gateway](docs/images/before-affinidi-tgw.png)
+![After Agent Gateway](docs/images/after-affinidi-tgw.png)
 
-## What is the Agent Trust Gateway?
+## What is the Agent Gateway?
 
-The Agent Trust Gateway (Affinidi TGW) is an enterprise-grade gateway written in Rust for the Agent-to-Agent AI ecosystem. It provides:
+The Agent Gateway (Affinidi TGW) is an enterprise-grade gateway written in Rust for the Agent-to-Agent AI ecosystem. It provides:
 
 - **Protocol inspection** — understands A2A, MCP, UCP, AP2, OpenAI protocols
 - **Identity management** — issues and validates decentralized identities (DIDs) for agents
@@ -400,7 +400,7 @@ Channels are the fundamental routing unit. Each channel defines:
 
 ## Prerequisites
 
-- Access to an Affinidi project with Trust Gateway enabled (whitelisted)
+- Access to an Affinidi project with Agent Gateway enabled (whitelisted)
 - Python 3.10+
 - ngrok (for local MCP/A2A servers — **not needed** for Vertex AI agent)
 - Ports 11000 and 10000 available
@@ -408,25 +408,25 @@ Channels are the fundamental routing unit. Each channel defines:
 
 ---
 
-## Setup Trust Gateway
+## Setup Agent Gateway
 
-### Step 1: Create Trust Gateway Configuration
+### Step 1: Create Agent Gateway Configuration
 
 1. Log in to the [Affinidi Developer Portal](https://portal.affinidi.com)
-2. Select your project from the top left menu (only whitelisted projects can create a Trust Gateway)
-3. Click on `Affinidi Trust Gateway` in the left menu
+2. Select your project from the top left menu (only whitelisted projects can create a Agent Gateway)
+3. Click on `Agent Gateway` in the left menu
 4. Click `Create Configuration` and provide a name and description
 
 ![Alt text](docs/images/create-trust-gateway.png)
 
 5. Wait until the deployment status is `Complete` (may take a few minutes)
-6. Copy the Trust Gateway dashboard URL
+6. Copy the Agent Gateway dashboard URL
 
 ![Alt text](docs/images/trust-gateway-done.png)
 
-### Step 2: Register and Login to Trust Gateway Control Plane
+### Step 2: Register and Login to Agent Gateway Control Plane
 
-1. Open the Trust Gateway dashboard URL in your browser
+1. Open the Agent Gateway dashboard URL in your browser
 2. **First-time users:**
    - Click `Register here`, enter a `username`, click `Register Passkey` (first user becomes admin)
 
@@ -439,13 +439,13 @@ Channels are the fundamental routing unit. Each channel defines:
 
 4. After login you will see the dashboard
 
-![Alt text](docs/images/dashboard.png)
+![Alt text](docs/images/gateway-dashboard.png)
 
 ---
 
-## MCP Server via Trust Gateway
+## MCP Server via Agent Gateway
 
-**Goal:** Route MCP JSON-RPC through the Trust Gateway with observability.
+**Goal:** Route MCP JSON-RPC through the Agent Gateway with observability.
 
 **Result:** A stable Gateway route URL you can use from your MCP client.
 
@@ -458,7 +458,7 @@ cd mcp
 
 ### 2. Expose via ngrok
 
-The MCP server must be publicly accessible for the Trust Gateway to route to it:
+The MCP server must be publicly accessible for the Agent Gateway to route to it:
 
 ```bash
 ngrok http 11000
@@ -470,59 +470,59 @@ For a static domain:
 ngrok http --url=<YOUR_NGROK_HOST> 11000
 ```
 
-### 3. Configure MCP Channel in Trust Gateway
+### 3. Configure MCP Channel in Agent Gateway
 
-1. Open the Trust Gateway dashboard → `Channels` → `Add Channel` → select `MCP` protocol
+1. Open the Agent Gateway dashboard → `Surfaces` → `Add Surface` → select `MCP Surface Starter` template
 
-   ![Alt text](docs/images/channel-create-1.png)
-   ![Alt text](docs/images/channel-create-2.png)
+   ![Alt text](./mcp/docs/channel-create-1.png)
+   ![Alt text](./mcp/docs/channel-create-2.png)
 
-2. Enter the channel details and click `Next`:
-   - **Channel Name:** `mcp-channel-weather`
-   - **Listen Address:** Your Gateway base URL (e.g., `https://pillar-channel.trustgateway.affinidi.io`)
-   - **Channel Prefix:** `routes`
-   - **Target Endpoint Type:** `Direct URL`
-   - **Target Endpoint URL:** Your ngrok URL
+2. Select the `Managed Agent` element and enter below details:
+   - Select **Endpoint Type:** `Direct URL`
+   - **Endpoint URL:** Your ngrok URL (public url of your MCP server)
 
-   ![Alt text](docs/images/channel-create-3.png)
+   ![Alt text](./mcp/docs/channel-create-3.png)
+   ![Alt text](./mcp/docs/channel-create-4.png)
 
-3. Review and click `Create Channel`
+3. Review and click `Agent surface area` and enter the name of surface as `MCP Weather Surface` and click on `save`
 
-   ![Alt text](docs/images/channel-create-4.png)
+   ![Alt text](./mcp/docs/channel-create-5.png)
 
-4. Open the newly created channel and copy the `Channel Route` URL
+4. Select the `Access Point` and copy the `Channel Route` URL
+   Note: Update the prefix/custom path as you desired
 
-   ![Alt text](docs/images/channels-list.png)
-   ![Alt text](docs/images/channel-mcp.png)
+   ![Alt text](./mcp/docs/channel-create-6.png)
 
-### 4. Test via Trust Gateway
+### 4. Test via Agent Gateway
 
 ```bash
 cd mcp
 ./test.sh https://<GATEWAY_HOST>/routes/<CHANNEL_PATH>
 
 # Example:
-./test.sh https://pillar-channel.trustgateway.affinidi.io/routes/album/legend
+./test.sh https://digital-plastic.trustgateway.affinidi.io/routes/weight/iceberg
 ```
 
 View traffic metrics and logs in the channel dashboard after testing.
 
-![Alt text](docs/images/channel-mcp-2.png)
-![Alt text](docs/images/channel-mcp-3.png)
+![Alt text](./mcp/docs/channel-create-7.png)
+
+If you want to do realtime capture for troubleshooting, click on `Catpure` button on `Monitoring` section, and run the program
+![Alt text](./mcp/docs/channel-create-8.png)
 
 ### Optional: Enable Authentication on the MCP Channel
 
-By default the MCP channel route is open. If you need to **lock down the channel** so only authorised clients can call it, and/or **inject an API key** from the Trust Gateway to a protected upstream MCP server, follow the optional guide:
+By default the MCP channel route is open. If you need to **lock down the channel** so only authorised clients can call it, and/or **inject an API key** from the Agent Gateway to a protected upstream MCP server, follow the optional guide:
 
-➡️ **[Enable Authentication on a Trust Gateway MCP Channel](mcp/enable-auth.md)**
+➡️ **[Enable Authentication on a Agent Gateway MCP Channel](mcp/enable-auth.md)**
 
 Covers Source Authentication (client → gateway) and Target Authentication (gateway → upstream) with screenshots and `curl` test commands. The same pattern applies to A2A channels.
 
 ---
 
-## A2A Server via Trust Gateway
+## A2A Server via Agent Gateway
 
-**Goal:** Route A2A traffic through the Trust Gateway with observability.
+**Goal:** Route A2A traffic through the Agent Gateway with observability.
 
 **Result:** A stable Gateway route URL you can use from your A2A client.
 
@@ -545,9 +545,9 @@ For a static domain:
 ngrok http --url=<YOUR_NGROK_HOST> 10000
 ```
 
-### 3. Configure A2A Channel in Trust Gateway
+### 3. Configure A2A Channel in Agent Gateway
 
-1. Open the Trust Gateway dashboard → `Channels` → `Add Channel` → select `A2A/UCP` protocol
+1. Open the Agent Gateway dashboard → `Channels` → `Add Channel` → select `A2A/UCP` protocol
 
    ![Alt text](docs/images/channel-create-1.png)
    ![Alt text](docs/images/channel-create-2.png)
@@ -570,7 +570,7 @@ ngrok http --url=<YOUR_NGROK_HOST> 10000
    ![Alt text](docs/images/channels-list-2.png)
    ![Alt text](docs/images/channel-a2a.png)
 
-### 4. Test via Trust Gateway
+### 4. Test via Agent Gateway
 
 ```bash
 cd a2a
@@ -587,13 +587,13 @@ View traffic metrics and logs in the channel dashboard after testing.
 
 ---
 
-## A2A Vertex AI Agent via Trust Gateway
+## A2A Vertex AI Agent via Agent Gateway
 
-**Goal:** Route Vertex AI Agent Engine A2A traffic through the Trust Gateway.
+**Goal:** Route Vertex AI Agent Engine A2A traffic through the Agent Gateway.
 
 **Result:** A stable Gateway route URL — your client talks to the Gateway instead of Vertex AI directly.
 
-> No local server or ngrok needed. The Trust Gateway points directly to your Vertex AI A2A endpoint.
+> No local server or ngrok needed. The Agent Gateway points directly to your Vertex AI A2A endpoint.
 
 ### 1. Deploy the Vertex AI Agent
 
@@ -611,9 +611,9 @@ https://<LOCATION>-aiplatform.googleapis.com
 # Example: https://us-central1-aiplatform.googleapis.com
 ```
 
-### 2. Configure A2A Channel in Trust Gateway
+### 2. Configure A2A Channel in Agent Gateway
 
-1. Open the Trust Gateway dashboard → `Channels` → `Add Channel` → select `A2A/UCP` protocol
+1. Open the Agent Gateway dashboard → `Channels` → `Add Channel` → select `A2A/UCP` protocol
    ![Alt text](docs/images/channel-create-1.png)
    ![Alt text](docs/images/channel-create-2.png)
 
@@ -635,7 +635,7 @@ https://<LOCATION>-aiplatform.googleapis.com
    ```
    ![Alt text](docs/images/channel-create-vertex3.png)
 
-### 3. Test via Trust Gateway
+### 3. Test via Agent Gateway
 
 ```bash
 cd a2a-vertex-agent
@@ -651,7 +651,7 @@ Or run directly:
 python a2a_client.py https://<GATEWAY_HOST>/agents/<CHANNEL_PATH>
 ```
 
-> The client still contacts the real Vertex AI management API to look up the deployed agent, but all A2A messaging is routed through the Trust Gateway.
+> The client still contacts the real Vertex AI management API to look up the deployed agent, but all A2A messaging is routed through the Agent Gateway.
 
 View traffic metrics and logs in the channel dashboard after testing.
 
@@ -659,7 +659,7 @@ View traffic metrics and logs in the channel dashboard after testing.
 
 ## Create Identity for Your Agent or MCP Server
 
-The Trust Gateway can issue a decentralized identity (DID) for the **agent or MCP server itself** — a cryptographically signed Verifiable Presentation (VP) that is automatically injected into responses:
+The Agent Gateway can issue a decentralized identity (DID) for the **agent or MCP server itself** — a cryptographically signed Verifiable Presentation (VP) that is automatically injected into responses:
 
 - **A2A channel** — VP is injected into the agent card response and every A2A message response
 - **MCP channel** — VP is injected into every MCP response
@@ -673,7 +673,7 @@ The Trust Gateway can issue a decentralized identity (DID) for the **agent or MC
 
    ![Alt text](docs/images/channel-mcp-identity.png)
 
-5. Call the agent card or send a message through the Trust Gateway — the VP carrying the agent's identity will be injected automatically into each response
+5. Call the agent card or send a message through the Agent Gateway — the VP carrying the agent's identity will be injected automatically into each response
 
    ![Alt text](docs/images/channel-mcp-identity2.png)
    ![Alt text](docs/images/channel-mcp-identity-dashboard.png)
@@ -684,7 +684,7 @@ The Trust Gateway can issue a decentralized identity (DID) for the **agent or MC
 
 ## Sample MCP Request & Response Messages
 
-This section shows the complete message flow through the Trust Gateway and how responses are enriched with the **agent's** identity credentials.
+This section shows the complete message flow through the Agent Gateway and how responses are enriched with the **agent's** identity credentials.
 
 ### 1. Client Sends MCP Request
 
@@ -702,7 +702,7 @@ This section shows the complete message flow through the Trust Gateway and how r
 
 ### 2. Client Receives Response with Agent's Verifiable Identity
 
-The Trust Gateway intercepts the response from the agent and injects a cryptographically signed W3C Verifiable Presentation proving the **agent's** identity:
+The Agent Gateway intercepts the response from the agent and injects a cryptographically signed W3C Verifiable Presentation proving the **agent's** identity:
 
 ```json
 {
@@ -739,9 +739,9 @@ The Trust Gateway intercepts the response from the agent and injects a cryptogra
 
 Key fields in the injected credential:
 
-- `holder` — the **agent's** DID (Decentralized Identifier) issued by the Trust Gateway
+- `holder` — the **agent's** DID (Decentralized Identifier) issued by the Agent Gateway
 - `credentialSubject.identityFields` — identity metadata from the **agent's** card or response
-- `issuer` — the Trust Gateway's DID
+- `issuer` — the Agent Gateway's DID
 - `proof` — cryptographic signature ensuring authenticity
 
 ## Reporting technical issues
@@ -752,39 +752,39 @@ If you have a technical issue with the project's codebase, you can also create a
 
 ## Part 3: A2A Protected Agent — Decentralized Identity
 
-This lab shows how to give AI agents a **cryptographic, verifiable identity** using the Trust Gateway. A multi-agent server (Personal Assistant + Finance Agent) exposes A2A endpoints. When routed through a Trust Gateway A2A channel with Protected Identity enabled, the gateway automatically issues a **Verifiable Presentation (VP)** signed with Ed25519 — injecting it into every agent card and message response.
+This lab shows how to give AI agents a **cryptographic, verifiable identity** using the Agent Gateway. A multi-agent server (Personal Assistant + Finance Agent) exposes A2A endpoints. When routed through a Agent Gateway A2A channel with Protected Identity enabled, the gateway automatically issues a **Verifiable Presentation (VP)** signed with Ed25519 — injecting it into every agent card and message response.
 
 **What you will learn:**
 
 - How to declare identity fields in an agent card using the `agent-identity-credential` extension
-- How to create A2A channels in Trust Gateway with a custom identity schema
-- How the Trust Gateway issues a `did:webvh` DID and a signed `AgentIdentityCredential` VC for each agent
+- How to create A2A channels in Agent Gateway with a custom identity schema
+- How the Agent Gateway issues a `did:webvh` DID and a signed `AgentIdentityCredential` VC for each agent
 - How VPs are injected into A2A agent card responses and message responses
 
 ➡️ **[View the full lab guide](a2a-protected-agent/README.MD)**
 
 ---
 
-## Part 4: Observability — Visualise Trust Gateway Metrics
+## Part 4: Observability — Visualise Agent Gateway Metrics
 
-The Trust Gateway exposes a **native Prometheus endpoint** at
+The Agent Gateway exposes a **native Prometheus endpoint** at
 `https://<YOUR_TGW_HOST>/api/v1/metrics/prometheus` covering request
 volume, success/fault rates, latency histograms, throughput, active
 connections, and unique agent identities.
 
 The [`tgw-prometheus-integration/`](tgw-prometheus-integration/) folder
 is a self-contained, customer-shareable bring-up: Prometheus scrapes
-the Trust Gateway directly (no agent, no OTel Collector, no tunnels)
-and Grafana auto-provisions a dashboard per Trust Gateway.
+the Agent Gateway directly (no agent, no OTel Collector, no tunnels)
+and Grafana auto-provisions a dashboard per Agent Gateway.
 
 **What you get:**
 
 - `docker compose` stack — Prometheus + Grafana, ready in seconds
-- One scrape job and one Grafana dashboard **per Trust Gateway**,
+- One scrape job and one Grafana dashboard **per Agent Gateway**,
   named automatically from the host's subdomain
   (e.g. `acme-demo.trustgateway.affinidi.io` → dashboard
-  _Trust Gateway — acme-demo.trustgateway_)
-- Supports **any number of Trust Gateways** in one stack
+  _Agent Gateway — acme-demo.trustgateway_)
+- Supports **any number of Agent Gateways** in one stack
 - `prometheus.yml` and the generated dashboards are gitignored so real
   hostnames stay local
 

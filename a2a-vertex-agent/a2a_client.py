@@ -37,7 +37,7 @@ MAX_RETRIES = 30
 
 # Default Vertex AI base URL — used for both management and A2A messaging.
 # Override via CLI: python a2a_client.py --base-url <url>
-# Example (Affinidi Trust Gateway):
+# Example (Agent Gateway):
 #   python a2a_client.py --base-url https://pillar-channel.trustgateway.affinidi.io/agents/evening/linear
 VERTEXAI_BASE_URL = f"https://{LOCATION}-aiplatform.googleapis.com"
 
@@ -215,7 +215,7 @@ if __name__ == "__main__":
         default=VERTEXAI_BASE_URL,
         help=(
             "Base URL for A2A messaging. Defaults to the Vertex AI endpoint. "
-            "Override to route through Affinidi Trust Gateway or any proxy."
+            "Override to route through Agent Gateway or any proxy."
         ),
     )
     args = parser.parse_args()

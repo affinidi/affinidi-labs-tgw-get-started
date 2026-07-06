@@ -82,7 +82,7 @@ def build_card(base_url: str) -> AgentCard:
             extensions=[
                 AgentExtension(
                     uri=IDENTITY_EXT_URI,
-                    description="Supports agent identity exchange via Affinidi Trust Gateway",
+                    description="Supports agent identity exchange via Agent Gateway",
                     required=False,
                     params=get_agent_identity("Personal Assistant"),
                 ),

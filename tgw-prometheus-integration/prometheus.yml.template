@@ -1,4 +1,4 @@
-# Prometheus scrape config TEMPLATE for Trust Gateway native /metrics endpoints.
+# Prometheus scrape config TEMPLATE for Agent Gateway native /metrics endpoints.
 #
 # This file is committed; the real config lives in prometheus.yml (gitignored).
 #
@@ -16,7 +16,7 @@
 #             and run `./run.sh` with no args.
 #
 # IMPORTANT: prometheus.yml is gitignored. Do NOT commit it once it
-# contains your real Trust Gateway hostnames. See readme.md "Security notice".
+# contains your real Agent Gateway hostnames. See readme.md "Security notice".
 
 global:
   scrape_interval: 15s
@@ -28,7 +28,7 @@ global:
 # ──────────────────────────────────────────────────────────────────────
 scrape_configs:
   # ─── BEGIN MANAGED ───────────────────────────────────────────────────
-  # Example — one scrape job per Trust Gateway.
+  # Example — one scrape job per Agent Gateway.
   # When you run `./run.sh <host1> <host2> …` this block is rewritten
   # automatically. For manual edits, follow this exact shape:
   #

@@ -13,7 +13,7 @@
       "id": 100,
       "type": "stat",
       "title": "Scrape Status",
-      "description": "Shows whether Prometheus can successfully scrape this Trust Gateway metrics endpoint. RED = scraping is failing (e.g. 401 Unauthorized \u2014 check basic_auth in prometheus.yml).",
+      "description": "Shows whether Prometheus can successfully scrape this Agent Gateway metrics endpoint. RED = scraping is failing (e.g. 401 Unauthorized \u2014 check basic_auth in prometheus.yml).",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -664,7 +664,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Trust Gateway \u2014 __TITLE__",
+  "title": "Agent Gateway \u2014 __TITLE__",
   "uid": "__UID__",
   "version": 1,
   "weekStart": ""

@@ -6,8 +6,8 @@
 # Example: ./test.sh http://localhost:10000
 
 # Default values
-# DEFAULT_SERVER_URL="http://localhost:10000"
-DEFAULT_SERVER_URL="https://nonblasphemous-fermentable-olimpia.ngrok-free.dev/agents/strong/paris" # Fabric Gateway URL
+DEFAULT_SERVER_URL="http://localhost:10000"
+# DEFAULT_SERVER_URL="https://nonblasphemous-fermentable-olimpia.ngrok-free.dev/agents/strong/paris" # Fabric Gateway URL
 
 # Get server URL from argument or use default
 SERVER_URL=${1:-$DEFAULT_SERVER_URL}

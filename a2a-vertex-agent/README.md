@@ -277,7 +277,7 @@ After successful deployment, test your agent using the A2A client.
 
 ### Run the A2A Client
 
-The client accepts an optional `base_url` argument. If omitted, it defaults to the Vertex AI endpoint directly. Pass a custom URL to route A2A messaging through a proxy such as the Affinidi Trust Gateway.
+The client accepts an optional `base_url` argument. If omitted, it defaults to the Vertex AI endpoint directly. Pass a custom URL to route A2A messaging through a proxy such as the Agent Gateway.
 
 **Using the convenience script (recommended):**
 
@@ -285,7 +285,7 @@ The client accepts an optional `base_url` argument. If omitted, it defaults to t
 # Direct — talks to Vertex AI
 ./test.sh
 
-# Via Affinidi Trust Gateway (or any proxy)
+# Via Agent Gateway (or any proxy)
 ./test.sh https://<your-trust-gateway-url>/agents/evening/linear
 ```
 
@@ -295,7 +295,7 @@ The client accepts an optional `base_url` argument. If omitted, it defaults to t
 # Direct — talks to Vertex AI
 python a2a_client.py
 
-# Via Affinidi Trust Gateway (or any proxy)
+# Via Agent Gateway (or any proxy)
 python a2a_client.py https://<your-trust-gateway-url>/agents/evening/linear
 ```
 
@@ -339,7 +339,7 @@ The `test.sh` script automatically:
   Agent : The current USD to INR exchange rate is approximately 84.5.
 ```
 
-**Example Interaction (via Trust Gateway):**
+**Example Interaction (via Agent Gateway):**
 
 ```
 ============================================================

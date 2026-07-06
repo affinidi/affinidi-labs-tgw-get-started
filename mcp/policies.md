@@ -1,6 +1,6 @@
-# Applying OPA Policies in the Trust Gateway (Optional)
+# Applying OPA Policies in the Agent Gateway (Optional)
 
-> **Audience:** Customers who have already set up a channel in the Trust Gateway and want to enforce fine-grained access control using Open Policy Agent (OPA) policies.
+> **Audience:** Customers who have already set up a channel in the Agent Gateway and want to enforce fine-grained access control using Open Policy Agent (OPA) policies.
 >
 > **Status:** These steps are **optional**. Use them when you need to:
 >
@@ -23,22 +23,22 @@
 
 ## Prerequisites
 
-- An MCP or A2A channel already created in the Trust Gateway.
-- Access to the Trust Gateway dashboard with permission to manage **Policies**.
+- An MCP or A2A channel already created in the Agent Gateway.
+- Access to the Agent Gateway dashboard with permission to manage **Policies**.
 - Basic familiarity with [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/) (the OPA policy language).
 
 ---
 
 ## Overview
 
-The Trust Gateway evaluates OPA policies on every request before forwarding it upstream. Policies are written in Rego and have access to JWT claims, HTTP context, and routing information.
+The Agent Gateway evaluates OPA policies on every request before forwarding it upstream. Policies are written in Rego and have access to JWT claims, HTTP context, and routing information.
 
 ```
   Inbound Request
        │
        ▼
   ┌─────────────────────────────────────┐
-  │         Trust Gateway               │
+  │         Agent Gateway               │
   │                                     │
   │  1. Gateway Policy (optional)       │  ◄── applies to ALL channels
   │  2. Channel Policy (optional)       │  ◄── applies to ONE channel
@@ -64,7 +64,7 @@ All policies are managed from the **Settings** page before being attached to a g
 
 ### A.1 — Open the Policies Page
 
-1. In the Trust Gateway dashboard, navigate to **Settings**.
+1. In the Agent Gateway dashboard, navigate to **Settings**.
 2. Click the **Policies** tab.
 3. The list shows all existing policies with their name, type, and status.
 
@@ -92,7 +92,7 @@ A gateway-level policy applies to **all** traffic passing through the gateway, r
 
 ### B.1 — Enable the Gateway Policy
 
-1. In the Trust Gateway dashboard, open the **Gateway** page.
+1. In the Agent Gateway dashboard, open the **Gateway** page.
 2. Click the **Global Policy** tab.
 3. Toggle **Enable gateway-level OPA policy** to on.
 4. From the **Policy** dropdown, select the policy you created in Part A.
@@ -110,7 +110,7 @@ A channel-level policy applies only to traffic on a specific channel, allowing d
 
 ### C.1 — Enable the Channel Policy
 
-1. In the Trust Gateway dashboard, open **Channels** and select the channel you want to protect.
+1. In the Agent Gateway dashboard, open **Channels** and select the channel you want to protect.
 2. Go to the **Policies** tab.
 3. Toggle **Enable channel-level OPA policy** to on.
 4. From the **Policy** dropdown, select the policy you created in Part A.
