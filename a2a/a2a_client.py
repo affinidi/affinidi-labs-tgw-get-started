@@ -109,11 +109,15 @@ async def main():
                 for ext in agent_card.capabilities.extensions:
                     logger.info(f"    - {ext.uri} (required: {ext.required})")
 
-            # Force agent card URL to use the same protocol as server_url
-            # This prevents SSL issues when agent card has HTTPS but we're connecting via HTTP
-            if agent_card.url.startswith('https://') and server_url.startswith('http://'):
+            # Force agent card URL to use the server_url if it points to localhost
+            # This handles cases where agent card has localhost but we're connecting via remote URL
+            if 'localhost' in agent_card.url or '127.0.0.1' in agent_card.url:
+                agent_card.url = server_url if server_url.endswith('/') else server_url + '/'
+                logger.info(f"Modified agent card URL from localhost to: {agent_card.url}")
+            elif agent_card.url.startswith('https://') and server_url.startswith('http://'):
+                # Handle protocol mismatch (HTTPS to HTTP)
                 agent_card.url = agent_card.url.replace('https://', 'http://')
-                logger.info(f"Modified agent card URL to: {agent_card.url}")
+                logger.info(f"Modified agent card URL protocol to: {agent_card.url}")
 
             print(f"✓ Connected to: {agent_card.name}")
             print("\n" + "=" * 60)
