@@ -1,0 +1,35 @@
+/**
+ * Design System - Radix Product Tokens
+ * 
+ * Product-Specific Overrides: Brand Radix customizations
+ * Brand identity: Success tones (Green) - Identity Wallets
+ * 
+ * Token Set: "radix"
+ * Dependencies: base, brand, dark-mode (or light-mode)
+ * Usage: Radix-specific design variations
+ */
+
+:root[data-product-theme="radix"] {
+  /* ----------------
+     RADIX BRAND SURFACES
+     Product-specific brand identity tokens
+     ---------------- */
+
+  /* Radix Palette */
+  --brand-radix-primary: #ADDD02;
+  --brand-radix-secondary: #10B94E;
+  --brand-radix-accent: #FFF641;
+
+  /* Radix Theme (Product Page) */
+  --brand-radix-bg: linear-gradient(135deg, var(--brand-radix-primary) 0%, var(--brand-radix-secondary) 100%);
+  --brand-radix-bg-subtle: rgba(173, 221, 2, 0.12);
+  --brand-radix-text: var(--brand-radix-primary);
+  --brand-radix-border: var(--brand-radix-primary);
+  --brand-radix-glow: rgba(173, 221, 2, 0.42);
+  --brand-radix-glow-bg: radial-gradient(circle, rgba(173, 221, 2, 0.18) 0%, transparent 60%);
+  --brand-radix-mesh: radial-gradient(at 40% 20%, rgba(16, 185, 78, 0.12) 0px, transparent 50%),
+                      radial-gradient(at 80% 0%, rgba(255, 246, 65, 0.16) 0px, transparent 50%);
+  --brand-radix-icon-bg: linear-gradient(135deg, var(--brand-radix-primary) 0%, var(--brand-radix-secondary) 100%);
+  --brand-radix-icon-shadow: 0 8px 24px rgba(173, 221, 2, 0.32), 0 0 40px rgba(16, 185, 78, 0.18);
+
+}

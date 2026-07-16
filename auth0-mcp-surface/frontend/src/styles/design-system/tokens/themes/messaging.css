@@ -1,0 +1,34 @@
+/**
+ * Design System - Messaging Product Tokens
+ * 
+ * Product-Specific Overrides: Brand Messaging customizations
+ * 
+ * Token Set: "messaging"
+ * Dependencies: base, brand, dark-mode (or light-mode)
+ * Usage: Messaging-specific design variations
+ */
+
+:root[data-product-theme="messaging"] {
+
+  /* ----------------
+     MESSAGING BRAND SURFACES
+     Product-specific brand identity tokens
+     ---------------- */
+
+  /* Messaging Palette */
+  --brand-messaging-primary: #68FAFD;
+  --brand-messaging-secondary: #14B8A6;
+  --brand-messaging-accent: #CAFFFF;
+
+  /* Messaging Theme (Product Page) */
+  --brand-messaging-bg: linear-gradient(135deg, var(--brand-messaging-primary) 0%, var(--brand-messaging-secondary) 100%);
+  --brand-messaging-bg-subtle: rgba(104, 250, 253, 0.12);
+  --brand-messaging-text: var(--brand-messaging-primary);
+  --brand-messaging-border: var(--brand-messaging-primary);
+  --brand-messaging-glow: rgba(104, 250, 253, 0.42);
+  --brand-messaging-glow-bg: radial-gradient(circle, rgba(104, 250, 253, 0.18) 0%, transparent 60%);
+  --brand-messaging-mesh: radial-gradient(at 40% 20%, rgba(20, 184, 166, 0.12) 0px, transparent 50%),
+                          radial-gradient(at 80% 0%, rgba(202, 255, 255, 0.16) 0px, transparent 50%);
+  --brand-messaging-icon-bg: linear-gradient(135deg, var(--brand-messaging-secondary) 0%, var(--brand-messaging-primary) 100%);
+  --brand-messaging-icon-shadow: 0 8px 24px rgba(104, 250, 253, 0.32), 0 0 40px rgba(20, 184, 166, 0.18);
+}

@@ -136,7 +136,7 @@ import Layout from '../layouts/Layout.astro';
     margin: 0 auto 24px;
   }
   h1 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
-  .subtitle { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+  .subtitle { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 28px; }
 
   .flow {
     display: flex;
@@ -158,13 +158,13 @@ import Layout from '../layouts/Layout.astro';
     line-height: 1.35;
     width: 100%;
   }
-  .flow-box .sub { font-size: 9px; color: var(--indigo); font-weight: 500; }
-  .flow-box.highlight { border-color: var(--primary); background: #1e1b4b; color: #c7d2fe; }
-  .flow-box.auth0 { border-color: var(--yellow); background: #2d1a00; color: #fde68a; }
-  .flow-box.target { border-color: #0ea5e9; background: #0c2a3d; color: var(--cyan); }
-  .flow-label { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .flow-box .sub { font-size: 9px; color: var(--text-secondary); font-weight: 500; }
+  .flow-box.highlight { border-color: var(--button-primary-bg); background: #1e1b4b; color: #c7d2fe; }
+  .flow-box.auth0 { border-color: var(--app-accent-yellow); background: #2d1a00; color: #fde68a; }
+  .flow-box.target { border-color: #0ea5e9; background: #0c2a3d; color: var(--app-accent-cyan); }
+  .flow-label { font-size: 9px; color: var(--text-disabled); text-transform: uppercase; letter-spacing: 0.5px; }
   .flow-arrow { font-size: 16px; color: #334155; margin: 14px 2px 0; flex-shrink: 0; }
-  .flow-arrow.consent { color: var(--yellow); }
+  .flow-arrow.consent { color: var(--app-accent-yellow); }
 
   .gateway-badge {
     background: #0f172a;
@@ -172,13 +172,13 @@ import Layout from '../layouts/Layout.astro';
     border-radius: var(--radius-sm);
     padding: 10px 14px;
     font-size: 12px;
-    color: var(--blue);
+    color: var(--app-accent-cyan);
     margin-bottom: 24px;
     word-break: break-all;
     text-align: left;
   }
   .gateway-badge span:first-child {
-    color: var(--dim);
+    color: var(--text-disabled);
     display: block;
     margin-bottom: 4px;
     font-size: 10px;
@@ -186,7 +186,7 @@ import Layout from '../layouts/Layout.astro';
     letter-spacing: 0.8px;
   }
   .guest { width: 100%; margin-top: 10px; }
-  .footer { font-size: 11px; color: var(--dim); margin-top: 20px; }
+  .footer { font-size: 11px; color: var(--text-disabled); margin-top: 20px; }
 
   @media (max-width: 560px) {
     .flow-node { width: 68px; }

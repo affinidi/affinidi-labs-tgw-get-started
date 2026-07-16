@@ -1,0 +1,151 @@
+/**
+ * Design System - Product Theme Fallbacks
+ *
+ * Defines all --brand-* product tokens at :root scope so they are always
+ * available, even when no [data-product-theme] attribute is set.
+ *
+ * The attribute-scoped selectors in each product theme file
+ * (:root[data-product-theme="<id>"]) have higher specificity (0,2,0) and
+ * will override these defaults (0,1,0) when the attribute is present.
+ *
+ * This ensures backwards compatibility for consumers that rely on
+ * --brand-* tokens being globally defined without explicit theme activation.
+ */
+
+:root {
+  /* ========================================
+     WEBSITE — Marketing
+     ======================================== */
+  --brand-website-primary: #3464FD;
+  --brand-website-secondary: #72F5FA;
+  --brand-website-accent: #E0F9FF;
+  --brand-website-bg: linear-gradient(135deg, #3464FD 0%, #72F5FA 100%);
+  --brand-website-bg-subtle: rgba(52, 100, 253, 0.12);
+  --brand-website-text: #3464FD;
+  --brand-website-border: #3464FD;
+  --brand-website-glow: rgba(52, 100, 253, 0.42);
+  --brand-website-glow-bg: radial-gradient(circle, rgba(52, 100, 253, 0.18) 0%, transparent 60%);
+  --brand-website-mesh: radial-gradient(at 40% 20%, rgba(114, 245, 250, 0.12) 0px, transparent 50%),
+                        radial-gradient(at 80% 0%, rgba(224, 249, 255, 0.16) 0px, transparent 50%);
+  --brand-website-icon-bg: linear-gradient(135deg, #72F5FA 0%, #3464FD 100%);
+  --brand-website-icon-shadow: 0 8px 24px rgba(52, 100, 253, 0.32), 0 0 40px rgba(114, 245, 250, 0.18);
+
+  /* ========================================
+     DOCSITE — Documentation & Learning
+     ======================================== */
+  --brand-docsite-primary: #7C3AED;
+  --brand-docsite-secondary: #3B82F6;
+  --brand-docsite-accent: #DDD6FE;
+  --brand-docsite-bg: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%);
+  --brand-docsite-bg-subtle: rgba(124, 58, 237, 0.12);
+  --brand-docsite-text: #7C3AED;
+  --brand-docsite-border: #7C3AED;
+  --brand-docsite-glow: rgba(124, 58, 237, 0.42);
+  --brand-docsite-glow-bg: radial-gradient(circle, rgba(124, 58, 237, 0.18) 0%, transparent 60%);
+  --brand-docsite-mesh: radial-gradient(at 40% 20%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+                        radial-gradient(at 80% 0%, rgba(221, 214, 254, 0.16) 0px, transparent 50%);
+  --brand-docsite-icon-bg: linear-gradient(135deg, #3B82F6 0%, #7C3AED 100%);
+  --brand-docsite-icon-shadow: 0 8px 24px rgba(124, 58, 237, 0.32), 0 0 40px rgba(59, 130, 246, 0.18);
+
+  /* ========================================
+     FABRIC — Trust Infrastructure
+     ======================================== */
+  --brand-fabric-primary: #AE44D5;
+  --brand-fabric-secondary: #3464FD;
+  --brand-fabric-accent: #FFB6FF;
+  --brand-fabric-bg: linear-gradient(135deg, #AE44D5 0%, #3464FD 100%);
+  --brand-fabric-bg-subtle: rgba(174, 68, 213, 0.12);
+  --brand-fabric-text: #AE44D5;
+  --brand-fabric-border: #AE44D5;
+  --brand-fabric-glow: rgba(174, 68, 213, 0.42);
+  --brand-fabric-glow-bg: radial-gradient(circle, rgba(174, 68, 213, 0.18) 0%, transparent 60%);
+  --brand-fabric-mesh: radial-gradient(at 40% 20%, rgba(52, 100, 253, 0.12) 0px, transparent 50%),
+                       radial-gradient(at 80% 0%, rgba(255, 182, 255, 0.16) 0px, transparent 50%);
+  --brand-fabric-icon-bg: linear-gradient(135deg, #3464FD 0%, #AE44D5 100%);
+  --brand-fabric-icon-shadow: 0 8px 24px rgba(174, 68, 213, 0.32), 0 0 40px rgba(52, 100, 253, 0.18);
+
+  /* ========================================
+     RADIX — Identity Wallets
+     ======================================== */
+  --brand-radix-primary: #ADDD02;
+  --brand-radix-secondary: #10B94E;
+  --brand-radix-accent: #FFF641;
+  --brand-radix-bg: linear-gradient(135deg, #ADDD02 0%, #10B94E 100%);
+  --brand-radix-bg-subtle: rgba(173, 221, 2, 0.12);
+  --brand-radix-text: #ADDD02;
+  --brand-radix-border: #ADDD02;
+  --brand-radix-glow: rgba(173, 221, 2, 0.42);
+  --brand-radix-glow-bg: radial-gradient(circle, rgba(173, 221, 2, 0.18) 0%, transparent 60%);
+  --brand-radix-mesh: radial-gradient(at 40% 20%, rgba(16, 185, 78, 0.12) 0px, transparent 50%),
+                      radial-gradient(at 80% 0%, rgba(255, 246, 65, 0.16) 0px, transparent 50%);
+  --brand-radix-icon-bg: linear-gradient(135deg, #ADDD02 0%, #10B94E 100%);
+  --brand-radix-icon-shadow: 0 8px 24px rgba(173, 221, 2, 0.32), 0 0 40px rgba(16, 185, 78, 0.18);
+
+  /* ========================================
+     MESSAGING — Secure Communications
+     ======================================== */
+  --brand-messaging-primary: #68FAFD;
+  --brand-messaging-secondary: #14B8A6;
+  --brand-messaging-accent: #CAFFFF;
+  --brand-messaging-bg: linear-gradient(135deg, #68FAFD 0%, #14B8A6 100%);
+  --brand-messaging-bg-subtle: rgba(104, 250, 253, 0.12);
+  --brand-messaging-text: #68FAFD;
+  --brand-messaging-border: #68FAFD;
+  --brand-messaging-glow: rgba(104, 250, 253, 0.42);
+  --brand-messaging-glow-bg: radial-gradient(circle, rgba(104, 250, 253, 0.18) 0%, transparent 60%);
+  --brand-messaging-mesh: radial-gradient(at 40% 20%, rgba(20, 184, 166, 0.12) 0px, transparent 50%),
+                          radial-gradient(at 80% 0%, rgba(202, 255, 255, 0.16) 0px, transparent 50%);
+  --brand-messaging-icon-bg: linear-gradient(135deg, #14B8A6 0%, #68FAFD 100%);
+  --brand-messaging-icon-shadow: 0 8px 24px rgba(104, 250, 253, 0.32), 0 0 40px rgba(20, 184, 166, 0.18);
+
+  /* ========================================
+     ELEMENTS — Verifiable Credentials
+     ======================================== */
+  --brand-elements-primary: #F5AB0B;
+  --brand-elements-secondary: #EE5939;
+  --brand-elements-accent: #FFF651;
+  --brand-elements-bg: linear-gradient(135deg, #F5AB0B 0%, #EE5939 100%);
+  --brand-elements-bg-subtle: rgba(245, 171, 11, 0.12);
+  --brand-elements-text: #F5AB0B;
+  --brand-elements-border: #F5AB0B;
+  --brand-elements-glow: rgba(245, 171, 11, 0.42);
+  --brand-elements-glow-bg: radial-gradient(circle, rgba(245, 171, 11, 0.18) 0%, transparent 60%);
+  --brand-elements-mesh: radial-gradient(at 40% 20%, rgba(238, 89, 57, 0.12) 0px, transparent 50%),
+                         radial-gradient(at 80% 0%, rgba(255, 246, 81, 0.16) 0px, transparent 50%);
+  --brand-elements-icon-bg: linear-gradient(135deg, #EE5939 0%, #F5AB0B 100%);
+  --brand-elements-icon-shadow: 0 8px 24px rgba(245, 171, 11, 0.32), 0 0 40px rgba(238, 89, 57, 0.18);
+
+  /* ========================================
+     FORGE — Developer Platform
+     ======================================== */
+  --brand-forge-primary: #FB54B5;
+  --brand-forge-secondary: #E22F42;
+  --brand-forge-accent: #FE80FB;
+  --brand-forge-bg: linear-gradient(135deg, #FB54B5 0%, #E22F42 100%);
+  --brand-forge-bg-subtle: rgba(251, 84, 181, 0.12);
+  --brand-forge-text: #FB54B5;
+  --brand-forge-border: #FB54B5;
+  --brand-forge-glow: rgba(251, 84, 181, 0.42);
+  --brand-forge-glow-bg: radial-gradient(circle, rgba(251, 84, 181, 0.18) 0%, transparent 60%);
+  --brand-forge-mesh: radial-gradient(at 40% 20%, rgba(226, 47, 66, 0.12) 0px, transparent 50%),
+                      radial-gradient(at 80% 0%, rgba(254, 128, 251, 0.16) 0px, transparent 50%);
+  --brand-forge-icon-bg: linear-gradient(135deg, #E22F42 0%, #FB54B5 100%);
+  --brand-forge-icon-shadow: 0 8px 24px rgba(251, 84, 181, 0.32), 0 0 40px rgba(226, 47, 66, 0.18);
+
+  /* ========================================
+     PORTAL — Admin Dashboard
+     ======================================== */
+  --brand-portal-primary: #6366F1;
+  --brand-portal-secondary: #06B6D4;
+  --brand-portal-accent: #C7F0FF;
+  --brand-portal-bg: linear-gradient(135deg, #6366F1 0%, #06B6D4 100%);
+  --brand-portal-bg-subtle: rgba(99, 102, 241, 0.12);
+  --brand-portal-text: #6366F1;
+  --brand-portal-border: #6366F1;
+  --brand-portal-glow: rgba(99, 102, 241, 0.42);
+  --brand-portal-glow-bg: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 60%);
+  --brand-portal-mesh: radial-gradient(at 40% 20%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+                       radial-gradient(at 80% 0%, rgba(199, 240, 255, 0.16) 0px, transparent 50%);
+  --brand-portal-icon-bg: linear-gradient(135deg, #06B6D4 0%, #6366F1 100%);
+  --brand-portal-icon-shadow: 0 8px 24px rgba(99, 102, 241, 0.32), 0 0 40px rgba(6, 182, 212, 0.18);
+}

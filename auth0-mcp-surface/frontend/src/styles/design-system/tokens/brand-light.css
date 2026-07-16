@@ -1,0 +1,230 @@
+/**
+ * Design System — Light Mode Overrides
+ *
+ * Overrides the dark-mode defaults in brand.css for light colour
+ * schemes. Two activation mechanisms:
+ *
+ *   1. Explicit attribute:  <html data-theme="light">
+ *   2. OS preference:       @media (prefers-color-scheme: light)
+ *      — only when no explicit data-theme is set
+ *
+ * Pattern matches media.css light-mode overrides.
+ *
+ * Tokens NOT overridden here (same in dark and light):
+ *   - Colour role scales (--primary-*, --secondary-*, etc.)
+ *   - Alpha variants
+ *   - Semantic borders (--border-focus, --border-success/warning/danger/info)
+ *   - Primary/danger button fills (brand colours stay brand colours)
+ *   - Status badge backgrounds
+ *   - Core brand gradients (same primaries in both modes)
+ *
+ * Glassmorphism + gradient overrides are intentionally included with a
+ * conservative approach (flip to white-alpha glass). Refine after visual QA.
+ */
+
+/* ============================================================
+   PART A: EXPLICIT LIGHT MODE
+   Applied when data-theme="light" is set on any ancestor.
+   ============================================================ */
+
+[data-theme="light"] {
+
+  /* ----------------
+     SURFACES
+     ---------------- */
+  --surface-background: var(--neutral-50);               /* #F8FAFC */
+  --surface-background-alt: var(--neutral-100);          /* #F1F5F9 */
+  --surface-primary: var(--black-alpha-3);
+  --surface-secondary: var(--black-alpha-5);
+  --surface-tertiary: rgba(0, 0, 0, 0.08);
+
+  --surface-raised: #FFFFFF;
+  --surface-overlay: var(--black-alpha-50);
+  --surface-dialog: #FFFFFF;
+  --surface-nav: var(--white-alpha-90);
+  --surface-nav-scrolled: var(--white-alpha-95);
+
+  --surface-dim-light:  rgba(0, 0, 0, 0.05);
+  --surface-dim-medium: rgba(0, 0, 0, 0.08);
+  --surface-dim-heavy:  rgba(0, 0, 0, 0.12);
+  --surface-dim-dense:  rgba(0, 0, 0, 0.16);
+  --surface-dim-opaque: rgba(0, 0, 0, 0.20);
+  --surface-dim-solid:  rgba(255, 255, 255, 0.97);
+
+  --surface-hover: var(--black-alpha-5);
+  --surface-active: var(--black-alpha-10);
+  --surface-disabled: rgba(0, 0, 0, 0.02);
+
+  /* ----------------
+     TEXT
+     ---------------- */
+  --text-primary: var(--neutral-900);                    /* #0F172A */
+  --text-secondary: rgba(0, 0, 0, 0.70);
+  --text-tertiary: rgba(0, 0, 0, 0.55);
+  --text-disabled: rgba(0, 0, 0, 0.38);
+  --text-inverse: #FFFFFF;
+
+  --text-on-secondary: var(--neutral-900);               /* Dark text on cyan bg */
+
+  /* ----------------
+     BORDERS
+     ---------------- */
+  --border-default: var(--black-alpha-10);
+  --border-subtle: var(--black-alpha-5);
+  --border-strong: var(--black-alpha-20);
+  --border-hover: var(--black-alpha-20);
+  --border-disabled: var(--black-alpha-5);
+
+  /* ----------------
+     BUTTONS
+     Primary + danger keep their brand fills.
+     Secondary + tertiary flip from white-alpha to black-alpha.
+     ---------------- */
+  --button-primary-bg-disabled: var(--black-alpha-10);
+
+  --button-secondary-border: var(--black-alpha-20);
+
+  --button-tertiary-bg-hover: var(--black-alpha-5);
+  --button-tertiary-bg-active: var(--black-alpha-10);
+  --button-tertiary-text: var(--primary-600);
+
+  /* ----------------
+     LINKS
+     Nav → dark (neutral). Content → blue. Product → dark.
+     ---------------- */
+  --link-nav: var(--neutral-900);
+  --link-nav-hover: var(--neutral-900);
+  --link-nav-active: var(--neutral-900);
+
+  --link-default: var(--primary-600);
+  --link-hover: var(--primary-700);
+  --link-active: var(--primary-800);
+  --link-visited: var(--primary-800);
+
+  --link-product: var(--neutral-900);
+  --link-product-hover: var(--neutral-900);
+  --link-product-underline: var(--neutral-900);
+
+  /* ----------------
+     FORMS & INPUTS
+     ---------------- */
+  --input-bg: #FFFFFF;
+  --input-bg-hover: var(--neutral-50);
+  --input-bg-focus: #FFFFFF;
+  --input-bg-disabled: var(--neutral-100);
+
+  /* ----------------
+     GLASSMORPHISM
+     Conservative flip: dark-alpha → white-alpha. Refine after visual QA.
+     ---------------- */
+  --card-bg: var(--white-alpha-80);
+  --nav-bg: var(--white-alpha-80);
+  --nav-bg-scrolled: var(--white-alpha-90);
+  --dropdown-bg: var(--white-alpha-95);
+
+  --gradient-glass: linear-gradient(135deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.01) 100%);
+
+  /* ----------------
+     SYNTAX HIGHLIGHTING
+     Adjusted for readability on light backgrounds
+     ---------------- */
+  --syntax-keyword: var(--primary-600);
+  --syntax-string: var(--success-700);
+  --syntax-function: var(--warning-700);
+  --syntax-flag: var(--silky-turquoise-800);
+  --syntax-comment: var(--neutral-400);
+  --syntax-variable: var(--tertiary-600);
+  --syntax-operator: var(--neutral-600);
+}
+
+/* ============================================================
+   PART B: OS PREFERENCE FALLBACK
+   Applied when the OS requests light mode AND no explicit
+   data-theme attribute is set. A data-theme="dark" attribute
+   overrides this media query.
+   ============================================================ */
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+
+    /* Surfaces */
+    --surface-background: var(--neutral-50);
+    --surface-background-alt: var(--neutral-100);
+    --surface-primary: var(--black-alpha-3);
+    --surface-secondary: var(--black-alpha-5);
+    --surface-tertiary: rgba(0, 0, 0, 0.08);
+
+    --surface-raised: #FFFFFF;
+    --surface-overlay: var(--black-alpha-50);
+    --surface-dialog: #FFFFFF;
+    --surface-nav: var(--white-alpha-90);
+    --surface-nav-scrolled: var(--white-alpha-95);
+
+    --surface-dim-light:  rgba(0, 0, 0, 0.05);
+    --surface-dim-medium: rgba(0, 0, 0, 0.08);
+    --surface-dim-heavy:  rgba(0, 0, 0, 0.12);
+    --surface-dim-dense:  rgba(0, 0, 0, 0.16);
+    --surface-dim-opaque: rgba(0, 0, 0, 0.20);
+    --surface-dim-solid:  rgba(255, 255, 255, 0.97);
+
+    --surface-hover: var(--black-alpha-5);
+    --surface-active: var(--black-alpha-10);
+    --surface-disabled: rgba(0, 0, 0, 0.02);
+
+    /* Text */
+    --text-primary: var(--neutral-900);
+    --text-secondary: rgba(0, 0, 0, 0.70);
+    --text-tertiary: rgba(0, 0, 0, 0.55);
+    --text-disabled: rgba(0, 0, 0, 0.38);
+    --text-inverse: #FFFFFF;
+    --text-on-secondary: var(--neutral-900);
+
+    /* Borders */
+    --border-default: var(--black-alpha-10);
+    --border-subtle: var(--black-alpha-5);
+    --border-strong: var(--black-alpha-20);
+    --border-hover: var(--black-alpha-20);
+    --border-disabled: var(--black-alpha-5);
+
+    /* Buttons */
+    --button-primary-bg-disabled: var(--black-alpha-10);
+    --button-secondary-border: var(--black-alpha-20);
+    --button-tertiary-bg-hover: var(--black-alpha-5);
+    --button-tertiary-bg-active: var(--black-alpha-10);
+    --button-tertiary-text: var(--primary-600);
+
+    /* Links */
+    --link-nav: var(--neutral-900);
+    --link-nav-hover: var(--neutral-900);
+    --link-nav-active: var(--neutral-900);
+    --link-default: var(--primary-600);
+    --link-hover: var(--primary-700);
+    --link-active: var(--primary-800);
+    --link-visited: var(--primary-800);
+    --link-product: var(--neutral-900);
+    --link-product-hover: var(--neutral-900);
+    --link-product-underline: var(--neutral-900);
+
+    /* Forms */
+    --input-bg: #FFFFFF;
+    --input-bg-hover: var(--neutral-50);
+    --input-bg-focus: #FFFFFF;
+    --input-bg-disabled: var(--neutral-100);
+
+    /* Glassmorphism */
+    --card-bg: var(--white-alpha-80);
+    --nav-bg: var(--white-alpha-80);
+    --nav-bg-scrolled: var(--white-alpha-90);
+    --dropdown-bg: var(--white-alpha-95);
+    --gradient-glass: linear-gradient(135deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.01) 100%);
+
+    /* Syntax highlighting */
+    --syntax-keyword: var(--primary-600);
+    --syntax-string: var(--success-700);
+    --syntax-function: var(--warning-700);
+    --syntax-flag: var(--silky-turquoise-800);
+    --syntax-comment: var(--neutral-400);
+    --syntax-variable: var(--tertiary-600);
+    --syntax-operator: var(--neutral-600);
+  }
+}

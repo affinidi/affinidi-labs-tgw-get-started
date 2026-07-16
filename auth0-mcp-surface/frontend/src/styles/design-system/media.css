@@ -1,0 +1,241 @@
+/**
+ * Design System - Media Component Styles
+ *
+ * Reusable container-driven media pattern. The container controls all
+ * layout decisions (size, aspect ratio, overflow, background); the media
+ * element only controls fitting behaviour.
+ *
+ * All values are consumed from media tokens (tokens/media.css).
+ * Do NOT add hardcoded values here — update the token file instead.
+ *
+ * Supported elements inside .media / .media__slide:
+ *   <img>, <video>, <iframe>
+ *
+ * Class reference:
+ *   .media                  Base container (required)
+ *   .media--preview         4:3 aspect ratio, cover fit (cards / grids / feeds)
+ *   .media--preview-dense   1:1 aspect ratio, cover fit (square grids)
+ *   .media--detail          16:9 aspect ratio, contain fit (article / product detail)
+ *   .media--fullscreen      Viewport-filling lightbox overlay, contain fit
+ *   .media--carousel        Horizontal scroll-snap carousel wrapper
+ *   .media__slide           Individual slide inside a carousel
+ *   .media__overlay         Optional caption / gradient overlay layer
+ */
+
+/* ============================================================
+   BASE CONTAINER
+   ============================================================ */
+
+.media {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--media-bg);
+  border-radius: var(--media-radius);
+}
+
+/* ============================================================
+   MEDIA ELEMENT RULES — img, video, iframe
+   Applies to any direct child media element inside .media or .media__slide.
+   Default fit is cover (preview-style) unless overridden by a modifier.
+   ============================================================ */
+
+.media > img,
+.media > video,
+.media > iframe {
+  /* Absolute positioning takes the element out of normal flow so the
+     container's height is resolved from aspect-ratio only — not from
+     the child. height:100% on a flow child causes a circular dependency
+     that browsers resolve as height:auto, collapsing the aspect ratio. */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: var(--media-fit-preview);
+  object-position: var(--media-focus-x) var(--media-focus-y);
+}
+
+/* Browsers that still honour iframe's aspect-ratio need border: none */
+.media > iframe {
+  border: none;
+}
+
+/* ============================================================
+   PREVIEW MODIFIER — Cards, Grids, Feeds
+   Fixed 4:3 ratio. Media always covers the area; cropping is intentional.
+   Layout shift is prevented by the declared aspect-ratio.
+   ============================================================ */
+
+.media--preview {
+  aspect-ratio: var(--media-aspect-ratio-preview);
+}
+
+/* ============================================================
+   DENSE PREVIEW MODIFIER — Square Grid / Avatar Cards
+   1:1 ratio. Same cover behaviour as preview.
+   ============================================================ */
+
+.media--preview-dense {
+  aspect-ratio: var(--media-aspect-ratio-preview-dense);
+}
+
+/* ============================================================
+   DETAIL MODIFIER — Article Hero / Product Detail Page
+   16:9 ratio. Full composition preserved; letterboxing is acceptable.
+   ============================================================ */
+
+.media--detail {
+  aspect-ratio: var(--media-aspect-ratio-detail);
+}
+
+.media--detail > img,
+.media--detail > video,
+.media--detail > iframe {
+  object-fit: var(--media-fit-detail);
+  /* Centred within letterbox bars */
+  object-position: center;
+}
+
+/* ============================================================
+   FULLSCREEN / LIGHTBOX
+   Covers the viewport. No aspect ratio enforced — the media scales
+   until one axis reaches the viewport edge (contain behaviour).
+   Toggled via JS: element.classList.add('media--fullscreen')
+   ============================================================ */
+
+.media--fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  z-index: 1000;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media--fullscreen > img,
+.media--fullscreen > video,
+.media--fullscreen > iframe {
+  /* Reset absolute positioning — let flex centering control placement */
+  position: static;
+  inset: auto;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: var(--media-fit-fullscreen);
+  object-position: var(--media-focus-x) var(--media-focus-y);
+}
+
+/* ============================================================
+   CAROUSEL
+   Horizontal scroll-snap carousel. The wrapper enforces the aspect ratio;
+   each .media__slide fills the wrapper and uses the same object-fit as
+   the active modifier class.
+
+   Mixed media types (img + video) are visually stable because ratio and
+   fit are normalised at the container level.
+   ============================================================ */
+
+.media--carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  /* Default carousel ratio: 4:3; override with --media-aspect-ratio-* */
+  aspect-ratio: var(--media-aspect-ratio-preview);
+}
+
+.media--carousel::-webkit-scrollbar {
+  display: none;
+}
+
+/* Carousel variant: square */
+.media--carousel.media--preview-dense {
+  aspect-ratio: var(--media-aspect-ratio-preview-dense);
+}
+
+/* Carousel variant: widescreen detail */
+.media--carousel.media--detail {
+  aspect-ratio: var(--media-aspect-ratio-detail);
+}
+
+/* Individual slide */
+.media__slide {
+  /* Each slide takes exactly 100% of the scroll viewport */
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  position: relative;
+  overflow: hidden;
+  /* Inherit background so no flash between slides */
+  background-color: var(--media-bg);
+}
+
+.media__slide > img,
+.media__slide > video,
+.media__slide > iframe {
+  /* Same absolute pattern — slide height comes from the flex cross-axis,
+     not from the child element. */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: var(--media-fit-preview);
+  object-position: var(--media-focus-x) var(--media-focus-y);
+}
+
+.media__slide > iframe {
+  border: none;
+}
+
+/* Detail-carousel slides use contain fit */
+.media--carousel.media--detail .media__slide > img,
+.media--carousel.media--detail .media__slide > video,
+.media--carousel.media--detail .media__slide > iframe {
+  object-fit: var(--media-fit-detail);
+  object-position: center;
+}
+
+/* ============================================================
+   OPTIONAL OVERLAY — Caption / Text-over-media gradient
+   Positioned absolutely over the media element.
+   Uses the --media-bg-overlay gradient token for contrast.
+   ============================================================ */
+
+.media__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--media-bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Overlay variant: caption at bottom (default gradient) */
+.media__overlay--caption {
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: var(--inset-lg);
+}
+
+.media__overlay-content {
+  pointer-events: auto;
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   REDUCED MOTION
+   Disable any reveal transitions for users who prefer it.
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .media,
+  .media__slide,
+  .media--fullscreen {
+    transition: none;
+  }
+}

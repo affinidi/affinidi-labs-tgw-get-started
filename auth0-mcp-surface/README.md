@@ -158,15 +158,33 @@ auth0-mcp-surface/
 ├── frontend/                # Astro + Alpine.js
 │   ├── src/
 │   │   ├── pages/           # index (login) · chat · callback
-│   │   ├── layouts/         # Layout.astro
+│   │   ├── layouts/         # Layout.astro (imports the design system)
 │   │   ├── lib/             # api.ts · render.ts
-│   │   └── styles/          # global.css (design tokens)
+│   │   └── styles/
+│   │       ├── design-system/  # vendored CSS design tokens (self-contained)
+│   │       ├── assets/fonts/   # bundled woff2 fonts
+│   │       └── global.css      # app-specific styles on top of the tokens
 │   ├── astro.config.mjs
 │   ├── package.json
 │   └── .env.example
 ├── dev.sh                   # run backend + frontend together
 └── README.md
 ```
+
+## Styling — self-contained design tokens
+
+The UI is styled with a **vendored CSS design-token system** under
+`frontend/src/styles/design-system/` — a self-contained set of CSS custom
+properties (surfaces, text, borders, buttons, spacing, typography, radius) plus
+bundled fonts and a reset. There is **no external/registry dependency**: the CSS
+is a local copy, so the repo builds anywhere with just `npm install`.
+
+`Layout.astro` imports `design-system/globals.css` first, then `global.css` for
+app-specific bits, and sets `data-theme="dark" data-product-theme="fabric"` on
+`<html>`. Components reference semantic tokens directly (e.g.
+`var(--surface-primary)`, `var(--button-primary-bg)`), so re-theming is a matter
+of swapping token values — no component changes. Derived from an MIT-licensed
+token system.
 
 ## Why Astro + Alpine.js (not Angular)?
 
