@@ -5,19 +5,12 @@ Simple MCP Server
 A basic Model Context Protocol server with calculator and weather tools.
 """
 
-import os
 import json
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import uvicorn
 from typing import Any, Dict
 from contextlib import asynccontextmanager
-
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass
 
 # Server info
 SERVER_INFO = {
@@ -74,20 +67,6 @@ TOOLS = [
                 }
             },
             "required": ["city"]
-        }
-    },
-    {
-        "name": "chat",
-        "description": "Chat with an assistant. Answers via AWS Bedrock when configured, otherwise returns a stub response.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "description": "The user's message to the assistant"
-                }
-            },
-            "required": ["message"]
         }
     }
 ]
@@ -231,8 +210,6 @@ def handle_tools_call(request_id: Any, params: Dict) -> JSONResponse:
         return execute_calculator(request_id, arguments)
     elif tool_name == "weather_forecast":
         return execute_weather_forecast(request_id, arguments)
-    elif tool_name == "chat":
-        return execute_chat(request_id, arguments)
     else:
         return JSONResponse(
             create_json_rpc_error(request_id, -32602,
@@ -354,52 +331,6 @@ def execute_weather_forecast(request_id: Any, arguments: Dict) -> JSONResponse:
         ]
     }
 
-    return JSONResponse(create_json_rpc_response(request_id, result))
-
-
-def execute_chat(request_id: Any, arguments: Dict) -> JSONResponse:
-    """Execute the chat tool.
-
-    If AWS Bedrock is configured (BEDROCK_MODEL_ID set, with AWS credentials
-    available via the standard chain), answer with a real LLM call. Otherwise
-    return a friendly stub — the getting-started demo works without any LLM.
-    """
-    message = (arguments.get("message") or "").strip()
-    if not message:
-        return JSONResponse(
-            create_json_rpc_error(request_id, -32602, "message is required"),
-            status_code=200
-        )
-
-    model_id = os.environ.get("BEDROCK_MODEL_ID")
-
-    if not model_id:
-        text = (
-            "🛈 Chat is running in stub mode — no LLM is configured.\n\n"
-            "To get real answers, set BEDROCK_MODEL_ID (and AWS credentials) on "
-            "the MCP server.\n\n"
-            f"You said: {message}"
-        )
-        result = {"content": [{"type": "text", "text": text}]}
-        return JSONResponse(create_json_rpc_response(request_id, result))
-
-    # Real answer via AWS Bedrock Converse API.
-    try:
-        import boto3  # lazy import so boto3 is only needed when configured
-
-        client = boto3.client(
-            "bedrock-runtime",
-            region_name=os.environ.get("AWS_REGION", "us-east-1"),
-        )
-        response = client.converse(
-            modelId=model_id,
-            messages=[{"role": "user", "content": [{"text": message}]}],
-        )
-        text = response["output"]["message"]["content"][0]["text"]
-    except Exception as e:  # noqa: BLE001 — surface any Bedrock error as text
-        text = f"(Bedrock error: {e})"
-
-    result = {"content": [{"type": "text", "text": text}]}
     return JSONResponse(create_json_rpc_response(request_id, result))
 
 

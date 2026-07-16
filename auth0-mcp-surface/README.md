@@ -96,11 +96,11 @@ There are **two** processes:
 | Service | Port | What it is |
 |---|---|---|
 | **Chat surface** (this dir) | `8642` | FastAPI backend + built Astro UI (the client) |
-| **MCP server** ([`../mcp`](../mcp)) | `11000` | calculator + weather + **chat** tools (the tool backend) |
+| **Chat MCP server** ([`mcp-server/`](mcp-server)) | `9740` | the `chat` tool (Bedrock-optional) — the tool backend |
 
 The chat surface never calls the MCP server directly — it calls the **Trust
-Gateway** (`GATEWAY_URL`), and the gateway routes to the MCP server. So both run
-locally, each gets its own public proxy, and the **MCP proxy** is what you
+Gateway** (`GATEWAY_URL`), and the gateway routes to the chat MCP server. So both
+run locally, each gets its own public proxy, and the **MCP proxy** is what you
 register in the gateway.
 
 Fill in secrets first: `cp backend/.env.example backend/.env` and set
@@ -110,34 +110,37 @@ work without them for look-and-feel testing).
 ### Run both services (from the repo root)
 
 ```bash
-make local-up     # chat backend :8642  +  MCP server :11000  (Ctrl-C stops both)
+make local-up     # chat backend :8642  +  chat MCP server :9740  (Ctrl-C stops both)
 ```
 
-Individually: `make serve` (chat backend only) · `make mcp` (MCP server only) ·
+Individually: `make serve` (chat backend only) · `make mcp` (chat MCP server only) ·
 `make dev` (frontend hot-reload + backend) · `make docker-up` (chat container).
-`make local-down` frees `:8642`, `:5137`, `:11000`.
+`make local-down` frees `:8642`, `:5137`, `:9740`.
 
 ### The `chat` tool + optional LLM (AWS Bedrock)
 
-The chat UI sends `tools/call name="chat"` to the MCP server. That `chat` tool
-answers via **AWS Bedrock when configured**, otherwise returns a **stub** reply —
-so getting-started works with no LLM. To enable real answers, in
-[`../mcp/.env`](../mcp/.env.example) set `BEDROCK_MODEL_ID` (+ AWS credentials).
-The LLM is always *your* infra — a delegated user token can't bill a user's
-personal LLM account; delegation unlocks the user's *data*, not their model.
+The chat UI sends `tools/call name="chat"` to the chat MCP server ([`mcp-server/`](mcp-server)).
+That `chat` tool answers via **AWS Bedrock when configured**, otherwise returns a
+**stub** reply — so getting-started works with no LLM. To enable real answers, in
+[`mcp-server/.env`](mcp-server/.env.example) set `BEDROCK_MODEL_ID` (+ AWS
+credentials). The LLM is always *your* infra — a delegated user token can't bill a
+user's personal LLM account; delegation unlocks the user's *data*, not their model.
 
-### Wire the MCP server into the gateway
+> The tutorial `../mcp` server (calculator/weather, :11000) is separate and
+> unrelated to this chat surface.
+
+### Wire the chat MCP server into the gateway
 
 1. `make local-up` (both services running).
 2. Put each behind a public URL — your own proxy, or ngrok:
-   `ngrok http 11000` (MCP), and expose `:8642` for the chat UI.
+   `ngrok http 9740` (chat MCP server), and expose `:8642` for the chat UI.
 3. Gateway dashboard → **Surfaces → Add Surface → MCP Surface Starter** →
-   Managed Agent → **Endpoint Type: Direct URL** → **Endpoint URL = the MCP
+   Managed Agent → **Endpoint Type: Direct URL** → **Endpoint URL = the chat MCP
    server's public/proxy URL** → save → copy the **Channel Route** URL.
    (See the root README "MCP Server via Agent Gateway" for the dashboard walkthrough.)
 4. Set `GATEWAY_URL` in `backend/.env` to that **Channel Route** URL.
 5. Reload the chat UI → type a message (→ `chat` tool) or click **List Tools**
-   (shows calculator, weather_forecast, chat).
+   (shows `chat`).
 
 > **Historical note:** the original `glean-mcp-surface` pointed the same chat UI
 > at **Glean's** MCP server (Glean Assistant did the LLM/RAG), scoped per-user via
@@ -207,14 +210,19 @@ auth0-mcp-surface/
 │   ├── astro.config.mjs
 │   ├── package.json
 │   └── .env.example
+├── mcp-server/              # the chat MCP server (the `chat` tool, :9740)
+│   ├── mcp_server.py        # JSON-RPC; chat → AWS Bedrock (optional) or stub
+│   ├── requirements.txt
+│   ├── run.sh
+│   └── .env.example         # BEDROCK_MODEL_ID (optional), AWS_REGION, PORT
 ├── Dockerfile               # multi-stage: build UI → serve UI + API (one port)
 ├── docker-compose.yml       # single service on :8642
 ├── dev.sh                   # two-server hot-reload (used by `make dev`)
 └── README.md
 ```
 
-> Run it from the repo root with `make local-up` (single origin, one port) or
-> `make dev` (hot reload). See "Part 2 — Run the app".
+> Run both services from the repo root with `make local-up`, or
+> `make dev` (hot reload). See "Part 2 — Run it".
 
 ## Styling — self-contained design tokens
 
