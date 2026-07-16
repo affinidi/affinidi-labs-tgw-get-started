@@ -244,9 +244,11 @@ affinidi-labs-tgw-get-started/
 │   ├── grafana/provisioning/       # Auto-provisioned datasource + dashboards
 │   └── readme.md                   # Full integration guide
 ├── auth0-mcp-surface/       # Chat surface: Google caller context + Auth0 delegation
-│   ├── backend/             # FastAPI API (OAuth + gateway proxy)
+│   ├── backend/             # FastAPI: API + serves the built UI (single origin)
 │   ├── frontend/            # Astro + Alpine.js (static)
-│   ├── dev.sh               # Run backend + frontend together
+│   ├── Dockerfile           # single-container build (make docker-up)
+│   ├── docker-compose.yml
+│   ├── dev.sh               # two-server hot-reload (make dev)
 │   └── README.md            # Full setup guide
 └── docs/
     └── images/              # Documentation images
@@ -256,6 +258,10 @@ affinidi-labs-tgw-get-started/
 > **Google OAuth** as the caller context and uses the Trust Gateway to delegate
 > **Auth0** credentials to the upstream MCP server (replacing the earlier Glean
 > delegation). Frontend is static Astro + Alpine.js; backend is FastAPI.
+>
+> **Run it:** `make local-up` (single origin, one port → http://localhost:8642),
+> `make dev` (hot reload), or `make docker-up`. For a public URL, forward port
+> `8642` (Codespaces) or `ngrok http 8642` and pass `PUBLIC_BASE_URL=…`.
 > See [auth0-mcp-surface/README.md](./auth0-mcp-surface/README.md).
 
 ---

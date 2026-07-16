@@ -5,9 +5,9 @@
   "private": true,
   "description": "Astro + Alpine.js frontend for the Agent Gateway chat surface (Google caller context, Auth0 credential delegation)",
   "scripts": {
-    "dev": "astro dev --port 4321",
+    "dev": "astro dev --port 5137",
     "build": "astro build",
-    "preview": "astro preview --port 4321",
+    "preview": "astro preview --port 5137",
     "astro": "astro"
   },
   "dependencies": {

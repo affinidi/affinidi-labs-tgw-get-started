@@ -13,10 +13,10 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-echo "Starting FastAPI backend (:8000)…"
+echo "Starting FastAPI backend (:8642)…"
 ( cd "$SCRIPT_DIR/backend" && ./run.sh ) &
 
-echo "Starting Astro frontend (:4321)…"
+echo "Starting Astro frontend (:5137)…"
 ( cd "$SCRIPT_DIR/frontend" && npm run dev ) &
 
 wait

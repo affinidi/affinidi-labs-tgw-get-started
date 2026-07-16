@@ -1,8 +1,11 @@
 // Small typed client for the FastAPI backend.
-// The base URL is injected at build time from PUBLIC_API_BASE.
-
+// The base URL is injected at build time from PUBLIC_API_BASE:
+//   - unset            → dev default (two-server mode, backend on :8642)
+//   - "" (empty)       → same origin / relative (single-origin: backend serves us)
+//   - "https://host"   → explicit absolute base
+const _rawBase = import.meta.env.PUBLIC_API_BASE as string | undefined;
 export const API_BASE: string =
-  (import.meta.env.PUBLIC_API_BASE as string) || 'http://localhost:8000';
+  _rawBase === undefined ? 'http://localhost:8642' : _rawBase;
 
 export interface UserInfo {
   name: string | null;

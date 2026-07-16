@@ -39,8 +39,8 @@ case "$COMMAND" in
     echo "Installing dependencies..."
     pip install --quiet -r requirements.txt
     echo ""
-    echo "Starting FastAPI backend on http://localhost:${PORT:-8000} ..."
-    echo "Callback: ${REDIRECT_URI:-http://localhost:8000/api/auth/callback}"
+    echo "Starting FastAPI backend on http://localhost:${PORT:-8642} ..."
+    echo "Callback: ${REDIRECT_URI:-http://localhost:8642/api/auth/callback}"
     echo ""
     python3 main.py
     ;;

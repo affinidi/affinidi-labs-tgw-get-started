@@ -20,13 +20,13 @@ This is the `poodle-chai` reimagining of the original `glean-mcp-surface` demo:
 
 ```
 ┌─ Browser ─────────────────────────────────────────────────────────┐
-│  Astro (static HTML) + Alpine.js  →  http://localhost:4321         │
+│  Astro (static HTML) + Alpine.js                                   │
 │  Pages: /  (login)   /chat   /callback                             │
 └───────────────┬────────────────────────────────────────────────────┘
-                │  fetch (credentials: include)
+                │  fetch (credentials: include)   ← relative /api/* (same origin)
                 ▼
-┌─ FastAPI backend (API only) ──────────────────────────────────────┐
-│  http://localhost:8000                                             │
+┌─ FastAPI backend — serves the built UI + the API on ONE port ─────┐
+│  http://localhost:8642   (single origin)                          │
 │  GET  /api/auth/login      → Google OAuth URL                      │
 │  GET  /api/auth/callback   → exchange code, set session, → /chat   │
 │  GET  /api/auth/me         → current user                          │
@@ -74,7 +74,8 @@ stores the delegated token so subsequent requests succeed automatically.
 
 1. [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials)
 2. **Create Credentials → OAuth client ID → Web application**
-3. Add authorised redirect URI: `http://localhost:8000/api/auth/callback`
+3. Add authorised redirect URI: `http://localhost:8642/api/auth/callback`
+   (and, for a public demo, `<PUBLIC_BASE_URL>/api/auth/callback`)
 4. Copy the **Client ID** and **Client Secret** into `backend/.env`
 
 ### 1.2 Auth0 application (credential delegation — replaces Glean)
@@ -90,26 +91,53 @@ stores the delegated token so subsequent requests succeed automatically.
 
 ## Part 2 — Run the app
 
-### Backend (FastAPI)
+Fill in secrets first: `cp backend/.env.example backend/.env` and set
+`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GATEWAY_URL` (the UI + guest
+mode work without them for look-and-feel testing).
+
+### Easiest — one command, one port (from the repo root)
 
 ```bash
-cd auth0-mcp-surface/backend
-cp .env.example .env      # fill in GOOGLE_CLIENT_ID / SECRET and GATEWAY_URL
-./run.sh                  # creates venv, installs deps, starts on :8000
+make local-up            # builds the frontend, serves API + UI on ONE port
 ```
 
-### Frontend (Astro)
+Open **http://localhost:8642**. The FastAPI backend serves both the built Astro
+site and the `/api/*` routes (single origin), so there's just one URL to open,
+forward, or tunnel.
+
+### Development — hot reload (two servers)
 
 ```bash
-cd auth0-mcp-surface/frontend
-cp .env.example .env      # PUBLIC_API_BASE=http://localhost:8000 (default is fine)
-npm install
-npm run dev               # starts on :4321
+make dev                 # frontend :5137 (hot reload) + backend :8642
 ```
 
-Open **http://localhost:4321** and sign in with Google.
+Open **http://localhost:5137**.
 
-> Or run both at once from the surface root: `./dev.sh`
+### Docker
+
+```bash
+make docker-up           # single container on :8642
+make docker-down
+```
+
+### Expose a public URL (ngrok or Codespaces)
+
+Because it's single-origin, you only expose **one** port (`8642`):
+
+```bash
+# Local, via ngrok:
+ngrok http 8642
+make local-up PUBLIC_BASE_URL=https://<your-subdomain>.ngrok-free.app
+
+# GitHub Codespaces:
+#   run `make local-up`, then in the Ports tab set port 8642 → Public,
+#   copy the https URL, and re-run:
+make local-up PUBLIC_BASE_URL=https://<name>-8642.app.github.dev
+```
+
+`PUBLIC_BASE_URL` makes the app use that URL for the OAuth callback and
+post-login redirect. Register `<PUBLIC_BASE_URL>/api/auth/callback` as an
+authorised redirect URI in Google Cloud Console.
 
 ---
 
@@ -150,8 +178,8 @@ Add the Auth0 client secret to the gateway secret store as `auth0-client-secret`
 
 ```
 auth0-mcp-surface/
-├── backend/                 # FastAPI (API only)
-│   ├── main.py              # OAuth + gateway proxy
+├── backend/                 # FastAPI: API + serves the built UI (single origin)
+│   ├── main.py              # OAuth + gateway proxy + static mount
 │   ├── requirements.txt
 │   ├── run.sh
 │   └── .env.example
@@ -167,9 +195,14 @@ auth0-mcp-surface/
 │   ├── astro.config.mjs
 │   ├── package.json
 │   └── .env.example
-├── dev.sh                   # run backend + frontend together
+├── Dockerfile               # multi-stage: build UI → serve UI + API (one port)
+├── docker-compose.yml       # single service on :8642
+├── dev.sh                   # two-server hot-reload (used by `make dev`)
 └── README.md
 ```
+
+> Run it from the repo root with `make local-up` (single origin, one port) or
+> `make dev` (hot reload). See "Part 2 — Run the app".
 
 ## Styling — self-contained design tokens
 

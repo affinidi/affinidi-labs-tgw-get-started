@@ -14,26 +14,29 @@ the gateway needs consent it returns a `consent_required` payload containing an
 `authorization_url`; the frontend renders that so the user can authorise.
 
 Run:
-    uvicorn main:app --reload --port 8000
+    uvicorn main:app --reload --port 8642
 
 Env vars (see .env.example):
     GOOGLE_CLIENT_ID       Google OAuth client ID
     GOOGLE_CLIENT_SECRET   Google OAuth client secret
-    REDIRECT_URI           OAuth callback (default http://localhost:8000/api/auth/callback)
+    REDIRECT_URI           OAuth callback (default http://localhost:8642/api/auth/callback)
     GATEWAY_URL            Affinidi Trust Gateway MCP surface endpoint
-    FRONTEND_URL           Astro frontend origin (default http://localhost:4321)
+    FRONTEND_URL           Frontend origin (default = this server's origin)
+    PUBLIC_BASE_URL        Public base URL for ngrok/Codespaces (sets callback + frontend)
     SESSION_SECRET         Session cookie signing secret
-    PORT                   Backend port (default 8000)
+    PORT                   Server port (default 8642)
 """
 
 import os
 import time
 import secrets
+import pathlib
 
 import httpx
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 try:
@@ -46,12 +49,21 @@ except ImportError:
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
 GATEWAY_URL = os.environ.get("GATEWAY_URL", "")
-PORT = int(os.environ.get("PORT", 8000))
+PORT = int(os.environ.get("PORT", 8642))
 REDIRECT_URI = os.environ.get(
     "REDIRECT_URI", f"http://localhost:{PORT}/api/auth/callback"
 )
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:4321")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", f"http://localhost:{PORT}")
 SESSION_SECRET = os.environ.get("SESSION_SECRET", secrets.token_hex(32))
+
+# Single knob for public exposure (ngrok / Codespaces). When set, the app is
+# reached at this base URL, so the OAuth callback and post-login redirect must
+# use it. Single-origin means the frontend is served from the same host, so no
+# CORS/cookie juggling is needed.
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+if PUBLIC_BASE_URL:
+    REDIRECT_URI = f"{PUBLIC_BASE_URL}/api/auth/callback"
+    FRONTEND_URL = PUBLIC_BASE_URL
 
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -63,8 +75,8 @@ AGENT_NAME = "chat-client"
 # ── App setup ─────────────────────────────────────────────────────────────────
 app = FastAPI(title="Agent Gateway Chat API", version="1.0.0")
 
-# Session cookie. same_site="lax" is sufficient because the Astro frontend
-# (localhost:4321) and this backend (localhost:8000) share the same site
+# Session cookie. same_site="lax" is sufficient: in single-origin mode the page
+# and API share the exact origin, and in two-server dev they share the site
 # (localhost); ports do not affect the cookie's site.
 app.add_middleware(
     SessionMiddleware,
@@ -73,10 +85,14 @@ app.add_middleware(
     https_only=False,  # set True behind HTTPS in production
 )
 
-# CORS so the Astro frontend can call this API with credentials.
+# CORS for the two-server dev mode (frontend on :5137 calling the API on :8642).
+# In single-origin mode requests are same-origin, so CORS is a no-op.
+_cors_origins = [FRONTEND_URL, "http://localhost:5137", f"http://localhost:{PORT}"]
+if PUBLIC_BASE_URL:
+    _cors_origins.append(PUBLIC_BASE_URL)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:4321", "http://localhost:8000"],
+    allow_origins=list(dict.fromkeys(_cors_origins)),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -306,13 +322,25 @@ def health():
     return {"ok": True, "gateway_configured": bool(GATEWAY_URL)}
 
 
+# ── Single-origin: serve the built Astro frontend ────────────────────────────
+# Mounted LAST so the /api/* routes above always win. Present only after the
+# frontend has been built (`npm run build` → frontend/dist). In two-server dev
+# mode the dist folder is absent and Astro serves the frontend on :5137 instead.
+_DIST = pathlib.Path(__file__).resolve().parent.parent / "frontend" / "dist"
+if _DIST.is_dir():
+    # html=True → "/" serves index.html, "/chat" serves chat/index.html, etc.
+    app.mount("/", StaticFiles(directory=str(_DIST), html=True), name="frontend")
+
+
 if __name__ == "__main__":
     import uvicorn
     print(f"\n{'='*60}")
     print("  Agent Gateway Chat — FastAPI backend")
-    print(f"  API:              http://localhost:{PORT}")
+    print(f"  App:              http://localhost:{PORT}")
+    print(f"  Serving frontend: {'yes (dist found)' if _DIST.is_dir() else 'no (run npm build for single-origin)'}")
     print(f"  Callback:         {REDIRECT_URI}")
-    print(f"  Frontend:         {FRONTEND_URL}")
+    print(f"  Frontend origin:  {FRONTEND_URL}")
+    print(f"  Public base URL:  {PUBLIC_BASE_URL or '(not set)'}")
     print(f"  Gateway (Google): {GATEWAY_URL or '(not set)'}")
     print(f"{'='*60}\n")
     uvicorn.run(app, host="0.0.0.0", port=PORT)
