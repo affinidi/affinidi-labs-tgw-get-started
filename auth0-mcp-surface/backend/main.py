@@ -31,6 +31,7 @@ import os
 import time
 import secrets
 import pathlib
+from urllib.parse import urlparse
 
 import httpx
 from fastapi import FastAPI, Request
@@ -50,20 +51,59 @@ GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
 GATEWAY_URL = os.environ.get("GATEWAY_URL", "")
 PORT = int(os.environ.get("PORT", 8642))
-REDIRECT_URI = os.environ.get(
-    "REDIRECT_URI", f"http://localhost:{PORT}/api/auth/callback"
-)
-FRONTEND_URL = os.environ.get("FRONTEND_URL", f"http://localhost:{PORT}")
 SESSION_SECRET = os.environ.get("SESSION_SECRET", secrets.token_hex(32))
 
-# Single knob for public exposure (ngrok / Codespaces). When set, the app is
-# reached at this base URL, so the OAuth callback and post-login redirect must
-# use it. Single-origin means the frontend is served from the same host, so no
-# CORS/cookie juggling is needed.
+# Public base URL of THIS backend (ngrok / Codespaces / proxy). Drives the OAuth
+# callback, which always lives on the backend. Falls back to localhost.
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
-if PUBLIC_BASE_URL:
-    REDIRECT_URI = f"{PUBLIC_BASE_URL}/api/auth/callback"
-    FRONTEND_URL = PUBLIC_BASE_URL
+_own_origin = PUBLIC_BASE_URL or f"http://localhost:{PORT}"
+
+# OAuth callback is always on this backend.
+REDIRECT_URI = os.environ.get("REDIRECT_URI") or f"{_own_origin}/api/auth/callback"
+
+# Where the browser lands after login. Defaults to this backend's origin
+# (single-origin: the backend serves the UI). For a SPLIT deploy — frontend and
+# backend on different hosts — set FRONTEND_URL explicitly; it is independent of
+# PUBLIC_BASE_URL.
+FRONTEND_URL = (os.environ.get("FRONTEND_URL") or _own_origin).rstrip("/")
+
+
+# ── Session-cookie policy ─────────────────────────────────────────────────────
+# origin ≠ site. Two subdomains of the same registrable domain (e.g.
+# foo.affinidi.io and bar.affinidi.io) are cross-ORIGIN but SAME-SITE, so a
+# SameSite=Lax cookie is still sent between them — we only need to widen the
+# cookie's Domain to the shared parent so both hosts can see it. A genuinely
+# different site requires SameSite=None; Secure instead.
+def _host(url: str) -> str:
+    return urlparse(url).hostname or ""
+
+
+def _shared_parent(a: str, b: str) -> str:
+    common: list[str] = []
+    for x, y in zip(reversed(a.split(".")), reversed(b.split("."))):
+        if x != y:
+            break
+        common.append(x)
+    common.reverse()
+    return ".".join(common) if len(common) >= 2 else ""
+
+
+_own_host, _fe_host = _host(_own_origin), _host(FRONTEND_URL)
+COOKIE_DOMAIN = os.environ.get("SESSION_COOKIE_DOMAIN") or None
+if _own_host == _fe_host:
+    # Single origin — host-only cookie is fine.
+    COOKIE_SAMESITE = "lax"
+else:
+    _parent = COOKIE_DOMAIN or _shared_parent(_own_host, _fe_host)
+    if _parent:
+        # Subdomains of one site: share the cookie via Domain, keep Lax.
+        COOKIE_DOMAIN, COOKIE_SAMESITE = _parent, "lax"
+    else:
+        # Genuinely different sites: only SameSite=None; Secure works.
+        COOKIE_DOMAIN, COOKIE_SAMESITE = None, "none"
+
+_is_https = _own_origin.startswith("https") or FRONTEND_URL.startswith("https")
+COOKIE_SECURE = _is_https or COOKIE_SAMESITE == "none"
 
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -75,21 +115,20 @@ AGENT_NAME = "chat-client"
 # ── App setup ─────────────────────────────────────────────────────────────────
 app = FastAPI(title="Agent Gateway Chat API", version="1.0.0")
 
-# Session cookie. same_site="lax" is sufficient: in single-origin mode the page
-# and API share the exact origin, and in two-server dev they share the site
-# (localhost); ports do not affect the cookie's site.
+# Session cookie. Domain/SameSite/Secure are computed above so the cookie works
+# for single-origin, shared-subdomain (Lax + Domain), and true cross-site
+# (None + Secure) deployments alike.
 app.add_middleware(
     SessionMiddleware,
     secret_key=SESSION_SECRET,
-    same_site="lax",
-    https_only=False,  # set True behind HTTPS in production
+    same_site=COOKIE_SAMESITE,
+    https_only=COOKIE_SECURE,
+    domain=COOKIE_DOMAIN,
 )
 
-# CORS for the two-server dev mode (frontend on :5137 calling the API on :8642).
-# In single-origin mode requests are same-origin, so CORS is a no-op.
-_cors_origins = [FRONTEND_URL, "http://localhost:5137", f"http://localhost:{PORT}"]
-if PUBLIC_BASE_URL:
-    _cors_origins.append(PUBLIC_BASE_URL)
+# CORS for split/two-server modes (frontend on a different origin calling the
+# API). In single-origin mode requests are same-origin, so CORS is a no-op.
+_cors_origins = [FRONTEND_URL, _own_origin, "http://localhost:5137", f"http://localhost:{PORT}"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=list(dict.fromkeys(_cors_origins)),
@@ -341,6 +380,8 @@ if __name__ == "__main__":
     print(f"  Callback:         {REDIRECT_URI}")
     print(f"  Frontend origin:  {FRONTEND_URL}")
     print(f"  Public base URL:  {PUBLIC_BASE_URL or '(not set)'}")
+    print(f"  Cookie:           domain={COOKIE_DOMAIN or '(host-only)'} "
+          f"samesite={COOKIE_SAMESITE} secure={COOKIE_SECURE}")
     print(f"  Gateway (Google): {GATEWAY_URL or '(not set)'}")
     print(f"{'='*60}\n")
     uvicorn.run(app, host="0.0.0.0", port=PORT)
