@@ -1,0 +1,6 @@
+# FastAPI backend for the Agent Gateway chat surface
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+httpx>=0.27.0
+itsdangerous>=2.1.2
+python-dotenv>=1.0.0

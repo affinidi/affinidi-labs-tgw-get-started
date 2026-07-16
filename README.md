@@ -243,9 +243,20 @@ affinidi-labs-tgw-get-started/
 │   ├── run.sh                      # Configure & start, supports N TGs
 │   ├── grafana/provisioning/       # Auto-provisioned datasource + dashboards
 │   └── readme.md                   # Full integration guide
+├── auth0-mcp-surface/       # Chat surface: Google caller context + Auth0 delegation
+│   ├── backend/             # FastAPI API (OAuth + gateway proxy)
+│   ├── frontend/            # Astro + Alpine.js (static)
+│   ├── dev.sh               # Run backend + frontend together
+│   └── README.md            # Full setup guide
 └── docs/
     └── images/              # Documentation images
 ```
+
+> **`auth0-mcp-surface`** is the modern (`poodle-chai`) chat surface. It keeps
+> **Google OAuth** as the caller context and uses the Trust Gateway to delegate
+> **Auth0** credentials to the upstream MCP server (replacing the earlier Glean
+> delegation). Frontend is static Astro + Alpine.js; backend is FastAPI.
+> See [auth0-mcp-surface/README.md](./auth0-mcp-surface/README.md).
 
 ---
 

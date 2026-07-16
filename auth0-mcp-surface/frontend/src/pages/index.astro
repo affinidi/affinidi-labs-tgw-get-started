@@ -1,0 +1,196 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="MCP via Agent Gateway — Login">
+  <main class="login-wrap" x-data="loginPage" x-cloak>
+    <div class="card login-card">
+      <div class="logo">⚡</div>
+      <h1>MCP via Agent Gateway</h1>
+      <p class="subtitle">
+        The Agent Gateway is protected with <strong>Google OAuth</strong>.<br />
+        Upstream <strong>Auth0</strong> consent is delegated by the gateway on your behalf.
+      </p>
+
+      <!-- Flow diagram: Google (caller context) → Gateway → Auth0 (delegation) → MCP -->
+      <div class="flow">
+        <div class="flow-node">
+          <div class="flow-icon">👤</div>
+          <div class="flow-box highlight">You<br /><span class="sub">Google Login</span></div>
+          <div class="flow-label">Caller Context ★</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">
+          <div class="flow-icon">⚡</div>
+          <div class="flow-box">Agent<br />Gateway</div>
+          <div class="flow-label">Verifies Google JWT</div>
+        </div>
+        <div class="flow-arrow consent">&rarr;</div>
+        <div class="flow-node">
+          <div class="flow-icon">🔐</div>
+          <div class="flow-box auth0">Auth0<br />Delegation</div>
+          <div class="flow-label">Credential Delegation ★</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">
+          <div class="flow-icon">🔍</div>
+          <div class="flow-box target">Target<br />MCP Server</div>
+          <div class="flow-label">Protected upstream</div>
+        </div>
+      </div>
+
+      <div class="gateway-badge" x-show="gatewayUrl">
+        <span>Agent Gateway URL</span>
+        <span x-text="gatewayUrl"></span>
+      </div>
+
+      <button class="btn btn-google" @click="login()" :disabled="loading">
+        <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.14 0 5.95 1.08 8.17 2.85l6.09-6.09C34.46 3.19 29.5 1 24 1 14.82 1 6.98 6.48 3.25 14.33l7.1 5.52C12.15 13.42 17.58 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.5 24.5c0-1.57-.14-3.1-.4-4.58H24v8.67h12.68c-.55 2.93-2.2 5.41-4.68 7.07l7.24 5.62C43.47 37.24 46.5 31.32 46.5 24.5z"/>
+          <path fill="#FBBC05" d="M10.35 28.14A14.54 14.54 0 0 1 9.5 24c0-1.44.25-2.84.85-4.14l-7.1-5.52A23.94 23.94 0 0 0 .5 24c0 3.87.92 7.53 2.55 10.77l7.3-6.63z"/>
+          <path fill="#34A853" d="M24 47c5.5 0 10.12-1.82 13.49-4.94l-7.24-5.62c-1.87 1.26-4.27 2.01-6.25 2.01-6.42 0-11.85-3.92-13.65-9.36l-7.3 6.63C6.98 41.52 14.82 47 24 47z"/>
+        </svg>
+        <span x-text="loading ? 'Redirecting…' : 'Sign in with Google'"></span>
+      </button>
+
+      <button class="btn btn-secondary guest" @click="guest()" :disabled="loading">
+        Continue as Guest
+      </button>
+
+      <p class="footer">Signing in with Google grants access to the Agent Gateway.</p>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import Alpine from 'alpinejs';
+  import { api } from '../lib/api';
+
+  Alpine.data('loginPage', () => ({
+    loading: false,
+    gatewayUrl: '',
+
+    async init() {
+      // If already authenticated, go straight to chat.
+      try {
+        const me = await api.me();
+        this.gatewayUrl = me.gateway_url || '';
+        if (me.authenticated) {
+          window.location.href = '/chat';
+        }
+      } catch (_) {
+        /* backend not reachable yet — stay on login */
+      }
+    },
+
+    async login() {
+      this.loading = true;
+      try {
+        const { auth_url } = await api.loginUrl();
+        window.location.href = auth_url;
+      } catch (e) {
+        this.loading = false;
+        alert('Could not start login. Is the backend running on :8000?');
+      }
+    },
+
+    async guest() {
+      this.loading = true;
+      try {
+        await api.guest();
+        window.location.href = '/chat';
+      } catch (e) {
+        this.loading = false;
+        alert('Guest login failed.');
+      }
+    },
+  }));
+
+  Alpine.start();
+</script>
+
+<style>
+  .login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .login-card {
+    padding: 40px;
+    width: 100%;
+    max-width: 580px;
+    text-align: center;
+  }
+  .logo {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 24px;
+  }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+  .subtitle { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+
+  .flow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    margin: 12px 0 28px;
+    flex-wrap: nowrap;
+  }
+  .flow-node { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; width: 92px; }
+  .flow-icon { font-size: 18px; }
+  .flow-box {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 8px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.35;
+    width: 100%;
+  }
+  .flow-box .sub { font-size: 9px; color: var(--indigo); font-weight: 500; }
+  .flow-box.highlight { border-color: var(--primary); background: #1e1b4b; color: #c7d2fe; }
+  .flow-box.auth0 { border-color: var(--yellow); background: #2d1a00; color: #fde68a; }
+  .flow-box.target { border-color: #0ea5e9; background: #0c2a3d; color: var(--cyan); }
+  .flow-label { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .flow-arrow { font-size: 16px; color: #334155; margin: 14px 2px 0; flex-shrink: 0; }
+  .flow-arrow.consent { color: var(--yellow); }
+
+  .gateway-badge {
+    background: #0f172a;
+    border: 1px solid #1e3a5f;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--blue);
+    margin-bottom: 24px;
+    word-break: break-all;
+    text-align: left;
+  }
+  .gateway-badge span:first-child {
+    color: var(--dim);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .guest { width: 100%; margin-top: 10px; }
+  .footer { font-size: 11px; color: var(--dim); margin-top: 20px; }
+
+  @media (max-width: 560px) {
+    .flow-node { width: 68px; }
+    .flow-box { font-size: 9px; }
+    .login-card { padding: 28px 20px; }
+  }
+</style>
