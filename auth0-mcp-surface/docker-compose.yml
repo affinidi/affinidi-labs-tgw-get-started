@@ -1,5 +1,7 @@
-# Single-origin container: FastAPI serves the API and the built Astro frontend
-# on one port (8642). Forward/tunnel just this one port for a public URL.
+# FastAPI serves the API and the built Astro frontend on one port (8642).
+# All config (PUBLIC_BASE_URL, FRONTEND_URL, SESSION_COOKIE_DOMAIN, secrets,
+# GATEWAY_URL) is read from backend/.env — copy backend/.env.example → backend/.env
+# and fill it in. Nothing here overrides those values.
 services:
   app:
     build:
@@ -9,11 +11,6 @@ services:
       - "8642:8642"
     environment:
       PORT: 8642
-      # Set for a public URL (ngrok / Codespaces), e.g.:
-      #   PUBLIC_BASE_URL=https://<host>
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-}
-    # Secrets (GOOGLE_CLIENT_ID/SECRET, GATEWAY_URL, SESSION_SECRET) come from
-    # backend/.env. Copy backend/.env.example → backend/.env and fill it in.
     # required:false so the container still boots (UI + guest mode) without it.
     env_file:
       - path: backend/.env
