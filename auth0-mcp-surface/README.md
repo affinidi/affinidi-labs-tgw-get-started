@@ -89,55 +89,67 @@ stores the delegated token so subsequent requests succeed automatically.
 
 ---
 
-## Part 2 — Run the app
+## Part 2 — Run it
+
+There are **two** processes:
+
+| Service | Port | What it is |
+|---|---|---|
+| **Chat surface** (this dir) | `8642` | FastAPI backend + built Astro UI (the client) |
+| **MCP server** ([`../mcp`](../mcp)) | `11000` | calculator + weather + **chat** tools (the tool backend) |
+
+The chat surface never calls the MCP server directly — it calls the **Trust
+Gateway** (`GATEWAY_URL`), and the gateway routes to the MCP server. So both run
+locally, each gets its own public proxy, and the **MCP proxy** is what you
+register in the gateway.
 
 Fill in secrets first: `cp backend/.env.example backend/.env` and set
-`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GATEWAY_URL` (the UI + guest
-mode work without them for look-and-feel testing).
+`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GATEWAY_URL` (UI + guest mode
+work without them for look-and-feel testing).
 
-### Easiest — one command, one port (from the repo root)
-
-```bash
-make local-up            # builds the frontend, serves API + UI on ONE port
-```
-
-Open **http://localhost:8642**. The FastAPI backend serves both the built Astro
-site and the `/api/*` routes (single origin), so there's just one URL to open,
-forward, or tunnel.
-
-### Development — hot reload (two servers)
+### Run both services (from the repo root)
 
 ```bash
-make dev                 # frontend :5137 (hot reload) + backend :8642
+make local-up     # chat backend :8642  +  MCP server :11000  (Ctrl-C stops both)
 ```
 
-Open **http://localhost:5137**.
+Individually: `make serve` (chat backend only) · `make mcp` (MCP server only) ·
+`make dev` (frontend hot-reload + backend) · `make docker-up` (chat container).
+`make local-down` frees `:8642`, `:5137`, `:11000`.
 
-### Docker
+### The `chat` tool + optional LLM (AWS Bedrock)
 
-```bash
-make docker-up           # single container on :8642
-make docker-down
-```
+The chat UI sends `tools/call name="chat"` to the MCP server. That `chat` tool
+answers via **AWS Bedrock when configured**, otherwise returns a **stub** reply —
+so getting-started works with no LLM. To enable real answers, in
+[`../mcp/.env`](../mcp/.env.example) set `BEDROCK_MODEL_ID` (+ AWS credentials).
+The LLM is always *your* infra — a delegated user token can't bill a user's
+personal LLM account; delegation unlocks the user's *data*, not their model.
 
-### Expose a public URL (ngrok or Codespaces)
+### Wire the MCP server into the gateway
 
-Because it's single-origin, you only expose **one** port (`8642`):
+1. `make local-up` (both services running).
+2. Put each behind a public URL — your own proxy, or ngrok:
+   `ngrok http 11000` (MCP), and expose `:8642` for the chat UI.
+3. Gateway dashboard → **Surfaces → Add Surface → MCP Surface Starter** →
+   Managed Agent → **Endpoint Type: Direct URL** → **Endpoint URL = the MCP
+   server's public/proxy URL** → save → copy the **Channel Route** URL.
+   (See the root README "MCP Server via Agent Gateway" for the dashboard walkthrough.)
+4. Set `GATEWAY_URL` in `backend/.env` to that **Channel Route** URL.
+5. Reload the chat UI → type a message (→ `chat` tool) or click **List Tools**
+   (shows calculator, weather_forecast, chat).
 
-```bash
-# Local, via ngrok:
-ngrok http 8642
-make local-up PUBLIC_BASE_URL=https://<your-subdomain>.ngrok-free.app
+> **Historical note:** the original `glean-mcp-surface` pointed the same chat UI
+> at **Glean's** MCP server (Glean Assistant did the LLM/RAG), scoped per-user via
+> Glean OAuth delegation. Our `chat` tool is the neutral, Bedrock-optional
+> stand-in for that upstream assistant.
 
-# GitHub Codespaces:
-#   run `make local-up`, then in the Ports tab set port 8642 → Public,
-#   copy the https URL, and re-run:
-make local-up PUBLIC_BASE_URL=https://<name>-8642.app.github.dev
-```
+### Expose a public URL
 
-`PUBLIC_BASE_URL` makes the app use that URL for the OAuth callback and
-post-login redirect. Register `<PUBLIC_BASE_URL>/api/auth/callback` as an
-authorised redirect URI in Google Cloud Console.
+`PUBLIC_BASE_URL` (chat backend) and `FRONTEND_URL` set the OAuth callback and
+post-login redirect; register `<PUBLIC_BASE_URL>/api/auth/callback` in Google
+Cloud Console. For a split across subdomains of one site, `SESSION_COOKIE_DOMAIN`
+lets both share the session cookie. See `backend/.env.example`.
 
 ---
 

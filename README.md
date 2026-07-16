@@ -192,7 +192,7 @@ Everything else stays the same — the Codespace keeps the server running while 
 | Component                     | Description                                                                           |
 | ----------------------------- | ------------------------------------------------------------------------------------- |
 | `a2a/`                        | Local A2A echo agent server + interactive client                                      |
-| `mcp/`                        | Local MCP server with calculator and weather tools                                    |
+| `mcp/`                        | Local MCP server with calculator, weather, and `chat` (Bedrock-optional) tools        |
 | `a2a-vertex-agent/`           | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
 | `rest-api/`                   | REST API server with MCP proxy                                                        |
 | `a2a-protected-agent/`        | Multi-agent server (Personal + Finance) with decentralized identity via Agent Gateway |
