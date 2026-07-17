@@ -6,15 +6,15 @@ A [Locust](https://locust.io)-based load testing harness for Agent Gateway endpo
 
 **Endpoints** — add, edit and toggle MCP / A2A endpoints; inactive endpoints sort to the bottom. Changes are stored in browser localStorage without touching the config file.
 
-![Endpoints](docs/test-endpoints.png)
+![Endpoints](docs/test-endpoints.jpg)
 
 **Scenarios** — manage load test scenarios ordered by type (smoke → load → stress → spike → soak → ramp). Add custom scenarios or reset to built-in defaults at any time.
 
-![Scenarios](docs/test-scenarios.png)
+![Scenarios](docs/test-scenarios.jpg)
 
 **Test Suite** — select scenarios, set error and latency thresholds, and run sequentially. Results update live; a breaking-point banner flags the first scenario that exceeds a threshold.
 
-![Test Run](docs/test-run.png)
+![Test Run](docs/test-run.jpg)
 
 ## Project structure
 

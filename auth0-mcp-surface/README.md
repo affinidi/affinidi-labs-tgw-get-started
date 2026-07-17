@@ -24,7 +24,7 @@ The demo exercises **three trust boundaries**:
 
 The landing page summarizes the flow:
 
-![Landing page — sign in with Google](docs/images/01-landing-page.png)
+![Landing page — sign in with Google](docs/images/01-landing-page.jpg)
 
 **Components:**
 
@@ -97,7 +97,7 @@ docker compose up --build
 Go to **Surfaces → Add Surface → MCP Surface Starter** and build the flow
 **Human → Caller → Access Point → Chat (Managed Agent) → External Target**:
 
-![Agent surface overview](docs/images/03-tgw-surface-overview.png)
+![Agent surface overview](docs/images/04-tgw-surface-diagram.jpg)
 
 ### Configure the Managed Agent
 
@@ -106,7 +106,7 @@ Go to **Surfaces → Add Surface → MCP Surface Starter** and build the flow
 3. Set the **Target Endpoint URL:** to your MCP server public URL from Part 1
    - Example: `https://your-ngrok-url.ngrok-free.app` or `https://getting-started-chat-mcp.yourcompany.com`
 
-![Managed Agent configuration](docs/images/03-managed-agent-config.png)
+![Managed Agent configuration](docs/images/03-managed-agent-config.jpg)
 
 ### Configure Access Point
 
@@ -119,7 +119,7 @@ Extract the user identity from the JWT:
 - **Identity Extraction Type:** `From JWT Claims`
 - **JWT Claim:** `email`
 
-![Caller identity configuration](docs/images/13-caller-identity-config.png)
+![Caller identity configuration](docs/images/13-caller-identity-config.jpg)
 
 ### Configure Credential Delegation
 
@@ -157,7 +157,7 @@ After completing the surface configuration, **copy and save** these two URLs:
 
 3. Save the **Client ID** and **Client Secret** — you'll add them to `backend/.env` in Part 8.
 
-![Google OAuth client configuration](docs/images/09-google-oauth.png)
+![Google OAuth client configuration](docs/images/09-google-oauth.jpg)
 
 ---
 
@@ -169,7 +169,7 @@ After completing the surface configuration, **copy and save** these two URLs:
 2. Note the **Domain**, **Client ID**, and **Client Secret** from the settings
    page — these become Trust Gateway secrets in [Part 5](#part-5-create-trust-gateway-secrets).
 
-   ![Auth0 application settings](docs/images/10-auth0-app-settings.png)
+   ![Auth0 application settings](docs/images/10-auth0-app-settings.jpg)
 
 3. Configure the **Application URIs**:
    - **Allowed Callback URLs** — add the **Credential Provider Callback URL** from Part 2:
@@ -177,7 +177,7 @@ After completing the surface configuration, **copy and save** these two URLs:
      - ⚠️ This is the **Trust Gateway's** callback, not your app's callback
    - **Allowed Logout URLs** and **Allowed Web Origins** — your frontend URL (optional)
 
-   ![Auth0 application URIs](docs/images/11-auth0-uris.png)
+   ![Auth0 application URIs](docs/images/11-auth0-uris.jpg)
 
 > 💡 The authorization and token endpoints are derived from your domain:
 > `https://YOUR_AUTH0_DOMAIN/authorize` and `https://YOUR_AUTH0_DOMAIN/oauth/token`.
@@ -195,7 +195,7 @@ gateway will reference (values are never shown again after creation):
 | `Chat Auth0 Client ID` | Auth0 application Client ID (Part 4) |
 | `Chat Auth0 Client Secret` | Auth0 application Client Secret (Part 4) |
 
-![Trust Gateway secrets](docs/images/08-tgw-secrets.png)
+![Trust Gateway secrets](docs/images/08-tgw-secrets.jpg)
 
 > **Note:** Google OAuth credentials are configured in `backend/.env` (Part 8), not in the Trust Gateway.
 
@@ -213,7 +213,7 @@ represents Auth0:
 - **Callback URL Host:** `https://YOUR_TGW_HOST`
 - **Callback URL Route:** `/v1/identity/oauth/callback/chat-auth0-provider`
 
-![Credential provider configuration](docs/images/06-credential-provider.png)
+![Credential provider configuration](docs/images/06-credential-provider.jpg)
 
 For the OAuth client credentials, reference the secrets created in Part 5 (the
 provider stores **references**, not the raw values):
@@ -221,7 +221,7 @@ provider stores **references**, not the raw values):
 - **Client ID Secret:** `Chat Auth0 Client ID`
 - **Client Secret:** `Chat Auth0 Client Secret`
 
-![OAuth client credential references](docs/images/07-oauth-client-creds.png)
+![OAuth client credential references](docs/images/07-oauth-client-creds.jpg)
 
 > **Important:** Verify the callback URL matches what you registered in Auth0's **Allowed Callback URLs** (Part 4).
 
@@ -237,7 +237,7 @@ verify the incoming Google token as the caller context:
 - **JWKS Source:** Remote URL
 - **JWKS URI:** `https://www.googleapis.com/oauth2/v3/certs`
 
-![JWT verification strategy](docs/images/05-jwt-verification.png)
+![JWT verification strategy](docs/images/05-jwt-verification.jpg)
 
 > 🔁 **Return to Part 2** and link this JWT verification strategy to the Access Point's Caller Context if you haven't already.
 
@@ -300,8 +300,8 @@ A browser-based chat interface where:
 - After consent, the chat works seamlessly — messages are answered by the `chat` tool
 - The `chat` tool uses **AWS Bedrock** (Claude Haiku) when configured, otherwise returns stub responses
 
-![Landing page — sign in with Google](docs/images/01-landing-page.png)
-![Chat welcome screen](docs/images/02-chat-welcome.png)
+![Landing page — sign in with Google](docs/images/01-landing-page.jpg)
+![Chat welcome screen](docs/images/02-chat-welcome.jpg)
 
 ### Start the services
 
@@ -320,7 +320,7 @@ make chat-auth0-local-up     # frontend :5137 + backend :8642 + MCP server
    has no stored Auth0 credential for you yet, an **Auth0 login popup opens
    automatically**:
 
-   ![Auth0 login popup](docs/images/12-auth0-popup-login.png)
+   ![Auth0 login popup](docs/images/12-auth0-popup-login.jpg)
 
 4. Authenticate with Auth0. The popup closes, the request **retries
    automatically**, and the chat response appears — powered by AWS Bedrock (if configured) or stub mode.

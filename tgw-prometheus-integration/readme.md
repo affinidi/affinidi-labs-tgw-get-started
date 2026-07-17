@@ -26,7 +26,7 @@ TG ends up with its own clearly labelled view.
 > **Enable in the Agent Gateway UI:**
 > **Settings → Admin tab → Prometheus Authentication → toggle on → set username & password**
 >
-> ![Prometheus Authentication setting in Agent Gateway UI](docs/tg-promethus-auth.png)
+> ![Prometheus Authentication setting in Agent Gateway UI](docs/tg-promethus-auth.jpg)
 >
 > If enabled, supply the credentials in `prometheus.yml` via the
 > `basic_auth` block (see steps below). If disabled, omit the block entirely.
@@ -184,11 +184,11 @@ In Grafana, open **Dashboards** in the left sidebar. You'll find
 filters on its own `job="tgw-<slug>"` so the views never mix
 metrics across TGs.
 
-![Grafana dashboards list](docs/grafana-dashboard.png)
+![Grafana dashboards list](docs/grafana-dashboard.jpg)
 
 Open one to see the Agent Gateway metrics:
 
-![Agent Gateway metrics dashboard](docs/grafana-dashboard-tg-metrics.png)
+![Agent Gateway metrics dashboard](docs/grafana-dashboard-tg-metrics.jpg)
 
 ## Metrics covered by the dashboards
 

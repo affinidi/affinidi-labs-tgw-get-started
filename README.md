@@ -46,8 +46,8 @@ Beyond a simple "hello world", this repo also includes a set of supporting tools
 
 Establish governed MCP and A2A connections by routing clients through the Agent Gateway, which manages identity, policy enforcement, and observability before forwarding requests to your local servers or cloud-deployed agents (e.g., Vertex AI Agent Engine).
 
-![Alt text](docs/images/before-affinidi-tgw.png)
-![Alt text](docs/images/after-affinidi-tgw.png)
+![Alt text](docs/images/before-affinidi-tgw.jpg)
+![Alt text](docs/images/after-affinidi-tgw.jpg)
 
 ## 📋 Table of Contents
 
@@ -71,7 +71,7 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
   - [Sample MCP Request & Response Messages](#sample-mcp-request--response-messages)
 - [Part 3: A2A Protected Agent — Decentralized Identity](#part-3-a2a-protected-agent--decentralized-identity)
 - [Part 4: Observability — Visualise Agent Gateway Metrics](#part-4-observability--visualise-trust-gateway-metrics)
-- [Part 5: Identity and Credential Delegation](#part-5-identity-and-credential-delegation--caller-context--auth0-integration)
+- [Part 5: Identity and Credential Delegation](#part-5-identity-and-credential-delegation)
 
 ---
 
@@ -88,10 +88,10 @@ Don't want to install anything on your computer? GitHub Codespaces gives you a r
 3. Select the **`Codespaces`** tab. This tab is only visible when you are signed in — create a free GitHub account first if you have not done so already.
 4. Click **`Create codespace on main`**.
 
-   ![alt text](/docs/images/select-codespace.png)
+   ![alt text](/docs/images/select-codespace.jpg)
 
 > A new browser tab will open and the environment will take about a minute to set up. You will see a VS Code editor appear in your browser when it is ready.
-> ![alt text](/docs/images/codespace-created.png)
+> ![alt text](/docs/images/codespace-created.jpg)
 
 > **Heads up:** Codespaces automatically pauses after **30 minutes of inactivity** to save your free quota. If your server stops responding, just reopen the Codespace, re-run `./run.sh`, and re-forward the port.
 
@@ -110,7 +110,7 @@ cd mcp
 
 You will see a message like `MCP server running on port 11000`. Leave this terminal running.
 
-![alt text](/docs/images/codespace-running.png)
+![alt text](/docs/images/codespace-running.jpg)
 
 ### Step 4 — Forward the port and get your public URL
 
@@ -121,7 +121,7 @@ Codespaces automatically detects that port `11000` is in use and shows a notific
 3. Right-click the row and choose **`Port Visibility → Public`** so the URL can be used from outside.
 4. Copy the **`Forwarded Address`** URL — it looks like `https://<random-name>-11000.app.github.dev`.
 
-![alt text](/docs/images/codespace-url.png)
+![alt text](/docs/images/codespace-url.jpg)
 
 > **Tip:** This forwarded URL acts as your public endpoint, just like ngrok would on a local machine. You do **not** need to install ngrok.
 
@@ -180,7 +180,7 @@ Once you have your Codespaces forwarded URLs, you can use them exactly like ngro
 - When configuring an MCP channel, set the **Target Endpoint URL** to your Codespaces forwarded address for port `11000`.
 - When configuring an A2A channel, set the **Target Endpoint URL** to your Codespaces forwarded address for port `10000`.
 
-![alt text](/docs/images/ATG-codespace.png)
+![alt text](/docs/images/ATG-codespace.jpg)
 
 Everything else stays the same — the Codespace keeps the server running while the Agent Gateway routes traffic to it.
 
@@ -394,8 +394,8 @@ pip install -r requirements.txt
 
 Route your agents through the **Agent Gateway** to add identity management, observability, policy enforcement, and governed routing to all agent communications.
 
-![Before Agent Gateway](docs/images/before-affinidi-tgw.png)
-![After Agent Gateway](docs/images/after-affinidi-tgw.png)
+![Before Agent Gateway](docs/images/before-affinidi-tgw.jpg)
+![After Agent Gateway](docs/images/after-affinidi-tgw.jpg)
 
 ## What is the Agent Gateway?
 
@@ -435,12 +435,12 @@ Channels are the fundamental routing unit. Each channel defines:
 3. Click on `Agent Gateway` in the left menu
 4. Click `Create Configuration` and provide a name and description
 
-![Alt text](docs/images/create-trust-gateway.png)
+![Alt text](docs/images/create-trust-gateway.jpg)
 
 5. Wait until the deployment status is `Complete` (may take a few minutes)
 6. Copy the Agent Gateway dashboard URL
 
-![Alt text](docs/images/trust-gateway-done.png)
+![Alt text](docs/images/trust-gateway-done.jpg)
 
 ### Step 2: Register and Login to Agent Gateway Control Plane
 
@@ -448,16 +448,16 @@ Channels are the fundamental routing unit. Each channel defines:
 2. **First-time users:**
    - Click `Register here`, enter a `username`, click `Register Passkey` (first user becomes admin)
 
-   ![Alt text](docs/images/register-tw.png)
+   ![Alt text](docs/images/register-tw.jpg)
 
 3. **Existing users:**
    - Enter your `username`, click `Sign in with Passkey`
 
-   ![Alt text](docs/images/login-tw.png)
+   ![Alt text](docs/images/login-tw.jpg)
 
 4. After login you will see the dashboard
 
-![Alt text](docs/images/gateway-dashboard.png)
+![Alt text](docs/images/gateway-dashboard.jpg)
 
 ---
 
@@ -492,24 +492,24 @@ ngrok http --url=<YOUR_NGROK_HOST> 11000
 
 1. Open the Agent Gateway dashboard → `Surfaces` → `Add Surface` → select `MCP Surface Starter` template
 
-   ![Alt text](./mcp/docs/channel-create-1.png)
-   ![Alt text](./mcp/docs/channel-create-2.png)
+   ![Alt text](./mcp/docs/channel-create-1.jpg)
+   ![Alt text](./mcp/docs/channel-create-2.jpg)
 
 2. Select the `Managed Agent` element and enter below details:
    - Select **Endpoint Type:** `Direct URL`
    - **Endpoint URL:** Your ngrok URL (public url of your MCP server)
 
-   ![Alt text](./mcp/docs/channel-create-3.png)
-   ![Alt text](./mcp/docs/channel-create-4.png)
+   ![Alt text](./mcp/docs/channel-create-3.jpg)
+   ![Alt text](./mcp/docs/channel-create-4.jpg)
 
 3. Review and click `Agent surface area` and enter the name of surface as `MCP Weather Surface` and click on `save`
 
-   ![Alt text](./mcp/docs/channel-create-5.png)
+   ![Alt text](./mcp/docs/channel-create-5.jpg)
 
 4. Select the `Access Point` and copy the `Channel Route` URL
    Note: Update the prefix/custom path as you desired
 
-   ![Alt text](./mcp/docs/channel-create-6.png)
+   ![Alt text](./mcp/docs/channel-create-6.jpg)
 
 ### 4. Test via Agent Gateway
 
@@ -523,10 +523,10 @@ cd mcp
 
 View traffic metrics and logs in the channel dashboard after testing.
 
-![Alt text](./mcp/docs/channel-create-7.png)
+![Alt text](./mcp/docs/channel-create-7.jpg)
 
 If you want to do realtime capture for troubleshooting, click on `Catpure` button on `Monitoring` section, and run the program
-![Alt text](./mcp/docs/channel-create-8.png)
+![Alt text](./mcp/docs/channel-create-8.jpg)
 
 ### Optional: Enable Authentication on the MCP Channel
 
@@ -567,8 +567,8 @@ ngrok http --url=<YOUR_NGROK_HOST> 10000
 
 1. Open the Agent Gateway dashboard → `Channels` → `Add Channel` → select `A2A/UCP` protocol
 
-   ![Alt text](docs/images/channel-create-1.png)
-   ![Alt text](docs/images/channel-create-2.png)
+   ![Alt text](docs/images/channel-create-1.jpg)
+   ![Alt text](docs/images/channel-create-2.jpg)
 
 2. Enter the channel details and click `Next`:
    - **Channel Name:** `a2a-channel-chat`
@@ -577,16 +577,16 @@ ngrok http --url=<YOUR_NGROK_HOST> 10000
    - **Target Endpoint Type:** `Direct URL`
    - **Target Endpoint URL:** Your ngrok URL
 
-   ![Alt text](docs/images/channel-create-3-a2a.png)
+   ![Alt text](docs/images/channel-create-3-a2a.jpg)
 
 3. Review and click `Create Channel`
 
-   ![Alt text](docs/images/channel-create-4-a2a.png)
+   ![Alt text](docs/images/channel-create-4-a2a.jpg)
 
 4. Open the newly created channel and copy the `Channel Route` URL
 
-   ![Alt text](docs/images/channels-list-2.png)
-   ![Alt text](docs/images/channel-a2a.png)
+   ![Alt text](docs/images/channels-list-2.jpg)
+   ![Alt text](docs/images/channel-a2a.jpg)
 
 ### 4. Test via Agent Gateway
 
@@ -600,8 +600,8 @@ cd a2a
 
 View traffic metrics and logs in the channel dashboard after testing.
 
-![Alt text](docs/images/channel-a2a-2.png)
-![Alt text](docs/images/channel-a2a-3.png)
+![Alt text](docs/images/channel-a2a-2.jpg)
+![Alt text](docs/images/channel-a2a-3.jpg)
 
 ---
 
@@ -632,8 +632,8 @@ https://<LOCATION>-aiplatform.googleapis.com
 ### 2. Configure A2A Channel in Agent Gateway
 
 1. Open the Agent Gateway dashboard → `Channels` → `Add Channel` → select `A2A/UCP` protocol
-   ![Alt text](docs/images/channel-create-1.png)
-   ![Alt text](docs/images/channel-create-2.png)
+   ![Alt text](docs/images/channel-create-1.jpg)
+   ![Alt text](docs/images/channel-create-2.jpg)
 
 2. Enter the channel details:
    - **Channel Name:** `a2a-channel-vertex`
@@ -642,16 +642,16 @@ https://<LOCATION>-aiplatform.googleapis.com
    - **Target Endpoint Type:** `Direct URL`
    - **Target Endpoint URL:** Vertex AI regional base URL (e.g., `https://us-central1-aiplatform.googleapis.com`)
 
-   ![Alt text](docs/images/channel-create-vertex1.png)
+   ![Alt text](docs/images/channel-create-vertex1.jpg)
 
 3. Review and click `Create Channel`
-   ![Alt text](docs/images/channel-create-vertex2.png)
+   ![Alt text](docs/images/channel-create-vertex2.jpg)
 
 4. Copy the `Channel Route` URL:
    ```
    https://<GATEWAY_HOST>/agents/<CHANNEL_PATH>
    ```
-   ![Alt text](docs/images/channel-create-vertex3.png)
+   ![Alt text](docs/images/channel-create-vertex3.jpg)
 
 ### 3. Test via Agent Gateway
 
@@ -689,12 +689,12 @@ The Agent Gateway can issue a decentralized identity (DID) for the **agent or MC
 3. Enable **Protected Identity** and paste the identity schema matching the fields declared in your agent card extension
 4. Save the configuration
 
-   ![Alt text](docs/images/channel-mcp-identity.png)
+   ![Alt text](docs/images/channel-mcp-identity.jpg)
 
 5. Call the agent card or send a message through the Agent Gateway — the VP carrying the agent's identity will be injected automatically into each response
 
-   ![Alt text](docs/images/channel-mcp-identity2.png)
-   ![Alt text](docs/images/channel-mcp-identity-dashboard.png)
+   ![Alt text](docs/images/channel-mcp-identity2.jpg)
+   ![Alt text](docs/images/channel-mcp-identity-dashboard.jpg)
 
 > For a detailed walkthrough with identity schema configuration and sample request/response messages, see the **[A2A Protected Agent lab](a2a-protected-agent/README.MD)**.
 

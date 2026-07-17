@@ -59,8 +59,8 @@ By default an MCP channel route is **unprotected** — anyone with the URL can c
 3. Enter a **Client ID** (e.g. `my-app`) — this identifies the calling application in logs and metrics.
 4. Click **Create**. The Agent Gateway generates a new API key.
 
-![Create API Key for channel](docs/tg-target-auth-1-create-apikey.png)
-![View API Key for channel](docs/tg-target-auth-2-apikey.png)
+![Create API Key for channel](docs/tg-target-auth-1-create-apikey.jpg)
+![View API Key for channel](docs/tg-target-auth-2-apikey.jpg)
 
 ### A.2 — Enable Source Authentication on the Channel
 
@@ -69,7 +69,7 @@ By default an MCP channel route is **unprotected** — anyone with the URL can c
    - **Header Name:** `x-api-key`
 4. Click **Save**.
 
-![Enable Source Auth on the channel](docs/tg-target-auth-3-update-channel.png)
+![Enable Source Auth on the channel](docs/tg-target-auth-3-update-channel.jpg)
 
 ### A.3 — Test
 
@@ -103,7 +103,7 @@ Use this when your upstream MCP server itself requires an API key (or other head
 
 1. In the Agent Gateway dashboard, open the **Secrets** page and click **`+ New Secret`**.
 
-   ![Secrets page](docs/tg-source-auth-1.png)
+   ![Secrets page](docs/tg-source-auth-1.jpg)
 
 2. Fill in the form:
    - **Secret Name:** e.g. `MCP Server API Key`
@@ -112,11 +112,11 @@ Use this when your upstream MCP server itself requires an API key (or other head
    - **Secret Value:** the API key your upstream server expects
 3. Click **Create secret**.
 
-   ![Create secret](docs/tg-source-auth-2-create.png)
+   ![Create secret](docs/tg-source-auth-2-create.jpg)
 
 4. The new secret appears in the secrets list.
 
-   ![Secrets list](docs/tg-source-auth-3-list.png)
+   ![Secrets list](docs/tg-source-auth-3-list.jpg)
 
 ### B.2 — Attach the Secret to the Channel
 
@@ -128,7 +128,7 @@ Use this when your upstream MCP server itself requires an API key (or other head
    - **Header Name:** `x-api-key` _(or whatever your upstream expects)_
 4. Click **Save**.
 
-   ![Configure target auth on channel](docs/tg-source-auth-4-channel-update.png)
+   ![Configure target auth on channel](docs/tg-source-auth-4-channel-update.jpg)
 
 ### B.3 — Test
 
@@ -141,7 +141,7 @@ cd mcp
 
 You can confirm the header is being injected by checking the upstream server's logs, or by viewing the request details in the channel's **Logs / Traffic** view in the dashboard.
 
-![Test with injected secret](docs/tg-source-auth-5-test.png)
+![Test with injected secret](docs/tg-source-auth-5-test.jpg)
 
 ---
 

@@ -68,7 +68,7 @@ All policies are managed from the **Settings** page before being attached to a g
 2. Click the **Policies** tab.
 3. The list shows all existing policies with their name, type, and status.
 
-![Policy list page](docs/policy/policy-page-list.png)
+![Policy list page](docs/policy/policy-page-list.jpg)
 
 ### A.2 — Define a New Policy
 
@@ -80,7 +80,7 @@ All policies are managed from the **Settings** page before being attached to a g
    - **Policy Content (Rego):** paste your Rego policy (see [Policy Reference](#policy-reference) below)
 3. Click **Save**.
 
-![Create policy form](docs/policy/create-policy.png)
+![Create policy form](docs/policy/create-policy.jpg)
 
 The new policy appears in the list with **Status: Enabled**.
 
@@ -98,7 +98,7 @@ A gateway-level policy applies to **all** traffic passing through the gateway, r
 4. From the **Policy** dropdown, select the policy you created in Part A.
 5. Click **Save Policy**.
 
-![Gateway policy configuration](docs/policy/gateway-policy.png)
+![Gateway policy configuration](docs/policy/gateway-policy.jpg)
 
 All requests to any channel will now be evaluated against this policy. Requests where `allow = false` are rejected with **`403 Forbidden`**.
 
@@ -116,7 +116,7 @@ A channel-level policy applies only to traffic on a specific channel, allowing d
 4. From the **Policy** dropdown, select the policy you created in Part A.
 5. Click **Save**.
 
-![Channel policy configuration](docs/policy/channel-policy.png)
+![Channel policy configuration](docs/policy/channel-policy.jpg)
 
 Requests to this channel will now be evaluated against the selected policy. Other channels are unaffected.
 

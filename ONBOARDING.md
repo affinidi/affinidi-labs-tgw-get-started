@@ -14,18 +14,18 @@ This guide walks you through the steps to get access to the Agent Gateway, from 
    - **Enable fingerprint authentication** (optional) — for faster access on supported devices.
    - **Verify your email** — enter your email address and confirm the OTP sent to your inbox.
 
-   ![Login](docs/images/dev-portal-login.png)
+   ![Login](docs/images/dev-portal-login.jpg)
 
 3. After a successful login, you will land on the Developer Portal dashboard.
 
-   ![Dashboard](docs/images/dev-portal-dashboard.png)
+   ![Dashboard](docs/images/dev-portal-dashboard.jpg)
 
 ---
 
 ## Step 2: Default Project
 
 After logging in for the first time, the portal automatically creates a **Default Project** for you. You can use this project or create a new one (see Step 3).
-![Alt text](docs/images/dev-portal-projects.png)
+![Alt text](docs/images/dev-portal-projects.jpg)
 
 ---
 
@@ -36,7 +36,7 @@ If you want to work under a dedicated project:
 1. Click **Create Project**
 2. Enter a **Project Name** and an optional **Description**.
 3. Click **Create** to Confirm.
-   ![Alt text](docs/images/dev-portal-project-create.png)
+   ![Alt text](docs/images/dev-portal-project-create.jpg)
 
 ---
 
@@ -45,7 +45,7 @@ If you want to work under a dedicated project:
 1. Navigate to **All Projects** from the left menu bar.
 2. Locate and select the project.
 3. Copy the **Project ID** displayed on the project details page — you will need this in the next step.
-   ![Alt text](docs/images/dev-portal-project-details.png)
+   ![Alt text](docs/images/dev-portal-project-details.jpg)
 
 ---
 
@@ -70,14 +70,14 @@ After your project is whitelisted, you can create and configure your Agent Gatew
 3. Click **Agent Gateway** in the left menu bar.
 4. Click **Create Configuration** and provide a name and description.
 
-   ![Create Agent Gateway](docs/images/create-agent-gateway.png)
+   ![Create Agent Gateway](docs/images/create-agent-gateway.jpg)
 
 5. Wait until the deployment status shows **Complete** (this may take a few minutes).
 6. Once deployment is complete, copy the **Agent Gateway dashboard URL**.
 
-   ![Agent Gateway Done](docs/images/agent-gateway-pending.png)
+   ![Agent Gateway Done](docs/images/agent-gateway-pending.jpg)
    Note: Ideally takes < 5mins to spin-up agent gateway
-   ![Agent Gateway Done](docs/images/agent-gateway-done.png)
+   ![Agent Gateway Done](docs/images/agent-gateway-done.jpg)
 
 ---
 
@@ -92,18 +92,18 @@ After your project is whitelisted, you can create and configure your Agent Gatew
 
    > The first user to register is automatically assigned the **admin** role.
 
-   ![Register Agent Gateway](docs/images/register-tw.png)
+   ![Register Agent Gateway](docs/images/register-tw.jpg)
 
 3. **Returning users:**
    - Enter your **username**.
    - Click **Sign in with Passkey**.
 
-   ![Login Agent Gateway](docs/images/login-tw.png)
-   ![Login Agent Gateway](docs/images/login-tw-passkey.png)
+   ![Login Agent Gateway](docs/images/login-tw.jpg)
+   ![Login Agent Gateway](docs/images/login-tw-passkey.jpg)
 
 4. After a successful login, you will land on the Agent Gateway **dashboard**.
 
-   ![Dashboard](docs/images/gateway-dashboard.png)
+   ![Dashboard](docs/images/gateway-dashboard.jpg)
 
 ---
 
