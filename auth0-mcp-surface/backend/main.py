@@ -22,7 +22,7 @@ Env vars (see .env.example):
     REDIRECT_URI           OAuth callback (default http://localhost:8642/api/auth/callback)
     GATEWAY_URL            Affinidi Trust Gateway MCP surface endpoint
     FRONTEND_URL           Frontend origin (default = this server's origin)
-    PUBLIC_BASE_URL        Public base URL for ngrok/Codespaces (sets callback + frontend)
+    BACKEND_URL            Public base URL for ngrok/Codespaces (sets callback + frontend)
     SESSION_SECRET         Session cookie signing secret
     PORT                   Server port (default 8642)
 """
@@ -55,8 +55,8 @@ SESSION_SECRET = os.environ.get("SESSION_SECRET", secrets.token_hex(32))
 
 # Public base URL of THIS backend (ngrok / Codespaces / proxy). Drives the OAuth
 # callback, which always lives on the backend. Falls back to localhost.
-PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
-_own_origin = PUBLIC_BASE_URL or f"http://localhost:{PORT}"
+BACKEND_URL = os.environ.get("BACKEND_URL", "").rstrip("/")
+_own_origin = BACKEND_URL or f"http://localhost:{PORT}"
 
 # OAuth callback is always on this backend.
 REDIRECT_URI = os.environ.get("REDIRECT_URI") or f"{_own_origin}/api/auth/callback"
@@ -64,7 +64,7 @@ REDIRECT_URI = os.environ.get("REDIRECT_URI") or f"{_own_origin}/api/auth/callba
 # Where the browser lands after login. Defaults to this backend's origin
 # (single-origin: the backend serves the UI). For a SPLIT deploy — frontend and
 # backend on different hosts — set FRONTEND_URL explicitly; it is independent of
-# PUBLIC_BASE_URL.
+# BACKEND_URL.
 FRONTEND_URL = (os.environ.get("FRONTEND_URL") or _own_origin).rstrip("/")
 
 
@@ -253,26 +253,12 @@ async def callback(request: Request):
     # Use the id_token (JWT) as the gateway Bearer token; fall back to access_token.
     stored_token = id_token or access_token
     request.session["token"] = stored_token
-    request.session["guest"] = False
     request.session["user"] = {
         "name": userinfo.get("name"),
         "email": userinfo.get("email"),
         "picture": userinfo.get("picture"),
     }
     return RedirectResponse(url=f"{FRONTEND_URL}/chat")
-
-
-@app.get("/api/auth/guest")
-def guest_login(request: Request):
-    """Continue as guest — no gateway token; protected calls will 401."""
-    request.session.clear()
-    request.session["guest"] = True
-    request.session["user"] = {
-        "name": "Guest User",
-        "email": "Not signed in",
-        "picture": "",
-    }
-    return {"ok": True}
 
 
 @app.get("/api/auth/me")
@@ -282,7 +268,6 @@ def me(request: Request):
     authenticated = "token" in request.session
     return {
         "authenticated": authenticated,
-        "guest": bool(request.session.get("guest")),
         "user": user or None,
         "gateway_url": GATEWAY_URL,
     }
@@ -297,12 +282,6 @@ def logout(request: Request):
 # ── Gateway proxy routes ─────────────────────────────────────────────────────────
 def _require_auth(request: Request):
     if "token" not in request.session:
-        if request.session.get("guest"):
-            return JSONResponse(
-                {"error": "401 Unauthorized: This gateway is protected with Google login. "
-                          "Sign in with Google to continue."},
-                status_code=401,
-            )
         return JSONResponse({"error": "Not authenticated"}, status_code=401)
     return None
 
@@ -379,7 +358,7 @@ if __name__ == "__main__":
     print(f"  Serving frontend: {'yes (dist found)' if _DIST.is_dir() else 'no (run npm build for single-origin)'}")
     print(f"  Callback:         {REDIRECT_URI}")
     print(f"  Frontend origin:  {FRONTEND_URL}")
-    print(f"  Public base URL:  {PUBLIC_BASE_URL or '(not set)'}")
+    print(f"  Backend URL:      {BACKEND_URL or '(not set)'}")
     print(f"  Cookie:           domain={COOKIE_DOMAIN or '(host-only)'} "
           f"samesite={COOKIE_SAMESITE} secure={COOKIE_SECURE}")
     print(f"  Gateway (Google): {GATEWAY_URL or '(not set)'}")

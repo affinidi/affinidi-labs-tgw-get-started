@@ -1,9 +1,9 @@
 // Small typed client for the FastAPI backend.
-// The base URL is injected at build time from PUBLIC_API_BASE:
+// The base URL is injected at build time from PUBLIC_BACKEND_URL:
 //   - unset            → dev default (two-server mode, backend on :8642)
 //   - "" (empty)       → same origin / relative (single-origin: backend serves us)
 //   - "https://host"   → explicit absolute base
-const _rawBase = import.meta.env.PUBLIC_API_BASE as string | undefined;
+const _rawBase = import.meta.env.PUBLIC_BACKEND_URL as string | undefined;
 export const API_BASE: string =
   _rawBase === undefined ? 'http://localhost:8642' : _rawBase;
 
@@ -15,7 +15,6 @@ export interface UserInfo {
 
 export interface MeResponse {
   authenticated: boolean;
-  guest: boolean;
   user: UserInfo | null;
   gateway_url: string;
 }
@@ -37,20 +36,24 @@ async function json<T>(path: string, init?: RequestInit): Promise<T> {
 export const api = {
   me: () => json<MeResponse>('/api/auth/me'),
   loginUrl: () => json<{ auth_url: string }>('/api/auth/login'),
-  guest: () => json<{ ok: boolean }>('/api/auth/guest'),
   logout: () => json<{ ok: boolean }>('/api/auth/logout'),
 
+  // No `Content-Type: application/json` on purpose. A JSON content-type makes the
+  // request "non-simple" and forces a CORS preflight (OPTIONS). Behind the
+  // split-subdomain proxy the preflight headers are stripped, so the OPTIONS
+  // falls through to the router and 405s. Omitting the header lets fetch default
+  // to text/plain (a CORS-safelisted value), keeping the request "simple" — no
+  // preflight. The backend parses the body with request.json(), which ignores
+  // the content-type.
   chat: (message: string) =>
     json<GatewayResponse>('/api/gateway/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message }),
     }),
 
   gateway: (body: unknown) =>
     json<GatewayResponse>('/api/gateway', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     }),
 };

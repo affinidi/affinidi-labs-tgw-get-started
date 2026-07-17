@@ -71,6 +71,7 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
   - [Sample MCP Request & Response Messages](#sample-mcp-request--response-messages)
 - [Part 3: A2A Protected Agent — Decentralized Identity](#part-3-a2a-protected-agent--decentralized-identity)
 - [Part 4: Observability — Visualise Agent Gateway Metrics](#part-4-observability--visualise-trust-gateway-metrics)
+- [Part 5: Identity and Credential Delegation](#part-5-identity-and-credential-delegation--caller-context--auth0-integration)
 
 ---
 
@@ -817,3 +818,23 @@ cd tgw-prometheus-integration
 Then open Grafana at http://localhost:3000 (admin / admin).
 
 ➡️ **[View the full integration guide](tgw-prometheus-integration/readme.md)**
+
+---
+
+## Part 5: Identity and Credential Delegation
+
+Establish governed MCP connections where the Agent Gateway bridges **caller context** (who the user is) with **credential delegation** (what credentials the upstream MCP server receives) — enabling secure, user-scoped access to protected MCP servers with automatic consent management.
+
+This lab walks you through building a browser-based chat surface that routes MCP requests through the Agent Gateway. The gateway verifies the caller's identity via OAuth JWT, delegates credentials to the upstream MCP server on a per-user basis, and handles the consent flow automatically when upstream access is needed.
+
+**What you will learn:**
+
+- How to configure OAuth JWT verification as the caller context
+- How to set up credential delegation for gateway-to-MCP-server authentication
+- How to extract user identity from JWT claims to scope delegated credentials per user
+- How to implement on-demand consent with automatic popup-based authorization
+- How the complete flow ensures only authorized users access protected upstream resources
+
+> This demo uses **Google OAuth** for caller context and **Auth0 OAuth** for credential delegation — but the pattern works with any OAuth 2.0 provider (Okta, Azure AD, etc.).
+
+➡️ **[View the complete setup guide](auth0-mcp-surface/README.md)**

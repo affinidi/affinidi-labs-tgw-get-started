@@ -54,10 +54,6 @@ import Layout from '../layouts/Layout.astro';
         <span x-text="loading ? 'Redirecting…' : 'Sign in with Google'"></span>
       </button>
 
-      <button class="btn btn-secondary guest" @click="guest()" :disabled="loading">
-        Continue as Guest
-      </button>
-
       <p class="footer">Signing in with Google grants access to the Agent Gateway.</p>
     </div>
   </main>
@@ -92,17 +88,6 @@ import Layout from '../layouts/Layout.astro';
       } catch (e) {
         this.loading = false;
         alert('Could not start login. Is the backend running on :8000?');
-      }
-    },
-
-    async guest() {
-      this.loading = true;
-      try {
-        await api.guest();
-        window.location.href = '/chat';
-      } catch (e) {
-        this.loading = false;
-        alert('Guest login failed.');
       }
     },
   }));
@@ -185,7 +170,6 @@ import Layout from '../layouts/Layout.astro';
     text-transform: uppercase;
     letter-spacing: 0.8px;
   }
-  .guest { width: 100%; margin-top: 10px; }
   .footer { font-size: 11px; color: var(--text-disabled); margin-top: 20px; }
 
   @media (max-width: 560px) {

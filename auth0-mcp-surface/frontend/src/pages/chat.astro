@@ -28,7 +28,16 @@ import Layout from '../layouts/Layout.astro';
     <!-- Messages -->
     <main class="messages" x-ref="messages">
       <div class="hint" x-show="messages.length === 0">
-        <p>Ask the gateway anything, or try a quick action below.</p>
+        <div class="welcome" x-show="user">
+          <template x-if="user && user.picture">
+            <img :src="user.picture" class="welcome-avatar" alt="" referrerpolicy="no-referrer" />
+          </template>
+          <h2 class="welcome-title">Welcome, <span x-text="firstName"></span> 👋</h2>
+          <p class="welcome-sub">
+            You're signed in with Google. Send your first message — the Trust Gateway
+            delegates Auth0 access to the MCP server on your behalf.
+          </p>
+        </div>
         <div class="quick">
           <button class="chip" @click="listTools()">📋 List Tools</button>
           <button class="chip" @click="send('What can you help me with?')">💬 Say hello</button>
@@ -83,6 +92,11 @@ import Layout from '../layouts/Layout.astro';
     messages: [] as any[],
     input: '',
     sending: false,
+
+    get firstName() {
+      const n = this.user && this.user.name ? this.user.name.trim() : '';
+      return n ? n.split(/\s+/)[0] : 'there';
+    },
 
     async init() {
       // Client-side auth guard.
@@ -162,6 +176,18 @@ import Layout from '../layouts/Layout.astro';
       const requestBody = buildChatToolCall(message, requestId);
       try {
         const data = await api.chat(message);
+
+        // Check for consent_required in response body
+        if (data.body?.consent_required?.length > 0) {
+          const authUrl = data.body.consent_required[0].authorization_url;
+          if (authUrl) {
+            this.resolve(id, '<span style="color:#fbbf24">🔐 Opening Auth0 authentication...</span>');
+            // Pass the loading message ID so popup handler can update it if popup is blocked
+            await this.handleConsentRequired(authUrl, () => this.send(message), id);
+            return; // Don't call this.sending = false yet - retry will handle it
+          }
+        }
+
         this.resolve(id, renderResponse(data, requestBody));
       } catch (err: any) {
         this.resolve(id, `<span style="color:#fca5a5">Error: ${escapeHtml(err.message)}</span>`);
@@ -176,6 +202,18 @@ import Layout from '../layouts/Layout.astro';
       this.sending = true;
       try {
         const data = await api.gateway(body);
+
+        // Check for consent_required in response body
+        if (data.body?.consent_required?.length > 0) {
+          const authUrl = data.body.consent_required[0].authorization_url;
+          if (authUrl) {
+            this.resolve(id, '<span style="color:#fbbf24">🔐 Opening Auth0 authentication...</span>');
+            // Pass the loading message ID so popup handler can update it if popup is blocked
+            await this.handleConsentRequired(authUrl, () => this.callGateway(body, label), id);
+            return; // Don't call this.sending = false yet - retry will handle it
+          }
+        }
+
         this.resolve(id, renderResponse(data, body));
       } catch (err: any) {
         this.resolve(id, `<span style="color:#fca5a5">Error: ${escapeHtml(err.message)}</span>`);
@@ -194,6 +232,68 @@ import Layout from '../layouts/Layout.astro';
         },
         '📋 List Tools'
       );
+    },
+
+    async handleConsentRequired(authUrl: string, originalRequestFn: () => Promise<void>, loadingMessageId: number) {
+      console.log('[OnDemandAuth] Opening Auth0 popup...');
+
+      // Open auth URL in centered popup window
+      const width = 500;
+      const height = 700;
+      const left = (window.screen.width - width) / 2;
+      const top = (window.screen.height - height) / 2;
+      const features = `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=yes,status=no,scrollbars=yes`;
+
+      const popup = window.open(authUrl, 'oauth_popup', features);
+
+      if (!popup) {
+        // Popup blocked - show error message with manual fallback
+        console.error('[OnDemandAuth] Popup blocked by browser');
+        const errorMsg = `
+          <div class="auth-card">
+            <div class="auth-title">⚠️ Popup Blocked</div>
+            <p class="auth-desc">Your browser blocked the authentication popup. Please allow popups for this site, or use the manual link below:</p>
+            <a href="${escapeHtml(authUrl)}" target="_blank" rel="noreferrer" class="btn btn-primary auth-btn">Authenticate with Auth0 ↗</a>
+            <p style="margin-top:10px;font-size:12px;opacity:0.7;">After authenticating, retry your request.</p>
+          </div>
+        `;
+        this.resolve(loadingMessageId, errorMsg);
+        return;
+      }
+
+      console.log('[OnDemandAuth] Popup opened, polling for close...');
+
+      // Poll to detect when popup closes
+      await this.waitForPopupClose(popup);
+
+      console.log('[OnDemandAuth] Popup closed, auto-retrying request...');
+
+      // Small delay to ensure OAuth callback completed
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Automatically retry the original request
+      await originalRequestFn();
+    },
+
+    async waitForPopupClose(popup: Window) {
+      return new Promise<void>((resolve) => {
+        const pollInterval = setInterval(() => {
+          try {
+            if (popup.closed) {
+              clearInterval(pollInterval);
+              resolve();
+            }
+          } catch (e) {
+            // Cross-origin error - keep polling
+          }
+        }, 500);
+
+        // Timeout after 5 minutes
+        setTimeout(() => {
+          clearInterval(pollInterval);
+          resolve();
+        }, 5 * 60 * 1000);
+      });
     },
 
     async logout() {
@@ -269,6 +369,26 @@ import Layout from '../layouts/Layout.astro';
   .auth-desc { font-size: 11px; color: #94a3b8; margin-bottom: 10px; }
   .auth-btn { text-decoration: none; }
 
+  /* Access-denied card */
+  .denied-card {
+    background: #2a0f0f;
+    border: 1px solid #f87171;
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .denied-title { font-weight: 700; font-size: 14px; color: #fca5a5; margin-bottom: 8px; }
+  .denied-desc { font-size: 12px; color: #fecaca; line-height: 1.5; margin-bottom: 10px; }
+  .denied-reason {
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+    color: #fda4af;
+    background: #1a0808;
+    border-radius: 6px;
+    padding: 8px 10px;
+    word-break: break-word;
+  }
+
   /* Caller-context card */
   .ctx-card { background: #0f172a; border: 1px solid var(--button-primary-bg); border-radius: var(--radius-sm); margin-bottom: 10px; overflow: hidden; }
   .ctx-header {
@@ -331,7 +451,11 @@ import Layout from '../layouts/Layout.astro';
   .brand-sub { font-size: 11px; color: var(--text-disabled); }
 
   .user { display: flex; align-items: center; gap: 12px; }
-  .avatar { width: 34px; height: 34px; border-radius: 50%; }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid var(--button-primary-bg);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.18);
+  }
   .user-meta { text-align: right; }
   .user-name { font-size: 13px; font-weight: 600; }
   .user-email { font-size: 11px; color: var(--text-disabled); }
@@ -339,6 +463,14 @@ import Layout from '../layouts/Layout.astro';
 
   .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
   .hint { color: var(--text-secondary); font-size: 13px; text-align: center; margin: auto; }
+  .welcome { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .welcome-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 2px solid var(--button-primary-bg);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+  }
+  .welcome-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+  .welcome-sub { font-size: 13px; color: var(--text-secondary); line-height: 1.6; max-width: 440px; margin: 0 auto; }
   .quick { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
   .chip {
     background: var(--surface-raised);

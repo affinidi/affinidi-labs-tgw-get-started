@@ -166,6 +166,7 @@ def execute_chat(request_id: Any, arguments: Dict) -> JSONResponse:
         response = client.converse(
             modelId=model_id,
             messages=[{"role": "user", "content": [{"text": message}]}],
+            inferenceConfig={"maxTokens": 3000, "temperature": 0.2},
         )
         text = response["output"]["message"]["content"][0]["text"]
     except Exception as e:  # noqa: BLE001 — surface any Bedrock error as text

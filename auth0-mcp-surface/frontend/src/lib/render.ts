@@ -207,6 +207,43 @@ function renderRawBlock(label: string, body: unknown): string {
   )}</div></details>`;
 }
 
+// Was the request denied by the gateway? Distinct from `consent_required`
+// (an expected step) — this is a hard "you may not access the upstream" verdict.
+function accessDeniedReason(data: any): string | null {
+  const body = data && data.body;
+  // Consent is not a denial — let the consent card handle it.
+  if (body && body.consent_required && body.consent_required.length > 0) return null;
+
+  const status = data && data.status;
+  const isDeniedStatus = status === 401 || status === 403;
+
+  // JSON-RPC / gateway error payloads.
+  const err =
+    (body && (body.error || (body.result && body.result.isError && body.result))) || null;
+  const haystacks = [
+    typeof data?.error === 'string' ? data.error : '',
+    err ? JSON.stringify(err) : '',
+  ]
+    .join(' ')
+    .toLowerCase();
+  const looksDenied = /denied|unauthor|forbidden|not permitted|permission|access.*(revoked|refused)/.test(
+    haystacks
+  );
+
+  if (!isDeniedStatus && !looksDenied) return null;
+
+  // Prefer a human-readable message from the payload.
+  if (err && typeof err === 'object') {
+    if (typeof (err as any).message === 'string') return (err as any).message;
+    if (Array.isArray((err as any).content)) {
+      const t = (err as any).content.find((c: any) => c.type === 'text' && c.text);
+      if (t) return t.text;
+    }
+  }
+  if (typeof data?.error === 'string') return data.error;
+  return 'The Trust Gateway declined access to the upstream MCP server.';
+}
+
 /**
  * Build the full HTML for a gateway response bubble.
  * `data` is { status, body, error }, `requestBody` is the outgoing MCP request.
@@ -215,7 +252,24 @@ export function renderResponse(data: any, requestBody: unknown): string {
   const body = data.body;
   let html = '';
 
-  // Consent required (driven by the Trust Gateway — now backed by Auth0).
+  // Access denied by the gateway (delegation refused / not permitted).
+  const deniedReason = accessDeniedReason(data);
+  if (deniedReason) {
+    html += `<div class="denied-card">
+      <div class="denied-title">🚫 Access Denied</div>
+      <p class="denied-desc">Your Google sign-in is valid, but the Trust Gateway did not grant access to the upstream MCP server for this request.</p>
+      <div class="denied-reason">${escapeHtml(deniedReason)}</div>
+    </div>`;
+    html += renderRawBlock('Raw MCP request', requestBody);
+    html += renderRawBlock('Raw MCP response', body);
+    return html;
+  }
+
+  // Consent required — Now handled by automatic popup in chat.astro
+  // The consent_required response is intercepted in send()/callGateway() before
+  // renderResponse() is called, so this block won't execute during auto-popup flow.
+  // Keeping it commented for reference / manual fallback mode.
+  /*
   if (body && body.consent_required && body.consent_required.length > 0) {
     const consent = body.consent_required[0];
     const authUrl = consent.authorization_url || '';
@@ -230,6 +284,7 @@ export function renderResponse(data: any, requestBody: unknown): string {
       }
     </div>`;
   }
+  */
 
   // Caller context VP — may be direct or nested in result.content[].text JSON.
   let vpSource: any = null;
