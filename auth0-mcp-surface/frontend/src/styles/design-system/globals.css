@@ -1,0 +1,155 @@
+/**
+ * Design system — all-in-one stylesheet (vendored, self-contained).
+ *
+ * A local copy of a CSS custom-property design-token system so this project has
+ * no external/registry dependency. Loads in order:
+ *   1. Token tiers (primitives → semantic → themes)
+ *   2. Font declarations
+ *   3. CSS reset
+ *   4. Utility classes
+ *   5. Global application styles
+ *
+ * Derived from an MIT-licensed design-token system. MIT license applies.
+ *
+ * Usage (already wired in src/layouts/Layout.astro):
+ *   import '../styles/design-system/globals.css';
+ */
+
+/* Tier 1: Primitives */
+@import './tokens/base.css';
+
+/* Tier 2: Brand Semantic */
+@import './tokens/brand.css';
+@import './tokens/brand-light.css';
+@import './tokens/media.css';
+
+/* Tier 3: Product Themes */
+@import './tokens/themes/_fallbacks.css';
+@import './tokens/themes/website.css';
+@import './tokens/themes/docsite.css';
+@import './tokens/themes/fabric.css';
+@import './tokens/themes/radix.css';
+@import './tokens/themes/messaging.css';
+@import './tokens/themes/elements.css';
+@import './tokens/themes/forge.css';
+@import './tokens/themes/portal.css';
+
+/* Font Declarations */
+@import './fonts.css';
+
+/* CSS Reset */
+@import './reset.css';
+
+/* Utility Classes */
+@import './utilities.css';
+
+/* Media Component Styles */
+@import './media.css';
+
+/* ========================================
+   Global Application Styles
+   ======================================== */
+
+html {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-body-md);
+  font-weight: var(--font-weight-body-md);
+  line-height: var(--line-height-body-md);
+  letter-spacing: var(--letter-spacing-body-md);
+  color: var(--text-primary);
+  background-color: var(--surface-background);
+  color-scheme: dark;
+  min-height: 100vh;
+}
+
+/* Typography defaults */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-sans);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-headline-lg);
+  letter-spacing: var(--letter-spacing-headline-lg);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+p {
+  line-height: var(--line-height-body-md);
+}
+
+/* ========================================
+   Links — Accessible Color System
+   ======================================== */
+
+a {
+  color: var(--link-default);
+  text-decoration: none;
+  transition: color var(--duration-short-4) var(--easing-standard);
+}
+
+a:hover {
+  color: var(--link-hover);
+}
+
+a:active {
+  color: var(--link-active);
+}
+
+a:visited {
+  color: var(--link-visited);
+}
+
+/* Product-themed links */
+a.link-product,
+.fabric a:not(.nav__link):not(.btn),
+.radix a:not(.nav__link):not(.btn),
+.forge a:not(.nav__link):not(.btn),
+.elements a:not(.nav__link):not(.btn) {
+  color: var(--link-product);
+}
+
+a.link-product:hover,
+.fabric a:not(.nav__link):not(.btn):hover,
+.radix a:not(.nav__link):not(.btn):hover,
+.forge a:not(.nav__link):not(.btn):hover,
+.elements a:not(.nav__link):not(.btn):hover {
+  color: var(--link-product-hover);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--primary-500);
+  color: var(--text-on-primary);
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}

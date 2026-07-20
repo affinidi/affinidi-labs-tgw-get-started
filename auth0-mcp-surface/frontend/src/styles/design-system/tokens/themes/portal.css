@@ -1,0 +1,34 @@
+/**
+ * Design System - Portal Product Tokens
+ * 
+ * Product-Specific Overrides: Brand Portal customizations
+ * Brand identity: Admin Dashboard
+ * 
+ * Token Set: "portal"
+ * Dependencies: base, brand, dark-mode (or light-mode)
+ * Usage: Portal-specific design variations
+ */
+
+:root[data-product-theme="portal"] {
+  /* ----------------
+     PORTAL BRAND SURFACES
+     Product-specific brand identity tokens
+     ---------------- */
+
+  /* Portal Palette */
+  --brand-portal-primary: #6366F1;
+  --brand-portal-secondary: #06B6D4;
+  --brand-portal-accent: #C7F0FF;
+
+  /* Portal Theme (Dashboard) */
+  --brand-portal-bg: linear-gradient(135deg, var(--brand-portal-primary) 0%, var(--brand-portal-secondary) 100%);
+  --brand-portal-bg-subtle: rgba(99, 102, 241, 0.12);
+  --brand-portal-text: var(--brand-portal-primary);
+  --brand-portal-border: var(--brand-portal-primary);
+  --brand-portal-glow: rgba(99, 102, 241, 0.42);
+  --brand-portal-glow-bg: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 60%);
+  --brand-portal-mesh: radial-gradient(at 40% 20%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+                       radial-gradient(at 80% 0%, rgba(199, 240, 255, 0.16) 0px, transparent 50%);
+  --brand-portal-icon-bg: linear-gradient(135deg, var(--brand-portal-secondary) 0%, var(--brand-portal-primary) 100%);
+  --brand-portal-icon-shadow: 0 8px 24px rgba(99, 102, 241, 0.32), 0 0 40px rgba(6, 182, 212, 0.18);
+}

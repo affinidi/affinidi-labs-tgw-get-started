@@ -1,17 +1,17 @@
-# Trust Gateway → Prometheus → Grafana
+# Agent Gateway → Prometheus → Grafana
 
-A self-contained guide for scraping the **Trust Gateway's native
+A self-contained guide for scraping the **Agent Gateway's native
 Prometheus metrics endpoint** and visualising it in Grafana — no
 OpenTelemetry Collector, no agents, no tunnels.
 
 ```
-Trust Gateway                                    Prometheus            Grafana
+Agent Gateway                                    Prometheus            Grafana
 ┌────────────────────────────────┐  scrape (15s) ┌───────────┐  query  ┌────────────┐
 │ /api/v1/metrics/prometheus     │ ────────────► │  TSDB     │ ──────► │ dashboards │
 └────────────────────────────────┘               └───────────┘         └────────────┘
 ```
 
-The stack supports **any number of Trust Gateway instances** — pass
+The stack supports **any number of Agent Gateway instances** — pass
 each one's host to `run.sh` and the script generates a scrape job
 plus a matching Grafana dashboard for it automatically. The job /
 dashboard name is **derived from the host's subdomain**, so each
@@ -19,14 +19,14 @@ TG ends up with its own clearly labelled view.
 
 > 🔒 **Optional: Basic Auth for the metrics endpoint**
 >
-> The Trust Gateway `/api/v1/metrics/prometheus` endpoint supports
+> The Agent Gateway `/api/v1/metrics/prometheus` endpoint supports
 > **HTTP Basic Authentication** (disabled by default). If you enable it,
 > Prometheus must supply the credentials or scraping will return 401.
 >
-> **Enable in the Trust Gateway UI:**
+> **Enable in the Agent Gateway UI:**
 > **Settings → Admin tab → Prometheus Authentication → toggle on → set username & password**
 >
-> ![Prometheus Authentication setting in Trust Gateway UI](docs/tg-promethus-auth.png)
+> ![Prometheus Authentication setting in Agent Gateway UI](docs/tg-promethus-auth.jpg)
 >
 > If enabled, supply the credentials in `prometheus.yml` via the
 > `basic_auth` block (see steps below). If disabled, omit the block entirely.
@@ -34,11 +34,11 @@ TG ends up with its own clearly labelled view.
 ## Prerequisites
 
 - Docker Desktop 24+ with Compose v2
-- Network reachability from your machine to your Trust Gateway host(s)
-- Your Trust Gateway URL(s) — only the host part of
+- Network reachability from your machine to your Agent Gateway host(s)
+- Your Agent Gateway URL(s) — only the host part of
   `https://<YOUR_TGW_HOST>/api/v1/metrics/prometheus`
 
-## Step 1 — Verify your Trust Gateway exposes metrics
+## Step 1 — Verify your Agent Gateway exposes metrics
 
 Before bringing the stack up, confirm the endpoint is reachable from
 your machine and returns Prometheus-format text:
@@ -62,7 +62,7 @@ agent_trust_gateway_requests_total 5458
 If you get an HTML error page or a connection failure, fix that first —
 nothing downstream will work until this `curl` succeeds.
 
-## Step 2 — Run the stack with your Trust Gateway host(s)
+## Step 2 — Run the stack with your Agent Gateway host(s)
 
 `run.sh` takes one of two flows. Pick whichever fits.
 
@@ -71,22 +71,22 @@ nothing downstream will work until this `curl` succeeds.
 ```bash
 cd tgw-prometheus-integration
 
-# One Trust Gateway — credentials set via environment variables
+# One Agent Gateway — credentials set via environment variables
 TGW_USERNAME=prometheus TGW_PASSWORD=secret \
   ./run.sh acme-demo.trustgateway.affinidi.io
 
-# Multiple Trust Gateways sharing the same credentials
+# Multiple Agent Gateways sharing the same credentials
 TGW_USERNAME=prometheus TGW_PASSWORD=secret \
   ./run.sh acme-demo.trustgateway.affinidi.io acme-prod.trustgateway.affinidi.io
 
-# Multiple Trust Gateways with different credentials (comma-separated, same order as hosts)
+# Multiple Agent Gateways with different credentials (comma-separated, same order as hosts)
 TGW_USERNAMES=user1,user2 TGW_PASSWORDS=pass1,pass2 \
   ./run.sh acme-demo.trustgateway.affinidi.io acme-prod.trustgateway.affinidi.io
 ```
 
 > `TGW_USERNAME` / `TGW_PASSWORD` are **optional**. Only set them if
 > you have enabled **Settings → Admin tab → Prometheus Authentication**
-> in the Trust Gateway UI. If omitted, `run.sh` writes the scrape job
+> in the Agent Gateway UI. If omitted, `run.sh` writes the scrape job
 > without a `basic_auth` block.
 
 What `./run.sh <host1> [host2 ...]` does:
@@ -151,10 +151,10 @@ sed -e 's/__JOB__/tgw-acme-demo-trustgateway/g' \
 ```
 
 > If you have enabled **Settings → Admin → Prometheus Authentication**
-> in the Trust Gateway UI, add the `basic_auth` block above with the
+> in the Agent Gateway UI, add the `basic_auth` block above with the
 > username and password you configured. If auth is disabled, omit it.
 
-Repeat the scrape-job block and the `sed` for as many Trust Gateways
+Repeat the scrape-job block and the `sed` for as many Agent Gateways
 as you need. Then start the stack:
 
 ```bash
@@ -179,20 +179,20 @@ show `State: UP`. If a target is `DOWN`, the error column tells you
 why (TLS handshake, DNS, 404 path, etc.).
 
 In Grafana, open **Dashboards** in the left sidebar. You'll find
-**one dashboard per Trust Gateway**, titled with the identifier
-(e.g. _Trust Gateway — acme-demo.trustgateway_). Each dashboard
+**one dashboard per Agent Gateway**, titled with the identifier
+(e.g. _Agent Gateway — acme-demo.trustgateway_). Each dashboard
 filters on its own `job="tgw-<slug>"` so the views never mix
 metrics across TGs.
 
-![Grafana dashboards list](docs/grafana-dashboard.png)
+![Grafana dashboards list](docs/grafana-dashboard.jpg)
 
-Open one to see the Trust Gateway metrics:
+Open one to see the Agent Gateway metrics:
 
-![Trust Gateway metrics dashboard](docs/grafana-dashboard-tg-metrics.png)
+![Agent Gateway metrics dashboard](docs/grafana-dashboard-tg-metrics.jpg)
 
 ## Metrics covered by the dashboards
 
-The Trust Gateway exposes the following `agent_trust_gateway_*` series.
+The Agent Gateway exposes the following `agent_trust_gateway_*` series.
 Every panel on the shipped dashboards maps to one or more of these:
 
 | Metric                                             | Type      | Meaning                            |
@@ -247,7 +247,7 @@ tgw-prometheus-integration/
 ```
 
 > Both `prometheus.yml` and `grafana/provisioning/dashboards/tgw-*.json`
-> are listed in `.gitignore`. They contain your real Trust Gateway
+> are listed in `.gitignore`. They contain your real Agent Gateway
 > hostnames — keep them local.
 
 ## Stop the stack

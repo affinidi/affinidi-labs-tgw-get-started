@@ -1,0 +1,694 @@
+/**
+ * Design System - Base Tokens
+ * 
+ * Primitives: Raw color scales, typography, spacing, motion, shapes, breakpoints
+ * These tokens are platform-agnostic and never reference semantic usage
+ * 
+ * Token Set: "base"
+ * Usage: Foundation for all other token sets (brand, themes, products)
+ */
+
+:root {
+  /* ========================================
+     COLOR PALETTE
+     Material Design 3 compliant tonal palettes
+     ======================================== */
+  
+  /* Shocking Blue (#1D58FC) - Vibrant blue from the Brand brand palette */
+  --shocking-blue-50: #EEF2FF;
+  --shocking-blue-100: #E0E7FF;
+  --shocking-blue-200: #C7D2FE;
+  --shocking-blue-300: #A5B4FC;
+  --shocking-blue-400: #818CF8;
+  --shocking-blue-500: #1D58FC;
+  --shocking-blue-600: #1A4DE3;
+  --shocking-blue-700: #1640C9;
+  --shocking-blue-800: #1434A3;
+  --shocking-blue-900: #122D81;
+  --shocking-blue-950: #0D1D4D;
+
+  /* Silky Turquoise (#67FAFD) - Electric cyan from the Brand brand palette */
+  --silky-turquoise-50: #F0FFFE;
+  --silky-turquoise-100: #DAFFFE;
+  --silky-turquoise-200: #BFFFFE;
+  --silky-turquoise-300: #9FFFFE;
+  --silky-turquoise-400: #7BFEFD;
+  --silky-turquoise-500: #67FAFD;
+  --silky-turquoise-600: #28D4DE;
+  --silky-turquoise-700: #22ADB9;
+  --silky-turquoise-800: #1E8691;
+  --silky-turquoise-900: #1C6670;
+  --silky-turquoise-950: #15474E;
+
+  /* Medium Orchid (#AE44D5) - Purple from the Brand brand palette */
+  --medium-orchid-50: #FAF5FF;
+  --medium-orchid-100: #F3E8FF;
+  --medium-orchid-200: #E9D5FF;
+  --medium-orchid-300: #D8B4FE;
+  --medium-orchid-400: #C084FC;
+  --medium-orchid-500: #AE44D5;
+  --medium-orchid-600: #9333EA;
+  --medium-orchid-700: #7E22CE;
+  --medium-orchid-800: #6B21A8;
+  --medium-orchid-900: #581C87;
+  --medium-orchid-950: #3B0764;
+
+  /* Vibrant Pink (#FF5BCC) - Hot pink from the Brand brand palette */
+  --vibrant-pink-50: #FEF1FB;
+  --vibrant-pink-100: #FEE5F9;
+  --vibrant-pink-200: #FFCCF3;
+  --vibrant-pink-300: #FFA3E8;
+  --vibrant-pink-400: #FF6AD5;
+  --vibrant-pink-500: #FF5BCC;
+  --vibrant-pink-600: #F72BB8;
+  --vibrant-pink-700: #E0149E;
+  --vibrant-pink-800: #B81581;
+  --vibrant-pink-900: #991869;
+  --vibrant-pink-950: #5F0340;
+
+  /* Slate Gray (Cool-tinted neutral) - Harmonizes with brand palette */
+  --neutral-50: #F8FAFC;
+  --neutral-100: #F1F5F9;
+  --neutral-200: #E2E8F0;
+  --neutral-300: #CBD5E1;
+  --neutral-400: #94A3B8;
+  --neutral-500: #64748B;
+  --neutral-600: #475569;
+  --neutral-700: #334155;
+  --neutral-800: #1E293B;
+  --neutral-900: #0F172A;
+  --neutral-950: #020617;
+
+  /* Emerald (#10B981) - Green primary color from emerald gemstone */
+  --emerald-50: #ECFDF5;
+  --emerald-100: #D1FAE5;
+  --emerald-200: #A7F3D0;
+  --emerald-300: #6EE7B7;
+  --emerald-400: #34D399;
+  --emerald-500: #10B981;
+  --emerald-600: #059669;
+  --emerald-700: #047857;
+  --emerald-800: #065F46;
+  --emerald-900: #064E3B;
+  --emerald-950: #022C22;
+
+  /* Yellow (#EAB308) - Bright yellow from amber spectrum */
+  --yellow-50: #FEFCE8;
+  --yellow-100: #FEF9C3;
+  --yellow-200: #FEF08A;
+  --yellow-300: #FDE047;
+  --yellow-400: #FACC15;
+  --yellow-500: #EAB308;
+  --yellow-600: #CA8A04;
+  --yellow-700: #A16207;
+  --yellow-800: #854D0E;
+  --yellow-900: #713F12;
+  --yellow-950: #422006;
+
+  /* Red (#EF4444) - Vibrant red for high visibility */
+  --red-50: #FEF2F2;
+  --red-100: #FEE2E2;
+  --red-200: #FECACA;
+  --red-300: #FCA5A5;
+  --red-400: #F87171;
+  --red-500: #EF4444;
+  --red-600: #DC2626;
+  --red-700: #B91C1C;
+  --red-800: #991B1B;
+  --red-900: #7F1D1D;
+  --red-950: #450A0A;
+
+  /* ========================================
+     TYPOGRAPHY (Optical Scale)
+     
+     Font sizes use an OPTICAL scale (not mathematical ratio)
+     - Sizes: 11, 12, 14, 16, 18, 20, 24, 32, 40, 48, 56, 80, 112px
+     - Irregular ratios (÷1.09 to ÷1.43) chosen for visual harmony
+     - Intentional duplicates serve different purposes:
+       * headline-sm (32px) vs title-lg (32px) → different line-heights
+       * body-sm (14px) vs label-lg (14px) → different weights
+     
+     Line-heights use PROGRESSIVE TIGHTENING (industry best practice):
+     - Display hero  0.88        — FatFrank all-caps only, never multi-line mixed-case
+       - Display lg    1.02        — tightened, but safe to wrap
+       - Display md    1.04        — tightened, but safe to wrap
+     - Display sm    1.02        — may wrap; just above 1.0 for safety
+     - Headline      1.10–1.20   — section titles, can wrap
+     - Title         1.25–1.40   — card titles, modals
+     - Body          1.60–1.75   — reading text
+     - Label         1.40–1.50   — UI chrome
+     - Relaxed       1.75        — long-form articles >1500 words
+     
+     ⚠ Values below 1.0 will cause line overlap on any multi-line text.
+          Use display-hero (0.88) ONLY for FatFrank all-caps single-line headings.
+     
+     Responsive fluid typography with clamp()
+     See DESIGN_TOKENS_SYNC.md for full scale philosophy
+     ======================================== */
+
+  /* Utility Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  /* Font Families */
+  --font-family-hero: 'FatFrank', 'Impact', 'Arial Black', sans-serif;
+  --font-family-sans: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --font-family-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Courier New', monospace;
+
+  /* Special line-heights */
+  --line-height-hero: 0.88;                /* FatFrank display hero — very tight, capitals */
+  --line-height-relaxed: 1.75;             /* Long-form body — loose for reading comfort */
+
+  /* Additional letter-spacing utilities */
+  --letter-spacing-tight: clamp(-0.03em, -0.025em + 0.025vw, -0.015em); /* Hero headings: looser on mobile */
+  --letter-spacing-caps: 0.1em;       /* Uppercase badges */
+  --letter-spacing-caps-wide: 0.15em; /* Section labels */
+  --letter-spacing-caps-wider: 0.2em; /* Uppercase taglines */
+
+  /* Display (Hero sections - FatFrank) */
+  --font-size-display-hero: clamp(3rem, 10vw, 6rem);
+  --font-weight-display-hero: var(--font-weight-black);
+  --line-height-display-hero: var(--line-height-hero);     /* 0.88 — caps stack tight */
+  --letter-spacing-display-hero: var(--letter-spacing-tight);
+
+  --font-size-display-hero-mobile: clamp(2.5rem, 12vw, 4rem);
+
+  --font-size-display-lg: clamp(3.5rem, 7vw, 7rem);
+  --font-weight-display-lg: var(--font-weight-bold);
+   --line-height-display-lg: 1.02;  /* tightened, but safe for wrapped mixed-case display text */
+  --letter-spacing-display-lg: clamp(-0.025em, -0.02em + 0.025vw, -0.01em);
+
+  --font-size-display-md: clamp(2.75rem, 5vw, 5rem);
+  --font-weight-display-md: var(--font-weight-bold);
+   --line-height-display-md: 1.04;  /* slightly looser than lg to improve wrap safety */
+  --letter-spacing-display-md: clamp(-0.025em, -0.02em + 0.025vw, -0.01em);
+
+  --font-size-display-sm: clamp(2.5rem, 6vw, 4.5rem);
+  --font-weight-display-sm: var(--font-weight-bold);
+  --line-height-display-sm: 1.02;
+  --letter-spacing-display-sm: clamp(-0.022em, -0.018em + 0.02vw, -0.01em);
+
+  /* Headline (Section titles) */
+  --font-size-headline-lg: clamp(2rem, 4vw, 3rem);
+  --font-weight-headline-lg: var(--font-weight-bold);
+  --line-height-headline-lg: 1.1;
+  --letter-spacing-headline-lg: clamp(-0.02em, -0.015em + 0.025vw, -0.008em);
+
+  --font-size-headline-md: clamp(1.75rem, 3vw, 2.5rem);
+  --font-weight-headline-md: var(--font-weight-bold);
+  --line-height-headline-md: 1.15;
+  --letter-spacing-headline-md: clamp(-0.02em, -0.015em + 0.025vw, -0.008em);
+
+  --font-size-headline-sm: clamp(1.5rem, 2.5vw, 2rem);
+  --font-weight-headline-sm: var(--font-weight-bold);
+  --line-height-headline-sm: 1.2;
+  --letter-spacing-headline-sm: clamp(-0.016em, -0.012em + 0.02vw, -0.006em);
+
+  /* Title (Card titles, modal headers) */
+  --font-size-title-lg: clamp(1.5rem, 2.5vw, 2rem);
+  --font-weight-title-lg: var(--font-weight-semibold);
+  --line-height-title-lg: 1.25;
+  --letter-spacing-title-lg: -0.01em;
+
+  --font-size-title-md: clamp(1.125rem, 2vw, 1.5rem);
+  --font-weight-title-md: var(--font-weight-semibold);
+  --line-height-title-md: 1.3;
+  --letter-spacing-title-md: -0.008em;
+
+  --font-size-title-sm: clamp(1rem, 1.5vw, 1.25rem);
+  --font-weight-title-sm: var(--font-weight-semibold);
+  --line-height-title-sm: 1.35;
+  --letter-spacing-title-sm: -0.005em;
+
+  /* Title XS — editorial card titles, dense grid cards, 2-line clamped headings.
+     Sits between title-sm and body-md: same 16px size as body-md but medium weight
+     and a tighter line-height (1.4) designed for -webkit-line-clamp: 2.          */
+  --font-size-title-xs: 1rem;                              /* 16px — fixed, no clamp */
+  --font-weight-title-xs: var(--font-weight-medium);       /* 500 — softer than semibold */
+  --line-height-title-xs: 1.4;                             /* body-md: 1.65 → title-sm: 1.35 */
+  --letter-spacing-title-xs: -0.003em;
+
+  /* Body (Content text) */
+  --font-size-body-lg: clamp(1rem, 1.5vw, 1.125rem);
+  --font-weight-body-lg: var(--font-weight-regular);
+  --line-height-body-lg: 1.6;
+  --letter-spacing-body-lg: 0;
+
+  --font-size-body-md: 1rem;
+  --font-weight-body-md: var(--font-weight-regular);
+  --line-height-body-md: 1.65;
+  --letter-spacing-body-md: 0;
+
+  --font-size-body-sm: 0.875rem;
+  --font-weight-body-sm: var(--font-weight-regular);
+  --line-height-body-sm: 1.7;
+  --letter-spacing-body-sm: 0;
+
+  /* extra small body text for hints, captions, disclaimers, fine print */ 
+  --font-size-body-xs: 0.75rem;
+  --font-weight-body-xs: var(--font-weight-regular);
+  --line-height-body-xs: 1.75;
+  --letter-spacing-body-xs: 0.01em;
+
+  --font-size-code: 0.8125rem; /* 13px - monospace code text */
+  --line-height-code: 1.6;
+  --letter-spacing-code: 0;
+
+  /* Label (Buttons, tags, UI elements) */
+  --font-size-label-lg: 0.875rem;
+  --font-weight-label-lg: var(--font-weight-semibold);
+  --line-height-label-lg: 1.4;
+  --letter-spacing-label-lg: 0.05em;
+
+  --font-size-label-md: 0.75rem;
+  --font-weight-label-md: var(--font-weight-semibold);
+  --line-height-label-md: 1.45;
+  --letter-spacing-label-md: 0.05em;
+
+  --font-size-label-sm: 0.6875rem;
+  --font-weight-label-sm: var(--font-weight-semibold);
+  --line-height-label-sm: 1.5;
+  --letter-spacing-label-sm: 0.05em;
+
+  /* ========================================
+     SPACING (Material Design 3 Grid System)
+     Base: 4px, Extended to 192px
+     ======================================== */
+
+  --scale-0: 0;
+  --scale-05: 0.125rem;  /* 2px */
+  --scale-1: 0.25rem;   /* 4px */
+  --scale-2: 0.5rem;    /* 8px */
+  --scale-3: 0.75rem;   /* 12px */
+  --scale-4: 1rem;      /* 16px */
+  --scale-5: 1.25rem;   /* 20px */
+  --scale-6: 1.5rem;    /* 24px */
+  --scale-7: 1.75rem;   /* 28px */
+  --scale-8: 2rem;      /* 32px */
+  --scale-10: 2.5rem;   /* 40px */
+  --scale-12: 3rem;     /* 48px */
+  --scale-14: 3.5rem;   /* 56px */
+  --scale-16: 4rem;     /* 64px */
+  --scale-20: 5rem;     /* 80px */
+  --scale-24: 6rem;     /* 96px */
+  --scale-28: 7rem;     /* 112px */
+  --scale-32: 8rem;     /* 128px */
+  --scale-36: 9rem;     /* 144px */
+  --scale-40: 10rem;    /* 160px */
+  --scale-44: 11rem;    /* 176px */
+  --scale-48: 12rem;    /* 192px */
+
+  /* ========================================
+     SEMANTIC SPACING LAYER
+     Type-based spacing system for intuitive usage
+     Base unit: 4px | Scale: 0, 2, 4, 8, 12, 16, 24, 32, 40, 48, 64, 80, 96, 128
+     ======================================== */
+
+  /* ----------------
+     Base Scale (Size-based semantic names)
+     Use for general-purpose spacing
+     ---------------- */
+  
+  --space-0: 0;                  /* 0px - Reset spacing, removes all gaps/margins */
+  --space-2xs: var(--scale-05);  /* 2px - Micro adjustments between tightly-grouped elements (icon badges, status dots) */
+  --space-xs: var(--scale-1);    /* 4px - Minimal spacing for closely related items (checkbox to label, icon to text) */
+  --space-sm: var(--scale-2);    /* 8px - Compact layouts (chip gaps, inline form elements, button icon spacing) */
+  --space-md: var(--scale-3);    /* 12px - Default spacing for most UI elements (list items, form fields, card content) */
+  --space-lg: var(--scale-4);    /* 16px - Standard component spacing (between paragraphs, form groups, card sections) */
+  --space-xl: var(--scale-6);    /* 24px - Component separation (navigation items, feature cards, section elements) */
+  --space-2xl: var(--scale-8);   /* 32px - Section padding (card containers, modal content, panel insets) */
+  --space-3xl: var(--scale-10);  /* 40px - Large section gaps (between major page sections, feature grids) */
+  --space-4xl: var(--scale-12);  /* 48px - Major section dividers (hero to content, between distinct page areas) */
+  --space-5xl: var(--scale-16);  /* 64px - Hero section spacing (large vertical rhythm, marketing page sections) */
+  --space-6xl: var(--scale-20);  /* 80px - Extra-large page sections (major content breaks, landing page sections) */
+  --space-7xl: var(--scale-24);  /* 96px - Maximum section spacing (hero areas, full-page vertical rhythm) */
+  --space-8xl: var(--scale-32);  /* 128px - Ultra-wide layouts only (extra-large viewport section gaps, marketing hero blocks) */
+
+  /* ----------------
+     Inset Spacing (Padding)
+     Use for container padding
+     References: Tier 2 (--space-*) semantic scale
+     ---------------- */
+
+  /* Standard Insets (Equal padding all sides) */
+  --inset-xs: var(--space-xs);     /* 4px */
+  --inset-sm: var(--space-sm);     /* 8px */
+  --inset-md: var(--space-md);     /* 12px */
+  --inset-lg: var(--space-lg);     /* 16px */
+  --inset-xl: var(--space-xl);     /* 24px */
+  --inset-2xl: var(--space-2xl);   /* 32px */
+  --inset-3xl: var(--space-4xl);   /* 48px */
+
+  /* Squish Insets (Compact - less vertical, more horizontal) */
+  /* Ideal for buttons, tags, pills */
+  --inset-squish-xs: var(--space-xs) var(--space-sm);    /* 4px 8px */
+  --inset-squish-sm: var(--space-xs) var(--space-md);    /* 4px 12px */
+  --inset-squish-md: var(--space-sm) var(--space-lg);    /* 8px 16px */
+  --inset-squish-lg: var(--space-md) var(--space-xl);    /* 12px 24px */
+  --inset-squish-xl: var(--space-lg) var(--space-2xl);   /* 16px 32px */
+
+  /* Stretch Insets (Tall - more vertical, less horizontal) */
+  /* Ideal for cards, content areas */
+  --inset-stretch-sm: var(--space-md) var(--space-sm);   /* 12px 8px */
+  --inset-stretch-md: var(--space-lg) var(--space-md);   /* 16px 12px */
+  --inset-stretch-lg: var(--space-xl) var(--space-lg);   /* 24px 16px */
+  --inset-stretch-xl: var(--space-2xl) var(--space-xl);  /* 32px 24px */
+  --inset-stretch-2xl: var(--space-3xl) var(--space-2xl); /* 40px 32px */
+
+  /* ----------------
+     Stack Spacing (Vertical - margin-bottom, gap in flex-col)
+     Use for vertical rhythm
+     References: Tier 2 (--space-*) semantic scale
+     ---------------- */
+
+  --stack-2xs: var(--space-2xs);   /* 2px - Micro spacing */
+  --stack-xs: var(--space-xs);     /* 4px - Tight lists */
+  --stack-sm: var(--space-sm);     /* 8px - Compact spacing */
+  --stack-md: var(--space-md);     /* 12px - List items */
+  --stack-lg: var(--space-lg);     /* 16px - Paragraph spacing */
+  --stack-xl: var(--space-xl);     /* 24px - Section elements */
+  --stack-2xl: var(--space-2xl);   /* 32px - Component groups */
+  --stack-3xl: var(--space-3xl);   /* 40px - Section spacing */
+  --stack-4xl: var(--space-4xl);   /* 48px - Major sections */
+  --stack-5xl: var(--space-5xl);   /* 64px - Section dividers */
+  --stack-6xl: var(--space-6xl);   /* 80px - Page sections */
+  --stack-7xl: var(--space-7xl);   /* 96px - Large sections */
+  --stack-8xl: var(--space-8xl);   /* 128px - Hero sections */
+
+  /* ----------------
+     Inline Spacing (Horizontal - margin-right, gap in flex-row)
+     Use for horizontal rhythm between inline elements
+     References: Tier 2 (--space-*) semantic scale
+     ---------------- */
+
+  --inline-2xs: var(--space-2xs);  /* 2px - Micro gaps */
+  --inline-xs: var(--space-xs);    /* 4px - Icon to text */
+  --inline-sm: var(--space-sm);    /* 8px - Button icons */
+  --inline-md: var(--space-md);    /* 12px - Chip gaps */
+  --inline-lg: var(--space-lg);    /* 16px - Button groups */
+  --inline-xl: var(--space-xl);    /* 24px - Navigation items */
+  --inline-2xl: var(--space-2xl);  /* 32px - Card grids */
+  --inline-3xl: var(--space-3xl);  /* 40px - Wide grids */
+  --inline-4xl: var(--space-4xl);  /* 48px - Column gaps */
+  --inline-5xl: var(--space-5xl);  /* 64px - Extra wide grids */
+
+  /* ========================================
+     MOTION (Material Design 3 Easing & Duration)
+     ======================================== */
+
+  /* Easing Curves */
+  --easing-standard: cubic-bezier(0.2, 0.0, 0, 1.0);
+  --easing-emphasized: cubic-bezier(0.0, 0.0, 0, 1.0);
+  --easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1.0);
+  --easing-emphasized-accelerate: cubic-bezier(0.3, 0.0, 0.8, 0.15);
+  --easing-legacy: cubic-bezier(0.4, 0.0, 0.2, 1.0);
+
+  /* Spring Easing (generated via linear() — organic, physics-based motion) */
+  /* stiffness: 300, damping: 12 — snappy with overshoot; buttons, toggles, micro-interactions */
+  --easing-spring: linear(0, 0.115, 0.437, 0.716, 0.967, 1.202, 1.287, 1.302, 1.262, 1.161, 1.077, 1.002, 0.935, 0.911, 0.909, 0.93, 0.954, 0.979, 1.001, 1.021, 1.027, 1.027, 1.021, 1.013, 1.005, 0.997, 0.993, 0.992, 0.992, 0.994, 0.996, 0.999, 1.001, 1.002, 1.003, 1.002, 1.002, 1.001, 1, 1, 1);
+  /* stiffness: 200, damping: 15 — gentle settle; larger elements, page transitions */
+  --easing-spring-gentle: linear(0, 0.076, 0.227, 0.349, 0.54, 0.717, 0.867, 0.982, 1.038, 1.095, 1.123, 1.128, 1.117, 1.105, 1.082, 1.057, 1.035, 1.016, 1.006, 0.995, 0.988, 0.984, 0.984, 0.985, 0.987, 0.99, 0.993, 0.996, 0.997, 0.999, 1.001, 1.002, 1.002, 1.002, 1.002, 1.002, 1.001, 1.001, 1.001, 1, 1);
+
+  /* Natural Motion */
+  --easing-gravity: cubic-bezier(0.123, 0.5, 0.5, 1); /* falling / drop-in — dropdowns, menus, reveals */
+
+  /* Durations */
+  --duration-short-1: 50ms;
+  --duration-short-2: 100ms;
+  --duration-short-3: 150ms;
+  --duration-short-4: 200ms;
+  --duration-medium-1: 250ms;
+  --duration-medium-2: 300ms;
+  --duration-medium-3: 350ms;
+  --duration-medium-4: 400ms;
+  --duration-long-1: 450ms;
+  --duration-long-2: 500ms;
+  --duration-long-3: 550ms;
+  --duration-long-4: 600ms;
+
+  /* Spring-paired Durations (match natural settle time of spring easing curves) */
+  --duration-spring: 1100ms;         /* pairs with --easing-spring */
+  --duration-spring-gentle: 925ms;   /* pairs with --easing-spring-gentle */
+
+  /* Common Transitions */
+  --transition-base: var(--duration-medium-2) var(--easing-standard);
+  --transition-fast: var(--duration-short-4) var(--easing-standard);
+  --transition-slow: var(--duration-long-2) var(--easing-emphasized);
+  --transition-spring: var(--duration-spring) var(--easing-spring);
+  --transition-spring-gentle: var(--duration-spring-gentle) var(--easing-spring-gentle);
+
+  /* ========================================
+     BORDER RADIUS (Material Design 3 Shape)
+     ======================================== */
+
+  --radius-none: 0;
+  --radius-xs: 0.25rem;   /* 4px */
+  --radius-sm: 0.5rem;    /* 8px */
+  --radius-md: 0.75rem;   /* 12px */
+  --radius-md-lg: 0.875rem; /* 14px - icon corners */
+  --radius-lg: 1rem;      /* 16px */
+  --radius-xl-sm: 1.25rem; /* 20px - card corners */
+  --radius-xl: 1.5rem;    /* 24px */
+  --radius-2xl: 2rem;     /* 32px */
+  --radius-full: 9999px;  /* Pill shape */
+
+  /* ========================================
+     BREAKPOINTS (Material Design 3 Responsive)
+     ======================================== */
+
+  --breakpoint-compact: 768px;       /* Mobile → Tablet (max-width: 768px) */
+  --breakpoint-medium: 1024px;       /* Tablet → Desktop (max-width: 1024px) */
+  --breakpoint-expanded: 1240px;     /* Desktop → Wide (min-width: 1240px) */
+  --breakpoint-large: 1440px;        /* Wide → Ultra-wide */
+  --breakpoint-extra-large: 1920px;  /* Ultra-wide screens */
+
+  /* ========================================
+     ICON SIZES
+     Normalized scale for icon containers and avatars
+     ======================================== */
+
+  --icon-xs: 0.75rem;    /* 12px - nav dropdown icons */
+  --icon-sm: 2rem;       /* 32px - step numbers, small icons */
+  --icon-md: 3rem;       /* 48px - step circles, nav icons */
+  --icon-lg: 3.5rem;     /* 56px - feature/related card icons */
+  --icon-xl: 4rem;       /* 64px - value icons */
+  --icon-2xl: 4.5rem;    /* 72px - hero icon inner image */
+  --icon-3xl: 5rem;      /* 80px - play buttons, large icons */
+  --icon-4xl: 7.5rem;    /* 120px - hero product icons */
+  --icon-avatar: 12.5rem; /* 200px - team photos, large avatars */
+
+  /* ========================================
+     LAYOUT WIDTHS
+     Content container max-widths for consistent page structure
+     ======================================== */
+
+  --layout-content-sm: 700px;   /* Narrow text blocks, subtitles */
+  --layout-content-md: 800px;   /* CTA sections, hero subtitles */
+  --layout-content-lg: 900px;   /* Section headers */
+  --layout-content-xl: 1000px;  /* Hero content areas */
+  --layout-content-max: 1200px; /* Main container, full-width sections */
+
+  /* ========================================
+     GOLDEN RATIO LAYOUT
+     φ = 1.618 — mathematical layout harmony
+     Inspired by the Fibonacci sequence and the golden ratio.
+     Use as an additive opt-in for content/doc-style layouts.
+     Reference: https://www.conor.fyi/writing/golden-ratio-grid
+     ======================================== */
+
+  --phi: 1.618;                                   /* Golden ratio constant */
+
+  /* Two-column golden layout: primary | gutter | secondary */
+  --grid-primary:   34em;                         /* Reading column (≈65ch) */
+  --grid-secondary: 21em;                         /* Secondary: 34em ÷ φ */
+  --grid-gutter:    calc(var(--phi) * 1rem);      /* ~25.9px at 16px base */
+  --grid-total:     56.618em;                     /* Combined width */
+
+  /* Responsive container gutters (side padding that scales with viewport) */
+  --gutter-xs: 0.75rem;   /* 12px — tiny phones  (<375px) */
+  --gutter-sm: 1rem;      /* 16px — small phones (375px+) */
+  --gutter-md: 1.25rem;   /* 20px — large phones (428px+) */
+  --gutter-lg: 1.5rem;    /* 24px — tablets      (680px+) */
+
+  /* ========================================
+     SECTION PADDING
+     Vertical rhythm for page-level sections
+     ======================================== */
+
+  --section-padding-sm: 60px;   /* Compact sections, reduced gap */
+  --section-padding-md: 80px;   /* Medium sections (mobile hero) */
+  --section-padding-lg: 100px;  /* Standard mobile hero top */
+  --section-padding-xl: 120px;  /* Standard section padding */
+  --section-padding-2xl: 150px; /* CTA/emphasis sections */
+
+  /* ========================================
+     ELEVATION (Material Design 3 Shadows)
+     5-level shadow system
+     ======================================== */
+
+  --elevation-0: none;
+  --elevation-1: 
+    0px 1px 2px rgba(0, 0, 0, 0.3),
+    0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+  --elevation-2: 
+    0px 1px 2px rgba(0, 0, 0, 0.3),
+    0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+  --elevation-3: 
+    0px 1px 3px rgba(0, 0, 0, 0.3),
+    0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+  --elevation-4: 
+    0px 2px 3px rgba(0, 0, 0, 0.3),
+    0px 6px 10px 4px rgba(0, 0, 0, 0.15);
+  --elevation-5: 
+    0px 4px 4px rgba(0, 0, 0, 0.3);
+
+  /* ========================================
+     Z-INDEX SCALE (Brand Layering)
+     ======================================== */
+
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-fixed: 1200;
+  --z-modal-backdrop: 1300;
+  --z-modal: 1400;
+  --z-popover: 1500;
+  --z-tooltip: 1600;
+
+  /* ========================================
+     ALPHA VARIANTS
+     Transparent color overlays for layering and depth
+     ======================================== */
+
+  /* White Alpha Variants (for dark backgrounds) */
+  --white-alpha-2: rgba(255, 255, 255, 0.02);
+  --white-alpha-3: rgba(255, 255, 255, 0.03);
+  --white-alpha-5: rgba(255, 255, 255, 0.05);
+  --white-alpha-6: rgba(255, 255, 255, 0.06);
+  --white-alpha-8: rgba(255, 255, 255, 0.08);
+  --white-alpha-10: rgba(255, 255, 255, 0.10);
+  --white-alpha-15: rgba(255, 255, 255, 0.15);
+  --white-alpha-20: rgba(255, 255, 255, 0.20);
+  --white-alpha-30: rgba(255, 255, 255, 0.30);
+  --white-alpha-38: rgba(255, 255, 255, 0.38);
+  --white-alpha-70: rgba(255, 255, 255, 0.70);
+  --white-alpha-80: rgba(255, 255, 255, 0.80);
+  --white-alpha-90: rgba(255, 255, 255, 0.90);
+  --white-alpha-95: rgba(255, 255, 255, 0.95);
+
+  /* Black Alpha Variants (for light backgrounds) */
+  --black-alpha-5: rgba(0, 0, 0, 0.05);
+  --black-alpha-10: rgba(0, 0, 0, 0.10);
+  --black-alpha-15: rgba(0, 0, 0, 0.15);
+  --black-alpha-20: rgba(0, 0, 0, 0.20);
+  --black-alpha-30: rgba(0, 0, 0, 0.30);
+  --black-alpha-40: rgba(0, 0, 0, 0.40);
+  --black-alpha-50: rgba(0, 0, 0, 0.50);
+  --black-alpha-80: rgba(0, 0, 0, 0.80);
+
+  /* Shocking Blue Alpha Variants (with transparency) */
+  --shocking-blue-alpha-2: rgba(29, 88, 252, 0.02);
+  --shocking-blue-alpha-3: rgba(29, 88, 252, 0.03);
+  --shocking-blue-alpha-4: rgba(29, 88, 252, 0.04);
+  --shocking-blue-alpha-5: rgba(29, 88, 252, 0.05);
+  --shocking-blue-alpha-8: rgba(29, 88, 252, 0.08);
+  --shocking-blue-alpha-10: rgba(29, 88, 252, 0.10);
+  --shocking-blue-alpha-15: rgba(29, 88, 252, 0.15);
+  --shocking-blue-alpha-20: rgba(29, 88, 252, 0.20);
+  --shocking-blue-alpha-30: rgba(29, 88, 252, 0.30);
+  --shocking-blue-alpha-40: rgba(29, 88, 252, 0.40);
+
+  /* Silky Turquoise Alpha Variants (with transparency) */
+  --silky-turquoise-alpha-2: rgba(103, 250, 253, 0.02);
+  --silky-turquoise-alpha-3: rgba(103, 250, 253, 0.03);
+  --silky-turquoise-alpha-4: rgba(103, 250, 253, 0.04);
+  --silky-turquoise-alpha-5: rgba(103, 250, 253, 0.05);
+  --silky-turquoise-alpha-6: rgba(103, 250, 253, 0.06);
+  --silky-turquoise-alpha-8: rgba(103, 250, 253, 0.08);
+  --silky-turquoise-alpha-10: rgba(103, 250, 253, 0.10);
+  --silky-turquoise-alpha-15: rgba(103, 250, 253, 0.15);
+  --silky-turquoise-alpha-20: rgba(103, 250, 253, 0.20);
+
+  /* Medium Orchid Alpha Variants (with transparency) */
+  --medium-orchid-alpha-2: rgba(174, 68, 213, 0.02);
+  --medium-orchid-alpha-3: rgba(174, 68, 213, 0.03);
+  --medium-orchid-alpha-4: rgba(174, 68, 213, 0.04);
+  --medium-orchid-alpha-5: rgba(174, 68, 213, 0.05);
+  --medium-orchid-alpha-10: rgba(174, 68, 213, 0.10);
+  --medium-orchid-alpha-12: rgba(174, 68, 213, 0.12);
+  --medium-orchid-alpha-15: rgba(174, 68, 213, 0.15);
+  --medium-orchid-alpha-20: rgba(174, 68, 213, 0.20);
+  --medium-orchid-alpha-40: rgba(174, 68, 213, 0.40);
+
+  /* Vibrant Pink Alpha Variants (with transparency) */
+  --vibrant-pink-alpha-10: rgba(255, 91, 204, 0.10);
+
+  /* Indigo Alpha Variants (#6366F1 - Fabric brand) */
+  --indigo-alpha-5: rgba(99, 102, 241, 0.05);
+  --indigo-alpha-10: rgba(99, 102, 241, 0.10);
+  --indigo-alpha-12: rgba(99, 102, 241, 0.12);
+  --indigo-alpha-15: rgba(99, 102, 241, 0.15);
+  --indigo-alpha-20: rgba(99, 102, 241, 0.20);
+  --indigo-alpha-30: rgba(99, 102, 241, 0.30);
+  --indigo-alpha-40: rgba(99, 102, 241, 0.40);
+
+  /* Purple Alpha Variants (#A855F7 - secondary gradient) */
+  --purple-alpha-5: rgba(168, 85, 247, 0.05);
+  --purple-alpha-10: rgba(168, 85, 247, 0.10);
+
+  /* Semantic Color Alpha Variants */
+  --emerald-alpha-10: rgba(16, 185, 129, 0.10);
+  --emerald-alpha-20: rgba(16, 185, 129, 0.20);
+  --emerald-alpha-30: rgba(16, 185, 129, 0.30);
+  --yellow-alpha-10: rgba(234, 179, 8, 0.10);
+  --red-alpha-10: rgba(239, 68, 68, 0.10);
+  --red-alpha-30: rgba(239, 68, 68, 0.30);
+
+  /* Dark Alpha Variants (for overlays) */
+  --dark-alpha-75: rgba(2, 6, 23, 0.75);
+  --dark-alpha-80: rgba(2, 6, 23, 0.80);
+  --dark-alpha-90: rgba(2, 6, 23, 0.90);
+  --dark-alpha-95: rgba(2, 6, 23, 0.95);
+
+  /* Dark Surface RGB channels (for compositing section overlays) */
+  --dark-surface: 10, 10, 15;
+
+  /* ========================================
+     PRODUCT THEMING DEFAULTS
+     Overridden by product token files (fabric, radix, etc.)
+     ======================================== */
+
+  --product-accent: var(--primary-400);
+  --product-accent-safe: var(--primary-600);       /* Darker shade for better contrast */
+  --product-gradient: var(--gradient-accent);
+  --product-glow: var(--shadow-glow-primary);
+}
+
+/* ========================================
+   ACCESSIBILITY: Reduced Motion Support
+   WCAG 2.3.3 - Animation from Interactions
+   ======================================== */
+
+/**
+ * Disable animations and transitions for users who prefer reduced motion
+ * This respects the prefers-reduced-motion media query
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Prevent parallax and transform animations */
+  * {
+    transform: none !important;
+  }
+}

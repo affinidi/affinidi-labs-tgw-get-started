@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Trust Gateway — Load Tester</title>
+    <title>Agent Gateway — Load Tester</title>
     <style>
         *,
         *::before,
@@ -1419,7 +1419,7 @@
 
     <!-- Topbar -->
     <div class="topbar">
-        <h1>Trust Gateway Load Tester</h1>
+        <h1>Agent Gateway Load Tester</h1>
         <div class="nav">
             <button class="nav-btn active" id="nav-ep" onclick="showPage('ep')">Endpoints</button>
             <button class="nav-btn" id="nav-sc" onclick="showPage('sc')">Scenarios</button>
@@ -2358,7 +2358,7 @@
             const errT = parseFloat(el('scErrThreshold').value) || 1;
             const latT = parseInt(el('scLatThreshold').value) || 5000;
             const data = {
-                tool: 'Trust Gateway Load Tester',
+                tool: 'Agent Gateway Load Tester',
                 exportedAt: new Date().toISOString(),
                 thresholds: { errorPct: errT, p95Ms: latT },
                 scenarios: SCENARIOS.map(sc => {
@@ -2516,7 +2516,7 @@
 
             return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
-<title>Trust Gateway Performance Report &mdash; ${_scDateSlug()}</title>
+<title>Agent Gateway Performance Report &mdash; ${_scDateSlug()}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:980px;margin:40px auto;padding:0 24px;color:#24292f}
@@ -2550,7 +2550,7 @@ tr.fail-row{background:#fff8f8}tr.bp-row{background:#fff0f0;font-weight:600}
 .slow{color:#d29922;font-weight:600}.err-cell{color:#d73a49;font-weight:600}
 footer{margin-top:40px;padding-top:16px;border-top:1px solid #d0d7de;font-size:.74rem;color:#6e7781}
 </style></head><body>
-<h1>Trust Gateway &mdash; Performance Report</h1>
+<h1>Agent Gateway &mdash; Performance Report</h1>
 <div class="meta">Generated: ${stamp} &nbsp;|&nbsp; Thresholds: Error &le; ${errT}% &middot; p95 Latency &le; ${latT.toLocaleString()}ms</div>
 
 <div class="summary">
@@ -2571,7 +2571,7 @@ ${bpHtml}
 <h2>Scenario Descriptions</h2>
 ${scDetail}
 
-<footer>Trust Gateway Load Tester &middot; Powered by Locust &middot; ${stamp}</footer>
+<footer>Agent Gateway Load Tester &middot; Powered by Locust &middot; ${stamp}</footer>
 </body></html>`;
         }
 

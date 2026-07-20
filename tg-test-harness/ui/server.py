@@ -1,5 +1,5 @@
 """
-Minimal web UI backend for Trust Gateway load tests.
+Minimal web UI backend for Agent Gateway load tests.
 
 Run:
   pip install -r ui/requirements.txt

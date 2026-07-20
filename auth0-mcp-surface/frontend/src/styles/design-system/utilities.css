@@ -1,0 +1,190 @@
+/* Utility Classes */
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-md);
+  padding-right: var(--space-md);
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-left: var(--space-xl);
+    padding-right: var(--space-xl);
+  }
+}
+
+/* Section spacing */
+.section {
+  padding-top: var(--space-4xl);
+  padding-bottom: var(--space-4xl);
+}
+
+@media (max-width: 767.98px) {
+  .section {
+    padding-top: var(--space-2xl);
+    padding-bottom: var(--space-2xl);
+  }
+}
+
+/* Text utilities */
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--duration-medium-2) var(--easing-standard);
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp var(--duration-long-2) var(--easing-emphasized);
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft var(--duration-long-2) var(--easing-emphasized);
+}
+
+.animate-slide-in-right {
+  animation: slideInRight var(--duration-long-2) var(--easing-emphasized);
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--duration-medium-2) var(--easing-standard);
+}
+
+/* Visibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ── UI Polish utilities ──────────────────────────────────────────────────── */
+
+/* Text wrapping: evenly distribute text to avoid orphaned words */
+.text-wrap-balance  { text-wrap: balance; }
+.text-wrap-pretty   { text-wrap: pretty; }
+
+/* Tabular numbers: equal-width digits for numeric data that updates */
+.tabular-nums       { font-variant-numeric: tabular-nums; }
+
+/* Image outline: 1px adaptive ring that works on any background */
+.img-outlined {
+  outline: 1px solid rgba(0, 0, 0, 0.1);
+  outline-offset: -1px;
+}
+@media (prefers-color-scheme: dark) {
+  .img-outlined { outline-color: rgba(255, 255, 255, 0.1); }
+}
+/* Dark-mode variant for explicit dark contexts */
+.dark .img-outlined { outline-color: rgba(255, 255, 255, 0.1); }
+
+/* Shadow border: layered box-shadow that replaces 1px borders.
+   More versatile than a hard border — adapts to any background. */
+.border-shadow {
+  box-shadow:
+    0px 0px 0px 1px rgba(0, 0, 0, 0.06),
+    0px 1px 2px -1px rgba(0, 0, 0, 0.06),
+    0px 2px 4px 0px rgba(0, 0, 0, 0.04);
+  transition: box-shadow var(--transition-fast);
+}
+.border-shadow:hover {
+  box-shadow:
+    0px 0px 0px 1px rgba(0, 0, 0, 0.08),
+    0px 1px 2px -1px rgba(0, 0, 0, 0.08),
+    0px 2px 4px 0px rgba(0, 0, 0, 0.06);
+}
+
+/* Enter animation: blur + lift + fade — combine with --stagger for sequences.
+   Usage: <div class="animate-enter" style="--stagger:1">...</div> */
+@keyframes enterAnimation {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+.animate-enter {
+  animation: enterAnimation var(--duration-long-3, 600ms)
+    var(--easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1.0)) both;
+  animation-delay: calc(var(--stagger-delay, 80ms) * var(--stagger, 0));
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-enter { animation: none; }
+}

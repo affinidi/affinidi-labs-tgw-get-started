@@ -1,10 +1,10 @@
-# A2A Protected Agent — Decentralized Identity with Affinidi Trust Gateway
+# A2A Protected Agent — Decentralized Identity with Agent Gateway
 
 ## Table of Contents
 
 - [1. Overview](#1-overview)
 - [2. Run the App](#2-run-the-app)
-- [3. Set Up A2A Channels in Trust Gateway](#3-set-up-a2a-channels-in-trust-gateway)
+- [3. Set Up A2A Channels in Agent Gateway](#3-set-up-a2a-channels-in-trust-gateway)
 - [4. Update the TG Channel Routes in Settings](#4-update-the-tg-channel-routes-in-settings)
 - [5. Enable Protected Identity for Your Agents](#5-enable-protected-identity-for-your-agents)
 - [6. Fetch the Identity-Protected Agent Cards](#6-fetch-the-identity-protected-agent-cards)
@@ -16,11 +16,11 @@
 
 This lab demonstrates how to give AI agents a **cryptographic, decentralized identity** using [Affinidi Trust Fabric](https://docs.affinidi.com/products/affinidi-trust-fabric/) — a secure proxy infrastructure that provides cryptographic identity, policy enforcement, and observability for AI agent communication.
 
-Instead of trusting an agent just because it says who it is, the Trust Gateway automatically generates a unique **Decentralised Identifier (DID)** for each agent and issues a **Verifiable Presentation (VP)** — cryptographically proving its identity credentials to any caller, verified with Ed25519 signatures.
+Instead of trusting an agent just because it says who it is, the Agent Gateway automatically generates a unique **Decentralised Identifier (DID)** for each agent and issues a **Verifiable Presentation (VP)** — cryptographically proving its identity credentials to any caller, verified with Ed25519 signatures.
 
-The identity fields can be **anything you define** — this lab uses `name`, `role`, and `model` as an example. What matters is that the fields declared in your agent card match the schema you configure in the Trust Gateway channel.
+The identity fields can be **anything you define** — this lab uses `name`, `role`, and `model` as an example. What matters is that the fields declared in your agent card match the schema you configure in the Agent Gateway channel.
 
-The Trust Gateway acts as an intercepting proxy that:
+The Agent Gateway acts as an intercepting proxy that:
 
 1. **Verifies identity** — assigns a unique DID to each agent based on configurable identity fields
 2. **Enforces policies** — applies access rules, rate limits, and circuit breakers
@@ -29,7 +29,7 @@ The Trust Gateway acts as an intercepting proxy that:
 
 ### Architecture
 
-**Without Trust Gateway — direct A2A traffic**
+**Without Agent Gateway — direct A2A traffic**
 
 ```
 Client / Caller
@@ -45,7 +45,7 @@ Client / Caller
 └─────────────────────────────────────────┘
 ```
 
-**With Trust Gateway — identity-protected A2A traffic**
+**With Agent Gateway — identity-protected A2A traffic**
 
 ```
          Client / Caller
@@ -79,7 +79,7 @@ The agent's identity fields are **fully customisable** — you define what goes 
 | `role`  | The agent's functional role |
 | `model` | The underlying LLM model    |
 
-You can add, remove, or rename these fields — as long as the schema in your agent card extension and the identity schema configured in the Trust Gateway channel match.
+You can add, remove, or rename these fields — as long as the schema in your agent card extension and the identity schema configured in the Agent Gateway channel match.
 
 ---
 
@@ -170,11 +170,11 @@ Each card contains plain-text identity fields:
 
 ---
 
-## 3. Set Up A2A Channels in Trust Gateway
+## 3. Set Up A2A Channels in Agent Gateway
 
 You will create **two channels** — one for each agent.
 
-1. Log in to the [Affinidi Developer Portal](https://portal.affinidi.com) and open your Trust Gateway instance.
+1. Log in to the [Affinidi Developer Portal](https://portal.affinidi.com) and open your Agent Gateway instance.
 2. Navigate to **Channels** and click **Create Channel**.
 3. Select **A2A** as the channel type.
 4. For the **Personal Agent channel**, set the Target URL:
@@ -203,7 +203,7 @@ You will create **two channels** — one for each agent.
    PERSONAL_AGENT_TG_URL=https://<your-tgw-domain>/channels/<personal-channel-id>
    FINANCE_AGENT_TG_URL=https://<your-tgw-domain>/channels/<finance-channel-id>
    ```
-3. Restart the app. All traffic to both agents will now route through the Trust Gateway instead of hitting them directly.
+3. Restart the app. All traffic to both agents will now route through the Agent Gateway instead of hitting them directly.
 
    ![Select A2A](docs/channel-routes-view.png)
    ![Update Agent URL](docs/app-update-tg-channel-route.png)
@@ -215,7 +215,7 @@ You will create **two channels** — one for each agent.
 
 Repeat the following steps for **both** the Personal Agent channel and the Finance Agent channel.
 
-> **Prerequisite:** For the Trust Gateway to issue a VP, your agent card **must** expose the identity extension (`https://fabric.affinidi.io/extensions/agent-identity-credential/v1`) with your chosen identity fields in its `capabilities.extensions`. This is already configured in this app — see `personal_agent.py` and `finance_agent.py`.
+> **Prerequisite:** For the Agent Gateway to issue a VP, your agent card **must** expose the identity extension (`https://fabric.affinidi.io/extensions/agent-identity-credential/v1`) with your chosen identity fields in its `capabilities.extensions`. This is already configured in this app — see `personal_agent.py` and `finance_agent.py`.
 
 1. Open the channel in the Developer Portal.
 2. Click the **Protected Identity** tab.
@@ -241,7 +241,7 @@ Repeat the following steps for **both** the Personal Agent channel and the Finan
 
    ```
 
-   This tells the Trust Gateway which fields to read from that agent's card and include in the issued Verifiable Credential.
+   This tells the Agent Gateway which fields to read from that agent's card and include in the issued Verifiable Credential.
    ```
 
 > **Note:** Each channel issues a VP specific to its target agent — the Personal Agent channel issues credentials with `"name": "Personal Assistant"` and the Finance Agent channel issues credentials with `"name": "Finance Agent"`.
@@ -253,21 +253,21 @@ Repeat the following steps for **both** the Personal Agent channel and the Finan
 Now call each agent card through its **TG Channel Route URL**:
 
 ```bash
-# Personal Agent via Trust Gateway
+# Personal Agent via Agent Gateway
 curl https://<personal-tgw-channel-url>/.well-known/agent.json
 
-# Finance Agent via Trust Gateway
+# Finance Agent via Agent Gateway
 curl https://<finance-tgw-channel-url>/.well-known/agent.json
 ```
 
 ![A2A Identity](docs/agent-card-via-tg.png)
 ![App Agent](docs/app-agent-identity.png)
 
-The Trust Gateway will:
+The Agent Gateway will:
 
 1. Call the agent's real card at the target URL
 2. Read the identity fields (`name`, `role`, `model`) from the card
-3. Issue a **Verifiable Presentation (VP)** signed by the Trust Gateway
+3. Issue a **Verifiable Presentation (VP)** signed by the Agent Gateway
 4. Inject the VP into the agent card response
 
 **Personal Agent** — returned card with decoded VP:
@@ -328,7 +328,7 @@ The Trust Gateway will:
 
 > **Note:** In the actual API response, `verifiablePresentation` is returned as an escaped JSON string. The above shows it decoded for readability.
 
-This VP proves: **"This agent is presenting identity credentials issued by the Trust Gateway"** — cryptographically verifiable by any caller.
+This VP proves: **"This agent is presenting identity credentials issued by the Agent Gateway"** — cryptographically verifiable by any caller.
 
 ---
 
@@ -367,7 +367,7 @@ A caller sends a message to the Personal Agent via the TG Channel Route. The req
 
 ### Response
 
-The agent responds with the answer. The Trust Gateway injects the agent's **Verifiable Presentation** into the response message's `metadata` under `https://fabric.affinidi.io/extensions/agent-identity-credential/v1`. The VP is decoded below for readability:
+The agent responds with the answer. The Agent Gateway injects the agent's **Verifiable Presentation** into the response message's `metadata` under `https://fabric.affinidi.io/extensions/agent-identity-credential/v1`. The VP is decoded below for readability:
 
 ```json
 {
@@ -448,6 +448,6 @@ The agent responds with the answer. The Trust Gateway injects the agent's **Veri
 **Key observations:**
 
 - The caller identifies itself in the **request** `metadata` using `agent-identity/v1` (name, version)
-- The agent's **response** `metadata` carries `agent-identity-credential/v1` — the VP injected by the Trust Gateway
+- The agent's **response** `metadata` carries `agent-identity-credential/v1` — the VP injected by the Agent Gateway
 - `credentialSubject.identityFields` contains the identity values read from the agent's card (`name`, `role`, `model`)
 - The VP has two `DataIntegrityProof` signatures: one from the **TGW issuer** (signing the credential) and one from the **channel holder DID** (signing the presentation)

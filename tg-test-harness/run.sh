@@ -28,12 +28,11 @@ echo "Installing dependencies …"
 
 # ── 4. Ensure endpoints.json exists ──────────────────────────────────────────
 ENDPOINTS="$SCRIPT_DIR/data/endpoints.json"
-TEMPLATE="$SCRIPT_DIR/data/endpoints.template.json"
 if [[ ! -f "$ENDPOINTS" ]]; then
   echo ""
   echo "ERROR: data/endpoints.json not found."
   echo "  Copy the template and fill in your endpoints:"
-  echo "    cp data/endpoints.template.json data/endpoints.json"
+  echo "    cp $SCRIPT_DIR/data/endpoints.template.json $SCRIPT_DIR/data/endpoints.json"
   echo ""
   exit 1
 fi

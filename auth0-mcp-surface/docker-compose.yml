@@ -1,0 +1,17 @@
+# FastAPI serves the API and the built Astro frontend on one port (8642).
+# All config (BACKEND_URL, FRONTEND_URL, SESSION_COOKIE_DOMAIN, secrets,
+# GATEWAY_URL) is read from backend/.env — copy backend/.env.example → backend/.env
+# and fill it in. Nothing here overrides those values.
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8642:8642"
+    environment:
+      PORT: 8642
+    # required:false so the container still boots (UI + guest mode) without it.
+    env_file:
+      - path: backend/.env
+        required: false

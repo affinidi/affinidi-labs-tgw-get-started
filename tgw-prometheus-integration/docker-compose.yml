@@ -1,5 +1,5 @@
-# Trust Gateway → Prometheus → Grafana
-# Pull-based integration. Prometheus scrapes the Trust Gateway's native
+# Agent Gateway → Prometheus → Grafana
+# Pull-based integration. Prometheus scrapes the Agent Gateway's native
 # /api/v1/metrics/prometheus endpoint and Grafana visualises the metrics.
 #
 # Usage:

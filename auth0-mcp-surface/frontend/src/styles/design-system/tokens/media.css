@@ -1,0 +1,113 @@
+/**
+ * Design System - Media Tokens
+ *
+ * Standardised design tokens for all media containers: preview cards,
+ * detail/article views, fullscreen/lightbox, and carousel layouts.
+ *
+ * Token Set: "media"
+ * Dependencies: base (primitives), brand (semantic surfaces)
+ * Usage: Consumed exclusively by base/media.css — never use these tokens
+ *        with hardcoded values; always reference the token.
+ *
+ * Light / dark support:
+ *   - Default values target dark UIs (Brand default)
+ *   - Light overrides apply via [data-theme="light"] and
+ *     @media (prefers-color-scheme: light) when no explicit theme is set
+ */
+
+/* ============================================================
+   DARK MODE (default)
+   ============================================================ */
+:root {
+
+  /* ------------------------------------------------------------------
+     ASPECT RATIOS
+     Use with aspect-ratio: var(--media-aspect-ratio-*) on containers.
+     Never apply aspect-ratio directly to <img> / <video> / <iframe>.
+     ------------------------------------------------------------------ */
+
+  /** Preview: default ratio for cards, grids, and feed thumbnails. */
+  --media-aspect-ratio-preview: 4 / 3;
+
+  /** Preview dense: square ratio for tight gallery grids or avatar-style cards. */
+  --media-aspect-ratio-preview-dense: 1 / 1;
+
+  /** Detail: widescreen ratio for article heroes, product detail pages. */
+  --media-aspect-ratio-detail: 16 / 9;
+
+  /** Auto: intrinsic ratio for fullscreen / lightbox; container does not
+      enforce a ratio — the viewport edges become the constraint. */
+  --media-aspect-ratio-auto: auto;
+
+  /* ------------------------------------------------------------------
+     OBJECT FIT
+     Controls how the media element fills its container.
+     ------------------------------------------------------------------ */
+
+  /** Preview fit: always covers the container — intentional cropping is expected. */
+  --media-fit-preview: cover;
+
+  /** Detail fit: preserves full composition — letterboxing is acceptable. */
+  --media-fit-detail: contain;
+
+  /** Fullscreen fit: scale until one axis hits the viewport edge, never crop. */
+  --media-fit-fullscreen: contain;
+
+  /* ------------------------------------------------------------------
+     SAFE CROP FOCUS CONTROL
+     Per-asset crop anchor. Override on the element or a wrapper to shift
+     the visible region without changing layout or aspect ratio.
+
+     Example:
+       .hero-card { --media-focus-x: 30%; --media-focus-y: 20%; }
+     ------------------------------------------------------------------ */
+
+  /** Horizontal crop anchor (0% = left edge, 100% = right edge). */
+  --media-focus-x: 50%;
+
+  /** Vertical crop anchor (0% = top edge, 100% = bottom edge). */
+  --media-focus-y: 50%;
+
+  /* ------------------------------------------------------------------
+     BACKGROUND
+     Fills visible area before media loads and during letterboxing.
+     Prevents flash artifacts and reveals the container shape immediately.
+     ------------------------------------------------------------------ */
+
+  /** Primary media container background — neutral tone for dark UIs. */
+  --media-bg: var(--neutral-900);
+
+  /** Subtle overlay placed above media for caption / gradient text legibility.
+      Always dark — the overlay sits on top of images/video, not the page bg. */
+  --media-bg-overlay: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(2, 6, 23, 0.75) 100%
+  );
+
+  /* ------------------------------------------------------------------
+     SHAPE & MOTION
+     ------------------------------------------------------------------ */
+
+  /** Corner radius for all media containers. Tracks the card radius token. */
+  --media-radius: var(--radius-lg);
+
+  /** Transition timing for reveal animations and lightbox open/close. */
+  --media-transition: var(--transition-base);
+}
+
+/* ============================================================
+   LIGHT MODE
+   Applied when the page explicitly requests light theme OR when the OS
+   preference is light and no explicit [data-theme] is set.
+   ============================================================ */
+
+[data-theme="light"] {
+  --media-bg: var(--neutral-100);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --media-bg: var(--neutral-100);
+  }
+}

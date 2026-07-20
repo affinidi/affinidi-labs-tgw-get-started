@@ -1,0 +1,107 @@
+/*
+ * App-specific styles for auth0-mcp-surface.
+ *
+ * All design tokens come from @affinidi/design-tokens (imported before this
+ * file in Layout.astro). This file only holds:
+ *   1. A tiny app-extension palette for UI chrome the semantic layer doesn't
+ *      cover (JSON syntax highlighting, login flow-diagram accents).
+ *   2. Shared component classes (buttons, cards, JSON block) built on tokens.
+ *
+ * Do NOT redefine surface/text/border/spacing/typography here — use the
+ * official semantic tokens (var(--surface-primary), var(--text-primary), …).
+ * The package owns the CSS reset and base body styles.
+ */
+
+/* ── App-extension palette (not covered by semantic tokens) ─────────────────── */
+:root {
+  /* JSON syntax highlight + status accents for the MCP response viewer */
+  --app-json-key: #7dd3fc;
+  --app-json-str: #a5d6a7;
+  --app-json-num: #fbbf24;
+  --app-json-bool: #c4b5fd;
+  --app-accent-cyan: #7dd3fc;
+  --app-accent-yellow: #fbbf24;
+  --app-accent-green: #6ee7b7;
+}
+
+/* ── Buttons (official button tokens) ──────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--inset-squish-md);
+  min-height: 44px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-label-lg);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--transition-fast), transform var(--transition-fast),
+    opacity var(--transition-fast);
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  border-color: var(--button-primary-border);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--button-primary-bg-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  border-color: var(--button-secondary-border);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--button-secondary-bg-hover);
+  border-color: var(--button-secondary-border-hover);
+}
+
+.btn-google { background: #fff; color: #1a1a1a; width: 100%; border: none; }
+.btn-google:hover:not(:disabled) { background: #f1f5f9; transform: translateY(-1px); }
+
+/* ── Card / surface ────────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-3);
+}
+
+/* ── JSON block (MCP request/response viewer) ──────────────────────────────── */
+.json-block {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-code);
+  line-height: 1.6;
+  background: var(--surface-background-alt);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--inset-md);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.j-key { color: var(--app-json-key); }
+.j-str { color: var(--app-json-str); }
+.j-num { color: var(--app-json-num); }
+.j-bool { color: var(--app-json-bool); }
+
+details.raw-response { margin-top: var(--stack-sm); }
+details.raw-response > summary {
+  cursor: pointer;
+  font-size: var(--font-size-label-md);
+  color: var(--text-secondary);
+  user-select: none;
+  padding: var(--space-xs) 0;
+}
+details.raw-response[open] > summary { color: var(--text-primary); }
+
+/* ── Utility ───────────────────────────────────────────────────────────────── */
+[x-cloak] { display: none !important; }
