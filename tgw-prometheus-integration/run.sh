@@ -282,7 +282,7 @@ docker compose kill -s HUP prometheus 2>/dev/null || true
 
 echo
 echo "▶ Waiting for services to be ready…"
-for _ in {1..20}; do
+for ((attempt=1; attempt<=20; attempt++)); do
   if curl -sf http://localhost:9090/-/ready >/dev/null && \
      curl -sf http://localhost:3000/api/health >/dev/null; then
     break

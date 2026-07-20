@@ -64,7 +64,7 @@ if [[ "$USE_NGROK" =~ ^[Yy]$ ]]; then
 
   # Wait for ngrok to establish the tunnel and expose the public URL
   NGROK_URL=""
-  for i in $(seq 1 20); do
+  for ((attempt=1; attempt<=20; attempt++)); do
     NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null \
       | .venv/bin/python3 -c "import sys,json; tunnels=json.load(sys.stdin).get('tunnels',[]); print(next((t['public_url'] for t in tunnels if t['proto']=='https'), ''))" 2>/dev/null || true)
     if [ -n "$NGROK_URL" ]; then

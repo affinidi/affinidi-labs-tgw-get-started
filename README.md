@@ -11,7 +11,7 @@ At its core, the Affinidi TGW is a protocol-aware intercepting proxy for the Int
 Built on top of these foundations are advanced features for production deployments including circuit breakers, retry logic, rate limiting, real-time metrics and logging for traffic observability and management; metadata inspection and injection for use-cases such as API key
 management.
 
-## Overview
+## Introduction
 
 This repository is designed to help you get started with Agent Gateway, introducing the core concepts and patterns for governing, coordinating, and managing agent-based workflows at scale.
 
@@ -51,7 +51,7 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
 
 ## 📋 Table of Contents
 
-- [Try it in GitHub Codespaces](#-try-it-in-github-codespaces-no-local-setup-required)
+- [Try it in GitHub Codespaces](#try-it-in-github-codespaces-no-local-setup-required)
 - [Overview](#overview)
 - [Project Structure](#project-structure)
 - [Part 1: Run Agents Without Agent Gateway](#part-1-run-agents-without-trust-gateway)
@@ -75,7 +75,7 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
 
 ---
 
-## � Try it in GitHub Codespaces (No Local Setup Required)
+## Try it in GitHub Codespaces (No Local Setup Required)
 
 Don't want to install anything on your computer? GitHub Codespaces gives you a ready-to-use development environment entirely in your browser. You get a terminal, an editor, and all the tools pre-installed — nothing to download or configure.
 
@@ -188,7 +188,7 @@ Everything else stays the same — the Codespace keeps the server running while 
 
 ---
 
-## �🔍 Overview
+## Overview
 
 | Component                     | Description                                                                           |
 | ----------------------------- | ------------------------------------------------------------------------------------- |
