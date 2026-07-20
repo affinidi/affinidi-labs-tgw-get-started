@@ -1,8 +1,8 @@
 # Agent Gateway (part of Affinidi Trust Fabric)
 
-The Agent Gateway (Affinidi TGW) is an enterprise-grade gateway designed specifically for the emerging Agent-to-Agent AI ecosystem. Written in Rust for maximum performance and security, it provides comprehensive trust infrastructure, observability, and governance for AI agent communications across organizational boundaries, in ways that set it apart in the emerging AI observability space.
+The Agent Gateway is an enterprise-grade gateway designed specifically for the emerging Agent-to-Agent AI ecosystem. Written in Rust for maximum performance and security, it provides comprehensive trust infrastructure, observability, and governance for AI agent communications across organizational boundaries, in ways that set it apart in the emerging AI observability space.
 
-At its core, the Affinidi TGW is a protocol-aware intercepting proxy for the Internet of AI Agents. The Gateway provides three fundamental capabilities:
+At its core, the Agent Gateway is a protocol-aware intercepting proxy for the Internet of AI Agents. The Gateway provides three fundamental capabilities:
 
 - **Protocol inspection** (understanding A2A, AP2, UCP, MCP, OpenAI protocols)
 - **Identity management** (issuing and validating durable and portable decentralized identities for agents to bridge the decentralized world to AI agents), and
@@ -64,7 +64,7 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
   - [Prerequisites](#prerequisites-1)
   - [Setup Agent Gateway](#setup-trust-gateway)
   - [MCP Server via Agent Gateway](#mcp-server-via-trust-gateway)
-    - [Optional: Enable Authentication on the MCP Channel](#optional-enable-authentication-on-the-mcp-channel)
+    - [Optional: Enable Authentication on the MCP Surface Route](#optional-enable-authentication-on-the-mcp-surface-route)
   - [A2A Server via Agent Gateway](#a2a-server-via-trust-gateway)
   - [A2A Vertex AI Agent via Agent Gateway](#a2a-vertex-ai-agent-via-trust-gateway)
   - [Create Identity for Your Agent or MCP Server](#create-identity-for-your-agent-or-mcp-server)
@@ -399,7 +399,7 @@ Route your agents through the **Agent Gateway** to add identity management, obse
 
 ## What is the Agent Gateway?
 
-The Agent Gateway (Affinidi TGW) is an enterprise-grade gateway written in Rust for the Agent-to-Agent AI ecosystem. It provides:
+The Agent Gateway is an enterprise-grade gateway written in Rust for the Agent-to-Agent AI ecosystem. It provides:
 
 - **Protocol inspection** — understands A2A, MCP, UCP, AP2, OpenAI protocols
 - **Identity management** — issues and validates decentralized identities (DIDs) for agents
@@ -488,26 +488,32 @@ For a static domain:
 ngrok http --url=<YOUR_NGROK_HOST> 11000
 ```
 
-### 3. Configure MCP Channel in Agent Gateway
+<a id="3-configure-mcp-channel-in-trust-gateway"></a>
 
-1. Open the Agent Gateway dashboard → `Surfaces` → `Add Surface` → select `MCP Surface Starter` template
+### 3. Configure MCP Surface in Agent Gateway
+
+> **UI note:** For MCP, many accounts now show this under **Surfaces** (not **Channels**).
+> If you do not see a `Channels` menu, this is expected for MCP setup.
+
+1. Open the Agent Gateway dashboard and go to `Surfaces`.
+2. Click `Add Surface` and select the `MCP Surface Starter` template.
 
    ![Alt text](./mcp/docs/channel-create-1.jpg)
    ![Alt text](./mcp/docs/channel-create-2.jpg)
 
-2. Select the `Managed Agent` element and enter below details:
+3. Select the `Managed Agent` element and enter the following details:
    - Select **Endpoint Type:** `Direct URL`
-   - **Endpoint URL:** Your ngrok URL (public url of your MCP server)
+   - **Endpoint URL:** Your ngrok URL (public URL of your MCP server)
 
    ![Alt text](./mcp/docs/channel-create-3.jpg)
    ![Alt text](./mcp/docs/channel-create-4.jpg)
 
-3. Review and click `Agent surface area` and enter the name of surface as `MCP Weather Surface` and click on `save`
+4. Review the flow, then click `Agent surface area`, set a name such as `MCP Weather Surface`, and click `Save`.
 
    ![Alt text](./mcp/docs/channel-create-5.jpg)
 
-4. Select the `Access Point` and copy the `Channel Route` URL
-   Note: Update the prefix/custom path as you desired
+5. Open `Access Point` and copy the route URL (shown as `Route URL`, and in some tenants as `Channel Route`).
+   Note: Update the prefix/custom path as needed.
 
    ![Alt text](./mcp/docs/channel-create-6.jpg)
 
@@ -517,20 +523,22 @@ ngrok http --url=<YOUR_NGROK_HOST> 11000
 cd mcp
 ./test.sh https://<GATEWAY_HOST>/routes/<CHANNEL_PATH>
 
+# <CHANNEL_PATH> is the surface route path copied from Access Point.
+
 # Example:
 ./test.sh https://digital-plastic.trustgateway.affinidi.io/routes/weight/iceberg
 ```
 
-View traffic metrics and logs in the channel dashboard after testing.
+View traffic metrics and logs in the surface monitoring dashboard after testing.
 
 ![Alt text](./mcp/docs/channel-create-7.jpg)
 
-If you want to do realtime capture for troubleshooting, click on `Catpure` button on `Monitoring` section, and run the program
+If you want real-time capture for troubleshooting, click the `Capture` button in the `Monitoring` section and run the program.
 ![Alt text](./mcp/docs/channel-create-8.jpg)
 
-### Optional: Enable Authentication on the MCP Channel
+### Optional: Enable Authentication on the MCP Surface Route
 
-By default the MCP channel route is open. If you need to **lock down the channel** so only authorised clients can call it, and/or **inject an API key** from the Agent Gateway to a protected upstream MCP server, follow the optional guide:
+By default the MCP surface route is open. If you need to **lock down the route** so only authorised clients can call it, and/or **inject an API key** from the Agent Gateway to a protected upstream MCP server, follow the optional guide:
 
 ➡️ **[Enable Authentication on a Agent Gateway MCP Channel](mcp/enable-auth.md)**
 
