@@ -97,7 +97,7 @@ docker compose up --build
 Go to **Surfaces → Add Surface → MCP Surface Starter** and build the flow
 **Human → Caller → Access Point → Chat (Managed Agent) → External Target**:
 
-![Agent surface overview](docs/images/04-agent-gateway-surface-diagram.jpg)
+![Agent surface overview](docs/images/04-tgw-surface-diagram.jpg)
 
 ### Configure the Managed Agent
 

@@ -69,7 +69,7 @@ nothing downstream will work until this `curl` succeeds.
 ### Option A — Pass host(s) to `run.sh` (recommended)
 
 ```bash
-cd agent-gateway-prometheus-integration
+cd tgw-prometheus-integration
 
 # One Agent Gateway — credentials set via environment variables
 TGW_USERNAME=prometheus TGW_PASSWORD=secret \
@@ -232,7 +232,7 @@ Dashboard layout (same for every TG instance):
 ## Files
 
 ```
-agent-gateway-prometheus-integration/
+tgw-prometheus-integration/
 ├── .gitignore                          ← ignores prometheus.yml and tgw-*.json
 ├── docker-compose.yml
 ├── prometheus.yml.template             ← committed; copied to prometheus.yml by run.sh
