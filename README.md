@@ -634,27 +634,7 @@ https://<LOCATION>-aiplatform.googleapis.com
 
 ### 2. Configure A2A Channel in Agent Gateway
 
-1. Open the Agent Gateway dashboard → `Channels` → `Add Channel` → select `A2A/UCP` protocol
-   ![Alt text](docs/images/channel-create-1.jpg)
-   ![Alt text](docs/images/channel-create-2.jpg)
-
-2. Enter the channel details:
-   - **Channel Name:** `a2a-channel-vertex`
-   - **Listen Address:** Your Gateway base URL (e.g., `https://pillar-channel.trustgateway.affinidi.io`)
-   - **Channel Prefix:** `agents`
-   - **Target Endpoint Type:** `Direct URL`
-   - **Target Endpoint URL:** Vertex AI regional base URL (e.g., `https://us-central1-aiplatform.googleapis.com`)
-
-   ![Alt text](docs/images/channel-create-vertex1.jpg)
-
-3. Review and click `Create Channel`
-   ![Alt text](docs/images/channel-create-vertex2.jpg)
-
-4. Copy the `Channel Route` URL:
-   ```
-   https://<GATEWAY_HOST>/agents/<CHANNEL_PATH>
-   ```
-   ![Alt text](docs/images/channel-create-vertex3.jpg)
+Follow the steps in [Part 2 → A2A Server via Agent Gateway → 3. Configure A2A Channel in Agent Gateway](#3-configure-a2a-channel-in-agent-gateway) to create an A2A surface, and set the target endpoint URL to your Vertex AI public URL.
 
 ### 3. Test via Agent Gateway
 
