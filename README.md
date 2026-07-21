@@ -191,13 +191,13 @@ Everything else stays the same — the Codespace keeps the server running while 
 
 ## Overview
 
-| Component                     | Description                                                                           |
-| ----------------------------- | ------------------------------------------------------------------------------------- |
-| `a2a/`                        | Local A2A echo agent server + interactive client                                      |
-| `mcp/`                        | Local MCP server with calculator and weather tools                                    |
-| `a2a-vertex-agent/`           | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
-| `rest-api/`                   | REST API server with MCP proxy                                                        |
-| `a2a-protected-agent/`        | Multi-agent server (Personal + Finance) with decentralized identity via Agent Gateway |
+| Component                         | Description                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| `a2a/`                            | Local A2A echo agent server + interactive client                                      |
+| `mcp/`                            | Local MCP server with calculator and weather tools                                    |
+| `a2a-vertex-agent/`               | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
+| `rest-api/`                       | REST API server with MCP proxy                                                        |
+| `a2a-protected-agent/`            | Multi-agent server (Personal + Finance) with decentralized identity via Agent Gateway |
 | `gateway-prometheus-integration/` | Scrape the Agent Gateway's native Prometheus endpoint and visualise it in Grafana     |
 
 ## 📁 Project Structure
@@ -395,8 +395,8 @@ pip install -r requirements.txt
 
 Route your agents through the **Agent Gateway** to add identity management, observability, policy enforcement, and governed routing to all agent communications.
 
-![Before Agent Gateway](docs/images/before-affinidi-agent-gateway.jpg)
-![After Agent Gateway](docs/images/after-affinidi-agent-gateway.jpg)
+![Before Agent Gateway](docs/images/before-affinidi-gateway.jpg)
+![After Agent Gateway](docs/images/after-affinidi-gateway.jpg)
 
 ## What is the Agent Gateway?
 
