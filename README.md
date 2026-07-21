@@ -198,7 +198,7 @@ Everything else stays the same — the Codespace keeps the server running while 
 | `a2a-vertex-agent/`           | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
 | `rest-api/`                   | REST API server with MCP proxy                                                        |
 | `a2a-protected-agent/`        | Multi-agent server (Personal + Finance) with decentralized identity via Agent Gateway |
-| `tgw-prometheus-integration/` | Scrape the Agent Gateway's native Prometheus endpoint and visualise it in Grafana     |
+| `gateway-prometheus-integration/` | Scrape the Agent Gateway's native Prometheus endpoint and visualise it in Grafana     |
 
 ## 📁 Project Structure
 
@@ -238,7 +238,7 @@ affinidi-labs-tgw-get-started/
 │   ├── requirements.txt
 │   ├── run.sh               # Start the server (with optional ngrok)
 │   └── README.MD            # Full lab guide
-├── agent-gateway-prometheus-integration/
+├── gateway-prometheus-integration/
 │   ├── docker-compose.yml          # Prometheus + Grafana stack
 │   ├── prometheus.yml.template     # Scrape-config template (committed)
 │   ├── dashboard-template.json     # Grafana dashboard template
@@ -773,7 +773,7 @@ The Agent Gateway exposes a **native Prometheus endpoint** at
 volume, success/fault rates, latency histograms, throughput, active
 connections, and unique agent identities.
 
-The [`tgw-prometheus-integration/`](tgw-prometheus-integration/) folder
+The [`gateway-prometheus-integration/`](gateway-prometheus-integration/) folder
 is a self-contained, customer-shareable bring-up: Prometheus scrapes
 the Agent Gateway directly (no agent, no OTel Collector, no tunnels)
 and Grafana auto-provisions a dashboard per Agent Gateway.
@@ -792,7 +792,7 @@ and Grafana auto-provisions a dashboard per Agent Gateway.
 **Quick start:**
 
 ```bash
-cd tgw-prometheus-integration
+cd gateway-prometheus-integration
 ./run.sh <YOUR_TGW_HOST>                  # e.g. acme-demo.trustgateway.affinidi.io
 # or several at once:
 ./run.sh <YOUR_TGW_HOST_1> <YOUR_TGW_HOST_2>
@@ -800,7 +800,7 @@ cd tgw-prometheus-integration
 
 Then open Grafana at http://localhost:3000 (admin / admin).
 
-➡️ **[View the full integration guide](tgw-prometheus-integration/readme.md)**
+➡️ **[View the full integration guide](gateway-prometheus-integration/readme.md)**
 
 ---
 
