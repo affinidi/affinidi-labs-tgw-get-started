@@ -569,7 +569,7 @@ For a static domain:
 ngrok http --url=<YOUR_NGROK_HOST> 10000
 ```
 
-### 3. Configure A2A Channel in Agent Gateway
+### 3. Configure A2A Surface in Agent Gateway
 
 1. Open the Agent Gateway dashboard and go to `Surfaces`.
 2. Click `Add Surface` and select the `A2A Surface Starter` template.
@@ -599,7 +599,7 @@ cd a2a
 ./test.sh https://<GATEWAY_HOST>/agents/<CHANNEL_PATH>
 
 # Example:
-./test.sh https://temasek-gateway.proxy.apse1.octo.affinidi.io/agents/ocean/superior
+./test.sh https://demo-gateway.proxy.apse1.octo.affinidi.io/agents/ocean/superior
 ```
 
 View traffic metrics and logs in the channel dashboard after testing.
@@ -632,9 +632,9 @@ https://<LOCATION>-aiplatform.googleapis.com
 # Example: https://us-central1-aiplatform.googleapis.com
 ```
 
-### 2. Configure A2A Channel in Agent Gateway
+### 2. Configure A2A Surface in Agent Gateway
 
-Follow the steps in [Part 2 → A2A Server via Agent Gateway → 3. Configure A2A Channel in Agent Gateway](#3-configure-a2a-channel-in-agent-gateway) to create an A2A surface, and set the target endpoint URL to your Vertex AI public URL.
+Follow the steps in [Part 2 → A2A Server via Agent Gateway → 3. Configure A2A Surface in Agent Gateway](#3-configure-a2a-surface-in-agent-gateway) to create an A2A surface, and set the target endpoint URL to your Vertex AI public URL.
 
 ### 3. Test via Agent Gateway
 
@@ -662,8 +662,8 @@ View traffic metrics and logs in the channel dashboard after testing.
 
 The Agent Gateway can issue a decentralized identity (DID) for the **agent or MCP server itself** — a cryptographically signed Verifiable Presentation (VP) that is automatically injected into responses:
 
-- **A2A channel** — VP is injected into the agent card response and every A2A message response
-- **MCP channel** — VP is injected into every MCP response
+- **A2A surface** — VP is injected into the agent card response and every A2A message response
+- **MCP surface** — VP is injected into every MCP response
 
 ### Enable Protected Identity
 
@@ -753,7 +753,7 @@ If you have a technical issue with the project's codebase, you can also create a
 
 ## Part 3: A2A Protected Agent — Decentralized Identity
 
-This lab shows how to give AI agents a **cryptographic, verifiable identity** using the Agent Gateway. A multi-agent server (Personal Assistant + Finance Agent) exposes A2A endpoints. When routed through a Agent Gateway A2A channel with Protected Identity enabled, the gateway automatically issues a **Verifiable Presentation (VP)** signed with Ed25519 — injecting it into every agent card and message response.
+This lab shows how to give AI agents a **cryptographic, verifiable identity** using the Agent Gateway. A multi-agent server (Personal Assistant + Finance Agent) exposes A2A endpoints. When routed through a Agent Gateway A2A surface with Protected Identity enabled, the gateway automatically issues a **Verifiable Presentation (VP)** signed with Ed25519 — injecting it into every agent card and message response.
 
 **What you will learn:**
 
