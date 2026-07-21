@@ -88,10 +88,10 @@ Don't want to install anything on your computer? GitHub Codespaces gives you a r
 3. Select the **`Codespaces`** tab. This tab is only visible when you are signed in — create a free GitHub account first if you have not done so already.
 4. Click **`Create codespace on main`**.
 
-   ![alt text](/docs/images/select-codespace.jpg)
+   ![alt text](/docs/images/github/codespace-1.png)
 
 > A new browser tab will open and the environment will take about a minute to set up. You will see a VS Code editor appear in your browser when it is ready.
-> ![alt text](/docs/images/codespace-created.jpg)
+> ![alt text](/docs/images/github/codespace-2.png)
 
 > **Heads up:** Codespaces automatically pauses after **30 minutes of inactivity** to save your free quota. If your server stops responding, just reopen the Codespace, re-run `./run.sh`, and re-forward the port.
 
@@ -110,7 +110,7 @@ cd mcp
 
 You will see a message like `MCP server running on port 11000`. Leave this terminal running.
 
-![alt text](/docs/images/codespace-running.jpg)
+![alt text](/docs/images/github/codespace-3.png)
 
 ### Step 4 — Forward the port and get your public URL
 
@@ -121,7 +121,7 @@ Codespaces automatically detects that port `11000` is in use and shows a notific
 3. Right-click the row and choose **`Port Visibility → Public`** so the URL can be used from outside.
 4. Copy the **`Forwarded Address`** URL — it looks like `https://<random-name>-11000.app.github.dev`.
 
-![alt text](/docs/images/codespace-url.jpg)
+![alt text](/docs/images/github/codespace-4.png)
 
 > **Tip:** This forwarded URL acts as your public endpoint, just like ngrok would on a local machine. You do **not** need to install ngrok.
 
@@ -161,6 +161,7 @@ cd a2a
 ```
 
 **Ports tab — make port `10000` public** and copy the forwarded URL.
+![alt text](/docs/images/github/codespace-5.png)
 
 **Terminal 2 — run the interactive client:**
 
@@ -177,10 +178,10 @@ You can now type messages to the agent and see responses in real time.
 
 Once you have your Codespaces forwarded URLs, you can use them exactly like ngrok URLs in all the Agent Gateway steps in Part 2:
 
-- When configuring an MCP channel, set the **Target Endpoint URL** to your Codespaces forwarded address for port `11000`.
-- When configuring an A2A channel, set the **Target Endpoint URL** to your Codespaces forwarded address for port `10000`.
+- When configuring an MCP Surface, set the **Target Endpoint URL** to your Codespaces forwarded address for port `11000`.
+- When configuring an A2A Surface, set the **Target Endpoint URL** to your Codespaces forwarded address for port `10000`.
 
-![alt text](/docs/images/ATG-codespace.jpg)
+![alt text](/docs/images/a2a/a2a-surface-2.png)
 
 Everything else stays the same — the Codespace keeps the server running while the Agent Gateway routes traffic to it.
 
@@ -435,12 +436,12 @@ Channels are the fundamental routing unit. Each channel defines:
 3. Click on `Agent Gateway` in the left menu
 4. Click `Create Configuration` and provide a name and description
 
-![Alt text](docs/images/create-trust-gateway.jpg)
+![Alt text](docs/images/create-agent-gateway.jpg)
 
 5. Wait until the deployment status is `Complete` (may take a few minutes)
 6. Copy the Agent Gateway dashboard URL
 
-![Alt text](docs/images/trust-gateway-done.jpg)
+![Alt text](docs/images/agent-gateway-done.jpg)
 
 ### Step 2: Register and Login to Agent Gateway Control Plane
 
@@ -491,9 +492,6 @@ ngrok http --url=<YOUR_NGROK_HOST> 11000
 <a id="3-configure-mcp-channel-in-trust-gateway"></a>
 
 ### 3. Configure MCP Surface in Agent Gateway
-
-> **UI note:** For MCP, many accounts now show this under **Surfaces** (not **Channels**).
-> If you do not see a `Channels` menu, this is expected for MCP setup.
 
 1. Open the Agent Gateway dashboard and go to `Surfaces`.
 2. Click `Add Surface` and select the `MCP Surface Starter` template.
@@ -573,28 +571,26 @@ ngrok http --url=<YOUR_NGROK_HOST> 10000
 
 ### 3. Configure A2A Channel in Agent Gateway
 
-1. Open the Agent Gateway dashboard → `Channels` → `Add Channel` → select `A2A/UCP` protocol
+1. Open the Agent Gateway dashboard and go to `Surfaces`.
+2. Click `Add Surface` and select the `A2A Surface Starter` template.
 
-   ![Alt text](docs/images/channel-create-1.jpg)
-   ![Alt text](docs/images/channel-create-2.jpg)
+   ![Alt text](/docs/images/a2a/a2a-surface-1.png)
 
-2. Enter the channel details and click `Next`:
-   - **Channel Name:** `a2a-channel-chat`
-   - **Listen Address:** Your Gateway base URL (e.g., `https://pillar-channel.trustgateway.affinidi.io`)
-   - **Channel Prefix:** `agents`
-   - **Target Endpoint Type:** `Direct URL`
-   - **Target Endpoint URL:** Your ngrok URL
+3. Select the `Managed Agent` element and enter the following details:
+   - Select **Endpoint Type:** `Direct URL`
+   - **Endpoint URL:** Your ngrok URL (public URL of your MCP server)
+   - Note: Make sure your endpoint URL does not have slash(`/`) at the end of url
 
-   ![Alt text](docs/images/channel-create-3-a2a.jpg)
+   ![Alt text](/docs/images/a2a/a2a-surface-2.png)
 
-3. Review and click `Create Channel`
+4. Review the flow, then click `Agent surface area`, set a name such as `A2A Simple Surface`, and click `Save`.
 
-   ![Alt text](docs/images/channel-create-4-a2a.jpg)
+   ![Alt text](/docs/images/a2a/a2a-surface-3.png)
 
-4. Open the newly created channel and copy the `Channel Route` URL
+5. Open `Access Point` and copy the route URL (shown as `Route URL`, and in some tenants as `Channel Route`).
+   Note: Update the prefix/custom path as needed.
 
-   ![Alt text](docs/images/channels-list-2.jpg)
-   ![Alt text](docs/images/channel-a2a.jpg)
+   ![Alt text](/docs/images/a2a/a2a-surface-4.png)
 
 ### 4. Test via Agent Gateway
 
@@ -603,13 +599,12 @@ cd a2a
 ./test.sh https://<GATEWAY_HOST>/agents/<CHANNEL_PATH>
 
 # Example:
-./test.sh https://pillar-channel.trustgateway.affinidi.io/agents/logic/second
+./test.sh https://temasek-gateway.proxy.apse1.octo.affinidi.io/agents/ocean/superior
 ```
 
 View traffic metrics and logs in the channel dashboard after testing.
 
-![Alt text](docs/images/channel-a2a-2.jpg)
-![Alt text](docs/images/channel-a2a-3.jpg)
+![Alt text](/docs/images/a2a/a2a-surface-5.png)
 
 ---
 
