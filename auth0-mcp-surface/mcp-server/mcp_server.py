@@ -3,7 +3,7 @@
 Chat MCP Server (auth0-mcp-surface)
 
 A minimal Model Context Protocol server exposing a single `chat` tool. It is the
-upstream the chat surface talks to (via the Trust Gateway). It answers using AWS
+upstream the chat surface talks to (via the Agent Gateway). It answers using AWS
 Bedrock when configured, otherwise returns a friendly stub — so getting-started
 works with no LLM.
 
@@ -62,7 +62,8 @@ async def lifespan(app: FastAPI):
     print(f"\n{'='*60}")
     print(f"🚀 {SERVER_INFO['name']} v{SERVER_INFO['version']} on :{PORT}")
     print(f"   Tools: {', '.join(t['name'] for t in TOOLS)}")
-    print(f"   Bedrock: {'enabled (' + model_id + ')' if model_id else 'stub mode (BEDROCK_MODEL_ID not set)'}")
+    print(
+        f"   Bedrock: {'enabled (' + model_id + ')' if model_id else 'stub mode (BEDROCK_MODEL_ID not set)'}")
     print(f"{'='*60}\n")
     yield
     print("\n👋 Server shutting down\n")
@@ -162,7 +163,8 @@ def execute_chat(request_id: Any, arguments: Dict) -> JSONResponse:
     try:
         import boto3  # lazy import — only needed when Bedrock is configured
 
-        client = boto3.client("bedrock-runtime", region_name=os.environ.get("AWS_REGION", "us-east-1"))
+        client = boto3.client(
+            "bedrock-runtime", region_name=os.environ.get("AWS_REGION", "us-east-1"))
         response = client.converse(
             modelId=model_id,
             messages=[{"role": "user", "content": [{"text": message}]}],

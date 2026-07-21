@@ -5,8 +5,8 @@
 - **Frontend** — Astro (static) + Alpine.js. Pages: `/` (login), `/chat`,
   `/callback`. Talks to the backend over `fetch` with `credentials: include`.
 - **Backend** — FastAPI. Serves the Google OAuth flow, keeps the user's Google
-  token in a signed session cookie, and proxies MCP calls to the Trust Gateway.
-- **Trust Gateway** — Affinidi-hosted. Verifies the Google JWT and delegates
+  token in a signed session cookie, and proxies MCP calls to the Agent Gateway.
+- **Agent Gateway** — Affinidi-hosted. Verifies the Google JWT and delegates
   Auth0 credentials to the upstream MCP server on demand.
 - **Chat MCP server** — the `chat` tool (Bedrock-optional), sitting behind the
   gateway. The app never calls it directly.
@@ -17,7 +17,7 @@
 Browser (Astro + Alpine)
    │  fetch (cookie)         relative or PUBLIC_BACKEND_URL
    ▼
-FastAPI backend  ── Authorization: Bearer <Google id_token> ──▶ Trust Gateway
+FastAPI backend  ── Authorization: Bearer <Google id_token> ──▶ Agent Gateway
    │  session cookie holds the Google token                        │
    │                                                               ▼
    │                                        verifies Google JWT (caller context)
@@ -39,15 +39,15 @@ serves built UI (single-origin)                          Upstream MCP server
 
 ## Backend API surface
 
-| Route | Purpose |
-|-------|---------|
-| `GET /api/auth/login` | Returns the Google OAuth URL |
+| Route                    | Purpose                                                |
+| ------------------------ | ------------------------------------------------------ |
+| `GET /api/auth/login`    | Returns the Google OAuth URL                           |
 | `GET /api/auth/callback` | Exchanges the code, sets session, redirects to `/chat` |
-| `GET /api/auth/me` | Current user + auth state |
-| `GET /api/auth/logout` | Clears the session |
-| `POST /api/gateway` | Proxies a raw JSON-RPC body to the gateway |
-| `POST /api/gateway/chat` | Proxies a chat `tools/call` to the gateway |
-| `GET /api/health` | Health + gateway-configured flag |
+| `GET /api/auth/me`       | Current user + auth state                              |
+| `GET /api/auth/logout`   | Clears the session                                     |
+| `POST /api/gateway`      | Proxies a raw JSON-RPC body to the gateway             |
+| `POST /api/gateway/chat` | Proxies a chat `tools/call` to the gateway             |
+| `GET /api/health`        | Health + gateway-configured flag                       |
 
 See [authentication.md](authentication.md) and
 [delegation-and-consent.md](delegation-and-consent.md) for the flows.

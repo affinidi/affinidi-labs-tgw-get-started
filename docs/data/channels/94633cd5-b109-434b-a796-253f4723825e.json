@@ -2,7 +2,7 @@
   "config_id": "94633cd5-b109-434b-a796-253f4723825e",
   "name": "a2a-channel-echo-agent",
   "description": "",
-  "listen_address": "your-trust-gateway.com",
+  "listen_address": "your-agent-gateway.com",
   "route": "/agents/strong/paris",
   "target_endpoint": "http://localhost:10000",
   "extension_rules": {

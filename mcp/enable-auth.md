@@ -1,6 +1,6 @@
 # Enabling Authentication on a Agent Gateway MCP Channel (Optional)
 
-> **Audience:** Customers who have already set up an [MCP Surface in the Agent Gateway](../README.md#mcp-server-via-trust-gateway) and want to add an extra layer of protection.
+> **Audience:** Customers who have already set up an [MCP Surface in the Agent Gateway](../README.md#mcp-server-via-agent-gateway) and want to add an extra layer of protection.
 >
 > **Status:** These steps are **optional**. Use them when you need to:
 >
@@ -21,7 +21,7 @@
 
 ## Prerequisites
 
-- An MCP surface already created in the Agent Gateway — see the [main README](../README.md#mcp-server-via-trust-gateway).
+- An MCP surface already created in the Agent Gateway — see the [main README](../README.md#mcp-server-via-agent-gateway).
 - Access to the Agent Gateway dashboard with permission to manage **Secrets** and **Channels**.
 - A working MCP client (the bundled `mcp/test.sh`, the MCP Sandbox in the dashboard, or `curl`).
 
@@ -65,9 +65,9 @@ By default an MCP channel route is **unprotected** — anyone with the URL can c
 ### A.2 — Enable Source Authentication on the Channel
 
 1. Open the surface and select the **Managed Agent** element.
-3. Select **Target Authentication:** as `API Key` and click on `Configure` button 
+2. Select **Target Authentication:** as `API Key` and click on `Configure` button
    - **Header Name:** `x-api-key`
-4. Click **Save**.
+3. Click **Save**.
 
 ![Enable Source Auth on the channel](docs/tg-target-auth-3-update-channel.jpg)
 
@@ -88,7 +88,7 @@ curl 'https://<GATEWAY_HOST>/routes/<CHANNEL_PATH>' \
     "params": {
       "protocolVersion": "2024-11-05",
       "capabilities": {},
-      "clientInfo": { "name": "trust-gateway-sandbox", "version": "1.0.0" }
+      "clientInfo": { "name": "agent-gateway-sandbox", "version": "1.0.0" }
     }
   }'
 ```

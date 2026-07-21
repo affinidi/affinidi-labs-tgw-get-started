@@ -4,7 +4,7 @@
 
 - [1. Overview](#1-overview)
 - [2. Run the App](#2-run-the-app)
-- [3. Set Up A2A Channels in Agent Gateway](#3-set-up-a2a-channels-in-trust-gateway)
+- [3. Set Up A2A Channels in Agent Gateway](#3-set-up-a2a-channels-in-agent-gateway)
 - [4. Update the TG Channel Routes in Settings](#4-update-the-tg-channel-routes-in-settings)
 - [5. Enable Protected Identity for Your Agents](#5-enable-protected-identity-for-your-agents)
 - [6. Fetch the Identity-Protected Agent Cards](#6-fetch-the-identity-protected-agent-cards)

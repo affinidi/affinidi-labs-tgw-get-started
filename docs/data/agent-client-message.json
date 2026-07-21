@@ -7,7 +7,7 @@
             "type": [
                 "VerifiablePresentation"
             ],
-            "holder": "did:web:your-trust-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be",
+            "holder": "did:web:your-agent-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be",
             "verifiableCredential": [
                 {
                     "@context": [
@@ -18,10 +18,10 @@
                         "VerifiableCredential",
                         "AgentIdentityCredential"
                     ],
-                    "issuer": "did:web:your-trust-gateway.com",
+                    "issuer": "did:web:your-agent-gateway.com",
                     "issuanceDate": "2026-02-05T13:01:22.123995+00:00",
                     "credentialSubject": {
-                        "id": "did:web:your-trust-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be",
+                        "id": "did:web:your-agent-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be",
                         "identityFields": {
                             "agentIdentity.name": "A2A Test Client"
                         }
@@ -35,6 +35,6 @@
             "exp": 1770382882,
             "jti": "urn:uuid:f019c822-2445-42c4-9977-3269820c1b7a"
         },
-        "did": "did:web:your-trust-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be"
+        "did": "did:web:your-agent-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be"
     }
 }

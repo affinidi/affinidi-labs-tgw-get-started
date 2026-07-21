@@ -1,7 +1,7 @@
 # Authentication
 
-The user authenticates with **Google OAuth**. This is the *caller context* — it
-identifies who is making the request. The Trust Gateway verifies this identity.
+The user authenticates with **Google OAuth**. This is the _caller context_ — it
+identifies who is making the request. The Agent Gateway verifies this identity.
 
 ## Flow
 
@@ -32,11 +32,11 @@ unlike storing a token in `localStorage`.
 The backend derives the cookie's `SameSite`/`Domain`/`Secure` from the frontend
 and backend origins:
 
-| Situation | Cookie policy |
-|-----------|---------------|
-| Same origin (single-origin) | host-only, `SameSite=Lax` |
-| Sub-domains of one site | `Domain=<shared parent>`, `SameSite=Lax` |
-| Genuinely different sites | `SameSite=None; Secure` |
+| Situation                   | Cookie policy                            |
+| --------------------------- | ---------------------------------------- |
+| Same origin (single-origin) | host-only, `SameSite=Lax`                |
+| Sub-domains of one site     | `Domain=<shared parent>`, `SameSite=Lax` |
+| Genuinely different sites   | `SameSite=None; Secure`                  |
 
 For the split-subdomain deploy, set `SESSION_COOKIE_DOMAIN` to the shared parent
 so both hosts share the cookie. See [configuration.md](configuration.md).

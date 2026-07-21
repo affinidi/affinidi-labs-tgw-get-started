@@ -54,23 +54,23 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
 - [Try it in GitHub Codespaces](#try-it-in-github-codespaces-no-local-setup-required)
 - [Overview](#overview)
 - [Project Structure](#project-structure)
-- [Part 1: Run Agents Without Agent Gateway](#part-1-run-agents-without-trust-gateway)
+- [Part 1: Run Agents Without Agent Gateway](#part-1-run-agents-without-agent-gateway)
   - [Prerequisites](#prerequisites)
   - [A2A Server (Local)](#a2a-server-local)
   - [MCP Server (Local)](#mcp-server-local)
   - [A2A Vertex AI Agent](#a2a-vertex-ai-agent)
-- [Part 2: Run Agents With Agent Gateway](#part-2-run-agents-with-trust-gateway)
-  - [What is the Agent Gateway?](#what-is-the-agent-trust-gateway)
+- [Part 2: Run Agents With Agent Gateway](#part-2-run-agents-with-agent-gateway)
+  - [What is the Agent Gateway?](#what-is-the-agent-agent-gateway)
   - [Prerequisites](#prerequisites-1)
-  - [Setup Agent Gateway](#setup-trust-gateway)
-  - [MCP Server via Agent Gateway](#mcp-server-via-trust-gateway)
+  - [Setup Agent Gateway](#setup-agent-gateway)
+  - [MCP Server via Agent Gateway](#mcp-server-via-agent-gateway)
     - [Optional: Enable Authentication on the MCP Surface Route](#optional-enable-authentication-on-the-mcp-surface-route)
-  - [A2A Server via Agent Gateway](#a2a-server-via-trust-gateway)
-  - [A2A Vertex AI Agent via Agent Gateway](#a2a-vertex-ai-agent-via-trust-gateway)
+  - [A2A Server via Agent Gateway](#a2a-server-via-agent-gateway)
+  - [A2A Vertex AI Agent via Agent Gateway](#a2a-vertex-ai-agent-via-agent-gateway)
   - [Create Identity for Your Agent or MCP Server](#create-identity-for-your-agent-or-mcp-server)
   - [Sample MCP Request & Response Messages](#sample-mcp-request--response-messages)
 - [Part 3: A2A Protected Agent — Decentralized Identity](#part-3-a2a-protected-agent--decentralized-identity)
-- [Part 4: Observability — Visualise Agent Gateway Metrics](#part-4-observability--visualise-trust-gateway-metrics)
+- [Part 4: Observability — Visualise Agent Gateway Metrics](#part-4-observability--visualise-agent-gateway-metrics)
 - [Part 5: Identity and Credential Delegation](#part-5-identity-and-credential-delegation)
 
 ---
@@ -238,7 +238,7 @@ affinidi-labs-tgw-get-started/
 │   ├── requirements.txt
 │   ├── run.sh               # Start the server (with optional ngrok)
 │   └── README.MD            # Full lab guide
-├── tgw-prometheus-integration/
+├── agent-gateway-prometheus-integration/
 │   ├── docker-compose.yml          # Prometheus + Grafana stack
 │   ├── prometheus.yml.template     # Scrape-config template (committed)
 │   ├── dashboard-template.json     # Grafana dashboard template
@@ -256,8 +256,8 @@ affinidi-labs-tgw-get-started/
     └── images/              # Documentation images
 ```
 
-> **`auth0-mcp-surface`** is the modern (`poodle-chai`) chat surface. It keeps
-> **Google OAuth** as the caller context and uses the Trust Gateway to delegate
+> **`auth0-mcp-surface`** is the modern chat surface. It keeps
+> **Google OAuth** as the caller context and uses the Agent Gateway to delegate
 > **Auth0** credentials to the upstream MCP server (replacing the earlier Glean
 > delegation). Frontend is static Astro + Alpine.js; backend is FastAPI.
 >
@@ -395,8 +395,8 @@ pip install -r requirements.txt
 
 Route your agents through the **Agent Gateway** to add identity management, observability, policy enforcement, and governed routing to all agent communications.
 
-![Before Agent Gateway](docs/images/before-affinidi-tgw.jpg)
-![After Agent Gateway](docs/images/after-affinidi-tgw.jpg)
+![Before Agent Gateway](docs/images/before-affinidi-agent-gateway.jpg)
+![After Agent Gateway](docs/images/after-affinidi-agent-gateway.jpg)
 
 ## What is the Agent Gateway?
 
@@ -489,7 +489,7 @@ For a static domain:
 ngrok http --url=<YOUR_NGROK_HOST> 11000
 ```
 
-<a id="3-configure-mcp-channel-in-trust-gateway"></a>
+<a id="3-configure-mcp-channel-in-agent-gateway"></a>
 
 ### 3. Configure MCP Surface in Agent Gateway
 

@@ -2,13 +2,13 @@
 
 The MCP server for the `auth0-mcp-surface` chat demo. It exposes a single
 **`chat`** tool over JSON-RPC (`POST /`, port **9740**) and is the upstream the
-chat surface talks to **through the Trust Gateway**.
+chat surface talks to **through the Agent Gateway**.
 
 - **`chat`** answers via **AWS Bedrock** when configured (`BEDROCK_MODEL_ID` +
   AWS credentials, see [.env.example](.env.example)); otherwise it returns a
   **stub** reply — so getting-started works with no LLM.
-- The LLM is *your* infrastructure. Credential delegation at the gateway scopes
-  *who* can call this / what data it may reach — it does not borrow the user's
+- The LLM is _your_ infrastructure. Credential delegation at the gateway scopes
+  _who_ can call this / what data it may reach — it does not borrow the user's
   own LLM account.
 
 ## Run
@@ -19,7 +19,7 @@ chat surface talks to **through the Trust Gateway**.
 make mcp
 ```
 
-## Wire into the Trust Gateway
+## Wire into the Agent Gateway
 
 1. Expose this server publicly (your proxy, or `ngrok http 9740`).
 2. Gateway dashboard → **Surfaces → Add Surface → MCP Surface Starter** →

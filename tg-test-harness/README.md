@@ -19,7 +19,7 @@ A [Locust](https://locust.io)-based load testing harness for Agent Gateway endpo
 ## Project structure
 
 ```
-tg-test-harness/
+agent-gateway-test-harness/
 ├── data/
 │   ├── endpoints.template.json  # Template — copy this to endpoints.json
 │   └── endpoints.json           # Your config (gitignored — not committed)
