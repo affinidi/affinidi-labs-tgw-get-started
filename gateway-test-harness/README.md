@@ -123,7 +123,7 @@ ITERATIONS=10 ENDPOINTS=mcp_airlines locust --headless \
       "name": "my_mcp_endpoint",
       "active": true,
       "type": "mcp",
-      "url": "<Trust_Gateway_MCP_Channel_Route>",
+      "url": "<Trust_Gateway_MCP_Surface_Route>",
       "headers": {
         "x-api-key": "<YOUR_API_KEY>"
       },
@@ -137,7 +137,7 @@ ITERATIONS=10 ENDPOINTS=mcp_airlines locust --headless \
       "name": "my_a2a_agent",
       "active": true,
       "type": "a2a",
-      "url": "<Trust_Gateway_Agent_Channel_Route>",
+      "url": "<Trust_Gateway_Agent_Surface_Route>",
       "headers": {
         "x-api-key": "<YOUR_API_KEY>"
       },

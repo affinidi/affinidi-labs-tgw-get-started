@@ -97,7 +97,7 @@ docker compose up --build
 Go to **Surfaces → Add Surface → MCP Surface Starter** and build the flow
 **Human → Caller → Access Point → Chat (Managed Agent) → External Target**:
 
-![Agent surface overview](docs/images/04-tgw-surface-diagram.jpg)
+![Agent surface overview](docs/images/04-gw-surface-diagram.jpg)
 
 ### Configure the Managed Agent
 
@@ -197,7 +197,7 @@ gateway will reference (values are never shown again after creation):
 | `Chat Auth0 Client ID`     | Auth0 application Client ID (Part 4)     |
 | `Chat Auth0 Client Secret` | Auth0 application Client Secret (Part 4) |
 
-![Agent Gateway secrets](docs/images/08-agent-gateway-secrets.jpg)
+![Agent Gateway secrets](docs/images/08-gw-secrets.jpg)
 
 > **Note:** Google OAuth credentials are configured in `backend/.env` (Part 8), not in the Agent Gateway.
 

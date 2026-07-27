@@ -24,8 +24,8 @@ make mcp
 1. Expose this server publicly (your proxy, or `ngrok http 9740`).
 2. Gateway dashboard → **Surfaces → Add Surface → MCP Surface Starter** →
    Managed Agent → **Direct URL = this server's public URL** → save → copy the
-   **Channel Route** URL.
-3. Set `GATEWAY_URL` in `../backend/.env` to that Channel Route URL.
+   **Route URL** (Access Point).
+3. Set `GATEWAY_URL` in `../backend/.env` to that Route URL.
 
 > Historical note: the original `glean-mcp-surface` pointed the same chat UI at
 > Glean's MCP server (Glean Assistant did the LLM/RAG). This is the neutral,

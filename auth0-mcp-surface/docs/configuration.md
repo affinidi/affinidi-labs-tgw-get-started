@@ -8,7 +8,7 @@ Two `.env` files: one for the backend, one for the frontend. Copy the
 | Variable                                    | Meaning                                                       |
 | ------------------------------------------- | ------------------------------------------------------------- |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth client (caller context)                          |
-| `GATEWAY_URL`                               | Agent Gateway **Channel Route** URL (not the MCP server URL)  |
+| `GATEWAY_URL`                               | Agent Gateway **Route URL** (Access Point, not the MCP server URL)  |
 | `BACKEND_URL`                               | This backend's own public base URL; drives the OAuth callback |
 | `FRONTEND_URL`                              | Where the browser lands after login (split deploy only)       |
 | `SESSION_COOKIE_DOMAIN`                     | Shared parent domain so sub-domains share the cookie          |

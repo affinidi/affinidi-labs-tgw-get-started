@@ -4,8 +4,8 @@
 
 - [1. Overview](#1-overview)
 - [2. Run the App](#2-run-the-app)
-- [3. Set Up A2A Channels in Agent Gateway](#3-set-up-a2a-channels-in-agent-gateway)
-- [4. Update the TG Channel Routes in Settings](#4-update-the-tg-channel-routes-in-settings)
+- [3. Set Up A2A Surfaces in Agent Gateway](#3-set-up-a2a-surfaces-in-agent-gateway)
+- [4. Update the GW Route URLs in Settings](#4-update-the-gw-route-urls-in-settings)
 - [5. Enable Protected Identity for Your Agents](#5-enable-protected-identity-for-your-agents)
 - [6. Fetch the Identity-Protected Agent Cards](#6-fetch-the-identity-protected-agent-cards)
 - [7. Sample A2A Message Exchange](#7-sample-a2a-message-exchange)
@@ -18,7 +18,7 @@ This lab demonstrates how to give AI agents a **cryptographic, decentralized ide
 
 Instead of trusting an agent just because it says who it is, the Agent Gateway automatically generates a unique **Decentralised Identifier (DID)** for each agent and issues a **Verifiable Presentation (VP)** — cryptographically proving its identity credentials to any caller, verified with Ed25519 signatures.
 
-The identity fields can be **anything you define** — this lab uses `name`, `role`, and `model` as an example. What matters is that the fields declared in your agent card match the schema you configure in the Agent Gateway channel.
+The identity fields can be **anything you define** — this lab uses `name`, `role`, and `model` as an example. What matters is that the fields declared in your agent card match the schema you configure in the Agent Gateway surface.
 
 The Agent Gateway acts as an intercepting proxy that:
 
@@ -53,8 +53,8 @@ Client / Caller
      ┌─────────┴──────────┐
      ▼                    ▼
 ┌──────────────┐  ┌──────────────────────┐
-│    TGW       │  │       TGW            │
-│  A2A Channel │  │    A2A Channel       │
+│    GW        │  │       GW             │
+│  A2A Surface │  │    A2A Surface       │
 │  (Personal)  │  │    (Finance)         │
 │  Issues VP ✓ │  │    Issues VP ✓       │
 └──────┬───────┘  └──────────┬───────────┘
@@ -79,7 +79,7 @@ The agent's identity fields are **fully customisable** — you define what goes 
 | `role`  | The agent's functional role |
 | `model` | The underlying LLM model    |
 
-You can add, remove, or rename these fields — as long as the schema in your agent card extension and the identity schema configured in the Agent Gateway channel match.
+You can add, remove, or rename these fields — as long as the schema in your agent card extension and the identity schema configured in the Agent Gateway surface match.
 
 ---
 
@@ -170,60 +170,64 @@ Each card contains plain-text identity fields:
 
 ---
 
-## 3. Set Up A2A Channels in Agent Gateway
+## 3. Set Up A2A Surfaces in Agent Gateway
 
-You will create **two channels** — one for each agent.
+You will create **two surfaces** — one for each agent.
 
 1. Log in to the [Affinidi Developer Portal](https://portal.affinidi.com) and open your Agent Gateway instance.
-2. Navigate to **Channels** and click **Create Channel**.
-3. Select **A2A** as the channel type.
-4. For the **Personal Agent channel**, set the Target URL:
+2. Navigate to **Surfaces** and click **Create Agent Surface**.
+3. Select the **A2A Surface Starter** template.
+4. For the **Personal Agent surface**, set the Target URL:
 
    ```
    https://<your-ngrok-domain>/a2a/personal-agent/
    ```
 
-5. Repeat steps 2–4 for the **Finance Agent channel**, setting the Target URL:
+5. Repeat steps 2–4 for the **Finance Agent surface**, setting the Target URL:
 
    ```
    https://<your-ngrok-domain>/a2a/finance-agent/
    ```
 
-6. Complete channel creation. You will see both channels in the list.
-   ![Create Channel](docs/channel-create.png)
-   ![Select A2A](docs/channel-step-review.png)
+6. Complete surface creation. You will see both surfaces in the list.
+
+   ![Add Surface — A2A Surface Starter](../docs/images/surface-create.jpg)
+   ![Managed Agent — set the target endpoint URL](../docs/images/surface-managed-agent.jpg)
+   ![Both surfaces in the list](../docs/images/surface-list.jpg)
 
 ---
 
-## 4. Update the TG Channel Routes in Settings
+## 4. Update the GW Route URLs in Settings
 
-1. Copy the **TG Channel Route URL** from each channel you created.
-2. Update your `.env` with both channel URLs:
+1. Copy the **GW Route URL** from each surface you created.
+2. Update your `.env` with both surface URLs:
    ```
    PERSONAL_AGENT_TG_URL=https://<your-tgw-domain>/channels/<personal-channel-id>
    FINANCE_AGENT_TG_URL=https://<your-tgw-domain>/channels/<finance-channel-id>
    ```
 3. Restart the app. All traffic to both agents will now route through the Agent Gateway instead of hitting them directly.
 
-   ![Select A2A](docs/channel-routes-view.png)
-   ![Update Agent URL](docs/app-update-tg-channel-route.png)
-   ![App Agent](docs/app-agent-card-view.png)
+   ![Copy the Route URL from the Access Point](../docs/images/surface-access-point.jpg)
+   ![Update Agent URL](docs/app-update-tg-channel-route.jpg)
+   ![App Agent](docs/app-agent-card-view.jpg)
 
 ---
 
 ## 5. Enable Protected Identity for Your Agents
 
-Repeat the following steps for **both** the Personal Agent channel and the Finance Agent channel.
+Repeat the following steps for **both** the Personal Agent surface and the Finance Agent surface.
 
 > **Prerequisite:** For the Agent Gateway to issue a VP, your agent card **must** expose the identity extension (`https://fabric.affinidi.io/extensions/agent-identity-credential/v1`) with your chosen identity fields in its `capabilities.extensions`. This is already configured in this app — see `personal_agent.py` and `finance_agent.py`.
 
-1. Open the channel in the Developer Portal.
-2. Click the **Protected Identity** tab.
+1. Open the surface in the Developer Portal.
+2. From the **Enhancements** palette, drag the **Identity** element ![Identity element](../docs/images/surface-identity-element.jpg) between the Managed Agent and the Access Point, as shown below.
 
-   ![A2A Identity Tab](docs/channel-enable-identity.png)
+   ![Drag the Identity element onto the surface canvas](../docs/images/surface-identity-canvas.jpg)
 
-3. **Enable** Protected Identity.
+3. Configure the Identity element to derive the agent identity from payload metadata.
 4. Paste the identity schema that matches the fields declared in your agent card. This lab uses the schema from `identity-extension.json`:
+
+   ![Configure the identity schema](../docs/images/surface-identity-schema.jpg)
 
    ```json
    {
@@ -244,13 +248,13 @@ Repeat the following steps for **both** the Personal Agent channel and the Finan
    This tells the Agent Gateway which fields to read from that agent's card and include in the issued Verifiable Credential.
    ```
 
-> **Note:** Each channel issues a VP specific to its target agent — the Personal Agent channel issues credentials with `"name": "Personal Assistant"` and the Finance Agent channel issues credentials with `"name": "Finance Agent"`.
+> **Note:** Each surface issues a VP specific to its target agent — the Personal Agent surface issues credentials with `"name": "Personal Assistant"` and the Finance Agent surface issues credentials with `"name": "Finance Agent"`.
 
 ---
 
 ## 6. Fetch the Identity-Protected Agent Cards
 
-Now call each agent card through its **TG Channel Route URL**:
+Now call each agent card through its **GW Route URL**:
 
 ```bash
 # Personal Agent via Agent Gateway
@@ -260,8 +264,8 @@ curl https://<personal-tgw-channel-url>/.well-known/agent.json
 curl https://<finance-tgw-channel-url>/.well-known/agent.json
 ```
 
-![A2A Identity](docs/agent-card-via-tg.png)
-![App Agent](docs/app-agent-identity.png)
+![A2A Identity](docs/agent-card-via-tg.jpg)
+![App Agent](docs/app-agent-identity.jpg)
 
 The Agent Gateway will:
 
@@ -280,12 +284,12 @@ The Agent Gateway will:
       {
         "uri": "https://fabric.affinidi.io/extensions/agent-identity-credential/v1",
         "params": {
-          "did": "did:webvh:<channel-did>",
+          "did": "did:webvh:<agent-did>",
           "verifiablePresentation": {
             "@context": ["https://www.w3.org/ns/credentials/v2"],
             "id": "urn:uuid:<uuid>",
             "type": ["VerifiablePresentation"],
-            "holder": "did:webvh:<channel-did>",
+            "holder": "did:webvh:<agent-did>",
             "verifiableCredential": {
               "@context": [
                 "https://www.w3.org/ns/credentials/v2",
@@ -296,7 +300,7 @@ The Agent Gateway will:
               "validFrom": "2026-05-04T06:21:14Z",
               "validUntil": "2027-05-04T06:21:14Z",
               "credentialSubject": {
-                "id": "did:webvh:<channel-did>",
+                "id": "did:webvh:<agent-did>",
                 "identityFields": {
                   "name": "Personal Assistant",
                   "role": "Personal Assistant Server",
@@ -315,7 +319,7 @@ The Agent Gateway will:
               "type": "DataIntegrityProof",
               "cryptosuite": "eddsa-rdfc-2022",
               "proofPurpose": "assertionMethod",
-              "verificationMethod": "did:webvh:<channel-did>#key-2",
+              "verificationMethod": "did:webvh:<agent-did>#key-2",
               "proofValue": "<signature>"
             }
           }
@@ -336,7 +340,7 @@ This VP proves: **"This agent is presenting identity credentials issued by the A
 
 ### Request
 
-A caller sends a message to the Personal Agent via the TG Channel Route. The request includes the caller's own identity metadata in `extensions` and `metadata`:
+A caller sends a message to the Personal Agent via the GW Route. The request includes the caller's own identity metadata in `extensions` and `metadata`:
 
 ```json
 {
@@ -450,4 +454,4 @@ The agent responds with the answer. The Agent Gateway injects the agent's **Veri
 - The caller identifies itself in the **request** `metadata` using `agent-identity/v1` (name, version)
 - The agent's **response** `metadata` carries `agent-identity-credential/v1` — the VP injected by the Agent Gateway
 - `credentialSubject.identityFields` contains the identity values read from the agent's card (`name`, `role`, `model`)
-- The VP has two `DataIntegrityProof` signatures: one from the **TGW issuer** (signing the credential) and one from the **channel holder DID** (signing the presentation)
+- The VP has two `DataIntegrityProof` signatures: one from the **Gateway issuer** (signing the credential) and one from the **channel holder DID** (signing the presentation)

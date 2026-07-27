@@ -111,8 +111,8 @@ After your project is whitelisted, you can create and configure your Agent Gatew
 
 With the Agent Gateway configured, you can now:
 
-- **Set up MCP channels** to route Model Context Protocol traffic through the gateway with observability and identity management.
-- **Set up A2A channels** to route Agent-to-Agent traffic through the gateway.
+- **Set up MCP surfaces** to route Model Context Protocol traffic through the gateway with observability and identity management.
+- **Set up A2A surfaces** to route Agent-to-Agent traffic through the gateway.
 - **Enable decentralized identities** for your inbound MCP/A2A clients.
 
-Refer to the [README](README.md) for detailed instructions on configuring channels and running agents through the Agent Gateway.
+Refer to the [README](README.md) for detailed instructions on configuring surfaces and running agents through the Agent Gateway.

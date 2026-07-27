@@ -15,7 +15,7 @@ The stack supports **any number of Agent Gateway instances** — pass
 each one's host to `run.sh` and the script generates a scrape job
 plus a matching Grafana dashboard for it automatically. The job /
 dashboard name is **derived from the host's subdomain**, so each
-TG ends up with its own clearly labelled view.
+Gateway ends up with its own clearly labelled view.
 
 > 🔒 **Optional: Basic Auth for the metrics endpoint**
 >
@@ -44,10 +44,10 @@ Before bringing the stack up, confirm the endpoint is reachable from
 your machine and returns Prometheus-format text:
 
 ```bash
-# Without auth (if Prometheus Authentication is disabled in the TG UI)
+# Without auth (if Prometheus Authentication is disabled in the Gateway UI)
 curl -s https://<YOUR_TGW_HOST>/api/v1/metrics/prometheus | head -20
 
-# With Basic Auth (if Prometheus Authentication is enabled in the TG UI)
+# With Basic Auth (if Prometheus Authentication is enabled in the Gateway UI)
 curl -s -u '<USERNAME>:<PASSWORD>' https://<YOUR_TGW_HOST>/api/v1/metrics/prometheus | head -20
 ```
 
@@ -210,7 +210,7 @@ Every panel on the shipped dashboards maps to one or more of these:
 | `agent_trust_gateway_avg_response_latency_ms`      | gauge     | Avg latency target → client        |
 | `agent_trust_gateway_unique_identities`            | gauge     | Distinct agent identities observed |
 
-Dashboard layout (same for every TG instance):
+Dashboard layout (same for every Gateway instance):
 
 - **Row 1 — Stat cards:** Total Requests · Successful · Gateway Faults · Active Connections · Unique Identities · Connections/min
 - **Row 2 — Traffic:** Request Rate (total/success/fault) · Success Ratio
@@ -223,7 +223,7 @@ Dashboard layout (same for every TG instance):
 | Symptom                             | Check                                                                                                                                             |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Target shows `DOWN` in Prometheus   | `curl -v -u '<USERNAME>:<PASSWORD>' https://<YOUR_TGW_HOST>/api/v1/metrics/prometheus`                                                            |
-| Target shows `401 Unauthorized`     | Basic Auth is enabled in the TG UI but `basic_auth` is missing/wrong in `prometheus.yml` — check **Settings → Admin → Prometheus Authentication** |
+| Target shows `401 Unauthorized`     | Basic Auth is enabled in the Gateway UI but `basic_auth` is missing/wrong in `prometheus.yml` — check **Settings → Admin → Prometheus Authentication** |
 | Panels show "No data"               | Dashboard's `job=` filter must equal `job_name` in `prometheus.yml`                                                                               |
 | Dashboard doesn't appear in Grafana | `docker logs tgw-prom-grafana \| grep -i provisioning`                                                                                            |
 | Want to wipe storage                | `docker compose down -v`                                                                                                                          |
@@ -237,7 +237,7 @@ tgw-prometheus-integration/
 ├── docker-compose.yml
 ├── prometheus.yml.template             ← committed; copied to prometheus.yml by run.sh
 ├── prometheus.yml                      ← LOCAL (gitignored); real scrape config
-├── run.sh                              ← accepts any number of TG hosts
+├── run.sh                              ← accepts any number of Gateway hosts
 ├── dashboard-template.json             ← single source of truth for panel layout
 └── grafana/provisioning/
     ├── datasources/datasources.yml

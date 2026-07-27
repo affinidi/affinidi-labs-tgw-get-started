@@ -99,7 +99,7 @@ app.add_middleware(HeaderLoggerMiddleware)
 
 @app.get("/headers", tags=["Debug"], summary="Echo all received headers")
 async def echo_headers(request: Request):
-    """Returns all headers received by the API server — useful to verify TGW header pass-through."""
+    """Returns all headers received by the API server — useful to verify Gateway header pass-through."""
     return {"headers": dict(request.headers)}
 
 

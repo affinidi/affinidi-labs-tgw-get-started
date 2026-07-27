@@ -6,7 +6,7 @@ At its core, the Agent Gateway is a protocol-aware intercepting proxy for the In
 
 - **Protocol inspection** (understanding A2A, AP2, UCP, MCP, OpenAI protocols)
 - **Identity management** (issuing and validating durable and portable decentralized identities for agents to bridge the decentralized world to AI agents), and
-- **Intelligent routing** (directing traffic based on channels, routes, and connection points)
+- **Intelligent routing** (directing traffic based on surfaces, routes, and connection points)
 
 Built on top of these foundations are advanced features for production deployments including circuit breakers, retry logic, rate limiting, real-time metrics and logging for traffic observability and management; metadata inspection and injection for use-cases such as API key
 management.
@@ -46,8 +46,8 @@ Beyond a simple "hello world", this repo also includes a set of supporting tools
 
 Establish governed MCP and A2A connections by routing clients through the Agent Gateway, which manages identity, policy enforcement, and observability before forwarding requests to your local servers or cloud-deployed agents (e.g., Vertex AI Agent Engine).
 
-![Alt text](docs/images/before-affinidi-tgw.jpg)
-![Alt text](docs/images/after-affinidi-tgw.jpg)
+![Before Agent Gateway](docs/images/before-affinidi-gateway.jpg)
+![After Agent Gateway](docs/images/after-affinidi-gateway.jpg)
 
 ## 📋 Table of Contents
 
@@ -234,7 +234,7 @@ affinidi-labs-tgw-get-started/
 │   ├── agents.py            # Multi-agent server (Personal + Finance agents)
 │   ├── personal_agent.py    # Personal Assistant agent
 │   ├── finance_agent.py     # Finance agent
-│   ├── identity-extension.json  # Identity schema for TG credential issuance
+│   ├── identity-extension.json  # Identity schema for Gateway credential issuance
 │   ├── requirements.txt
 │   ├── run.sh               # Start the server (with optional ngrok)
 │   └── README.MD            # Full lab guide
@@ -404,13 +404,13 @@ The Agent Gateway is an enterprise-grade gateway written in Rust for the Agent-t
 
 - **Protocol inspection** — understands A2A, MCP, UCP, AP2, OpenAI protocols
 - **Identity management** — issues and validates decentralized identities (DIDs) for agents
-- **Intelligent routing** — directs traffic based on channels, routes, and policies
+- **Intelligent routing** — directs traffic based on surfaces, routes, and policies
 - **Observability** — real-time metrics, logging, and payload inspection
-- **Zero-downtime hot reload** — update channel configs without dropping in-flight requests
+- **Zero-downtime hot reload** — update surface configs without dropping in-flight requests
 
-### About Channels
+### About Surfaces
 
-Channels are the fundamental routing unit. Each channel defines:
+Surfaces are the fundamental routing unit. Each surface defines:
 
 - Where to listen (external URL / load balancer)
 - Where to forward (upstream endpoint or proxy)
@@ -489,31 +489,31 @@ For a static domain:
 ngrok http --url=<YOUR_NGROK_HOST> 11000
 ```
 
-<a id="3-configure-mcp-channel-in-agent-gateway"></a>
+<a id="3-configure-mcp-surface-in-agent-gateway"></a>
 
 ### 3. Configure MCP Surface in Agent Gateway
 
 1. Open the Agent Gateway dashboard and go to `Surfaces`.
 2. Click `Add Surface` and select the `MCP Surface Starter` template.
 
-   ![Alt text](./mcp/docs/channel-create-1.jpg)
-   ![Alt text](./mcp/docs/channel-create-2.jpg)
+   ![Agent Surfaces list](./mcp/docs/surface-list.jpg)
+   ![Surface Starter templates](./mcp/docs/surface-starter-templates.jpg)
 
 3. Select the `Managed Agent` element and enter the following details:
    - Select **Endpoint Type:** `Direct URL`
    - **Endpoint URL:** Your ngrok URL (public URL of your MCP server)
 
-   ![Alt text](./mcp/docs/channel-create-3.jpg)
-   ![Alt text](./mcp/docs/channel-create-4.jpg)
+   ![Managed Agent on the surface canvas](./mcp/docs/surface-canvas-managed-agent.jpg)
+   ![Managed Agent endpoint configuration](./mcp/docs/surface-managed-agent-config.jpg)
 
 4. Review the flow, then click `Agent surface area`, set a name such as `MCP Weather Surface`, and click `Save`.
 
-   ![Alt text](./mcp/docs/channel-create-5.jpg)
+   ![Surface configuration](./mcp/docs/surface-config.jpg)
 
 5. Open `Access Point` and copy the route URL (shown as `Route URL`, and in some tenants as `Channel Route`).
    Note: Update the prefix/custom path as needed.
 
-   ![Alt text](./mcp/docs/channel-create-6.jpg)
+   ![Access Point route URL](./mcp/docs/surface-access-point.jpg)
 
 ### 4. Test via Agent Gateway
 
@@ -529,18 +529,18 @@ cd mcp
 
 View traffic metrics and logs in the surface monitoring dashboard after testing.
 
-![Alt text](./mcp/docs/channel-create-7.jpg)
+![Surface monitoring](./mcp/docs/surface-monitoring.jpg)
 
 If you want real-time capture for troubleshooting, click the `Capture` button in the `Monitoring` section and run the program.
-![Alt text](./mcp/docs/channel-create-8.jpg)
+![Surface capture](./mcp/docs/surface-capture.jpg)
 
 ### Optional: Enable Authentication on the MCP Surface Route
 
 By default the MCP surface route is open. If you need to **lock down the route** so only authorised clients can call it, and/or **inject an API key** from the Agent Gateway to a protected upstream MCP server, follow the optional guide:
 
-➡️ **[Enable Authentication on a Agent Gateway MCP Channel](mcp/enable-auth.md)**
+➡️ **[Enable Authentication on a Agent Gateway MCP Surface](mcp/enable-auth.md)**
 
-Covers Source Authentication (client → gateway) and Target Authentication (gateway → upstream) with screenshots and `curl` test commands. The same pattern applies to A2A channels.
+Covers Target Authentication (gateway → upstream) — store a secret once in the Agent Gateway and have it injected into every forwarded request. Includes screenshots and `curl` test commands. The same pattern applies to A2A surfaces.
 
 ---
 
@@ -602,7 +602,7 @@ cd a2a
 ./test.sh https://demo-gateway.proxy.apse1.octo.affinidi.io/agents/ocean/superior
 ```
 
-View traffic metrics and logs in the channel dashboard after testing.
+View traffic metrics and logs in the surface monitoring dashboard after testing.
 
 ![Alt text](/docs/images/a2a/a2a-surface-5.png)
 
@@ -654,7 +654,7 @@ python a2a_client.py https://<GATEWAY_HOST>/agents/<CHANNEL_PATH>
 
 > The client still contacts the real Vertex AI management API to look up the deployed agent, but all A2A messaging is routed through the Agent Gateway.
 
-View traffic metrics and logs in the channel dashboard after testing.
+View traffic metrics and logs in the surface monitoring dashboard after testing.
 
 ---
 
@@ -667,16 +667,16 @@ The Agent Gateway can issue a decentralized identity (DID) for the **agent or MC
 
 ### Enable Protected Identity
 
-1. Edit the A2A or MCP channel you created
+1. Edit the A2A or MCP surface you created
 2. Click on the `Protected Identity` tab
 3. Enable **Protected Identity** and paste the identity schema matching the fields declared in your agent card extension
 4. Save the configuration
 
-   ![Alt text](docs/images/channel-mcp-identity.jpg)
+   ![Configure surface identity schema](docs/images/surface-identity-schema.jpg)
 
 5. Call the agent card or send a message through the Agent Gateway — the VP carrying the agent's identity will be injected automatically into each response
 
-   ![Alt text](docs/images/channel-mcp-identity2.jpg)
+   ![Drag the Identity element onto the surface canvas](docs/images/surface-identity-canvas.jpg)
    ![Alt text](docs/images/channel-mcp-identity-dashboard.jpg)
 
 > For a detailed walkthrough with identity schema configuration and sample request/response messages, see the **[A2A Protected Agent lab](a2a-protected-agent/README.MD)**.
@@ -758,7 +758,7 @@ This lab shows how to give AI agents a **cryptographic, verifiable identity** us
 **What you will learn:**
 
 - How to declare identity fields in an agent card using the `agent-identity-credential` extension
-- How to create A2A channels in Agent Gateway with a custom identity schema
+- How to create A2A surfaces in Agent Gateway with a custom identity schema
 - How the Agent Gateway issues a `did:webvh` DID and a signed `AgentIdentityCredential` VC for each agent
 - How VPs are injected into A2A agent card responses and message responses
 
