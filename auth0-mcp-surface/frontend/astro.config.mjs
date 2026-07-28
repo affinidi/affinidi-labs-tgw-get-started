@@ -7,5 +7,6 @@ export default defineConfig({
   output: 'static',
   server: {
     port: 5137,
+    host: '0.0.0.0',
   },
 });
