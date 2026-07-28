@@ -61,7 +61,7 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   import Alpine from 'alpinejs';
-  import { api } from '../lib/api';
+  import { api, API_BASE } from '../lib/api';
 
   Alpine.data('loginPage', () => ({
     loading: false,
@@ -87,7 +87,7 @@ import Layout from '../layouts/Layout.astro';
         window.location.href = auth_url;
       } catch (e) {
         this.loading = false;
-        alert('Could not start login. Is the backend running on :8000?');
+        alert(`Could not start login. Backend unreachable at ${API_BASE}`);
       }
     },
   }));

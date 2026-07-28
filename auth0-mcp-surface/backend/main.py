@@ -34,6 +34,7 @@ import pathlib
 from urllib.parse import urlparse
 
 import httpx
+import publicsuffix2
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -80,13 +81,31 @@ def _host(url: str) -> str:
 
 
 def _shared_parent(a: str, b: str) -> str:
+    """
+    Find the shared parent domain between two hostnames.
+    Returns empty string if they share a public suffix (e.g., ngrok-free.app)
+    to avoid setting cookies that browsers will reject.
+    """
     common: list[str] = []
     for x, y in zip(reversed(a.split(".")), reversed(b.split("."))):
         if x != y:
             break
         common.append(x)
     common.reverse()
-    return ".".join(common) if len(common) >= 2 else ""
+
+    if len(common) < 2:
+        return ""
+
+    shared = ".".join(common)
+
+    # Check if shared parent is a public suffix (like ngrok-free.app, ngrok.app, etc.)
+    # Browsers reject cookies on public suffixes for security reasons.
+    psl = publicsuffix2.PublicSuffixList()
+    if psl.get_public_suffix(shared) == shared:
+        # Shared parent is itself a public suffix - can't set cookie here
+        return ""
+
+    return shared
 
 
 _own_host, _fe_host = _host(_own_origin), _host(FRONTEND_URL)
