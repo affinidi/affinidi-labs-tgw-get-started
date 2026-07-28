@@ -63,6 +63,7 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
   - [What is the Agent Gateway?](#what-is-the-agent-gateway)
   - [Prerequisites](#prerequisites-1)
   - [Setup Agent Gateway](#setup-agent-gateway)
+  - [Copilot Studio Agent via Agent Gateway](#copilot-studio-agent-via-agent-gateway)
   - [MCP Server via Agent Gateway](#mcp-server-via-agent-gateway)
     - [Optional: Enable Authentication on the MCP Surface Route](#optional-enable-authentication-on-the-mcp-surface-route)
   - [A2A Server via Agent Gateway](#a2a-server-via-agent-gateway)
@@ -459,6 +460,14 @@ Surfaces are the fundamental routing unit. Each surface defines:
 4. After login you will see the dashboard
 
 ![Alt text](docs/images/gateway-dashboard.jpg)
+
+---
+
+## Copilot Studio Agent via Agent Gateway
+
+Copilot Studio agents do not support A2A ingress by default. To expose a Copilot Studio agent to A2A clients, route traffic through Agent Gateway using an A2A proxy and surface.
+
+Use the step-by-step guide in [copilot-studio/](copilot-studio/).
 
 ---
 

@@ -1,6 +1,17 @@
 # Copilot Studio + Gateway Developer Guide (Simple)
 
-This guide shows the fastest way to expose a Copilot Studio agent through Gateway using direct link credentials and an A2A surface.
+This guide shows the fastest way to expose a Copilot Studio agent through Gateway using Direct Line credentials and an A2A surface.
+
+## Why this guide is needed
+
+Copilot Studio agents do not provide A2A ingress by default. If your clients or platforms communicate through A2A, you need a Gateway layer to bridge requests to Copilot Studio safely.
+
+This guide explains how to:
+
+- Enable a Copilot Studio agent behind a Gateway A2A proxy and A2A surface
+- Route traffic through a stable Access Point URL
+- Validate end-to-end behavior with curl
+- Monitor request flow and logs in Gateway
 
 ## Flow overview
 
@@ -29,7 +40,7 @@ Reference pages:
 ### 1. Create a Copilot agent
 
 1. Sign in to Copilot Studio: https://copilotstudio.microsoft.com
-   
+
    <img src="https://learn.microsoft.com/en-us/microsoft-copilot-studio/media/fundamentals-get-started/home-page.png" alt="Copilot Studio Home page" width="760" />
 
 2. On Home, describe your agent and create it. Keep it simple.
