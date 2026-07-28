@@ -60,7 +60,7 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
   - [MCP Server (Local)](#mcp-server-local)
   - [A2A Vertex AI Agent](#a2a-vertex-ai-agent)
 - [Part 2: Run Agents With Agent Gateway](#part-2-run-agents-with-agent-gateway)
-  - [What is the Agent Gateway?](#what-is-the-agent-agent-gateway)
+  - [What is the Agent Gateway?](#what-is-the-agent-gateway)
   - [Prerequisites](#prerequisites-1)
   - [Setup Agent Gateway](#setup-agent-gateway)
   - [MCP Server via Agent Gateway](#mcp-server-via-agent-gateway)
@@ -69,7 +69,7 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
   - [A2A Vertex AI Agent via Agent Gateway](#a2a-vertex-ai-agent-via-agent-gateway)
   - [Create Identity for Your Agent or MCP Server](#create-identity-for-your-agent-or-mcp-server)
   - [Sample MCP Request & Response Messages](#sample-mcp-request--response-messages)
-- [Part 3: A2A Protected Agent — Decentralized Identity](#part-3-a2a-protected-agent--decentralized-identity)
+- [Part 3: A2A Agent Identity — Decentralized Identity](#part-3-a2a-agent-identity--decentralized-identity)
 - [Part 4: Observability — Visualise Agent Gateway Metrics](#part-4-observability--visualise-agent-gateway-metrics)
 - [Part 5: Identity and Credential Delegation](#part-5-identity-and-credential-delegation)
 
@@ -88,10 +88,10 @@ Don't want to install anything on your computer? GitHub Codespaces gives you a r
 3. Select the **`Codespaces`** tab. This tab is only visible when you are signed in — create a free GitHub account first if you have not done so already.
 4. Click **`Create codespace on main`**.
 
-   ![alt text](/docs/images/github/codespace-1.png)
+![alt text](docs/images/github/codespace-1.png)
 
 > A new browser tab will open and the environment will take about a minute to set up. You will see a VS Code editor appear in your browser when it is ready.
-> ![alt text](/docs/images/github/codespace-2.png)
+> ![alt text](docs/images/github/codespace-2.png)
 
 > **Heads up:** Codespaces automatically pauses after **30 minutes of inactivity** to save your free quota. If your server stops responding, just reopen the Codespace, re-run `./run.sh`, and re-forward the port.
 
@@ -110,7 +110,7 @@ cd mcp
 
 You will see a message like `MCP server running on port 11000`. Leave this terminal running.
 
-![alt text](/docs/images/github/codespace-3.png)
+![alt text](docs/images/github/codespace-3.png)
 
 ### Step 4 — Forward the port and get your public URL
 
@@ -121,7 +121,7 @@ Codespaces automatically detects that port `11000` is in use and shows a notific
 3. Right-click the row and choose **`Port Visibility → Public`** so the URL can be used from outside.
 4. Copy the **`Forwarded Address`** URL — it looks like `https://<random-name>-11000.app.github.dev`.
 
-![alt text](/docs/images/github/codespace-4.png)
+![alt text](docs/images/github/codespace-4.png)
 
 > **Tip:** This forwarded URL acts as your public endpoint, just like ngrok would on a local machine. You do **not** need to install ngrok.
 
@@ -161,7 +161,7 @@ cd a2a
 ```
 
 **Ports tab — make port `10000` public** and copy the forwarded URL.
-![alt text](/docs/images/github/codespace-5.png)
+![alt text](docs/images/github/codespace-5.png)
 
 **Terminal 2 — run the interactive client:**
 
@@ -181,7 +181,7 @@ Once you have your Codespaces forwarded URLs, you can use them exactly like ngro
 - When configuring an MCP Surface, set the **Target Endpoint URL** to your Codespaces forwarded address for port `11000`.
 - When configuring an A2A Surface, set the **Target Endpoint URL** to your Codespaces forwarded address for port `10000`.
 
-![alt text](/docs/images/a2a/a2a-surface-2.png)
+![alt text](docs/images/a2a/a2a-surface-2.png)
 
 Everything else stays the same — the Codespace keeps the server running while the Agent Gateway routes traffic to it.
 
@@ -197,10 +197,10 @@ Everything else stays the same — the Codespace keeps the server running while 
 | `mcp/`                            | Local MCP server with calculator and weather tools                                    |
 | `a2a-vertex-agent/`               | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
 | `rest-api/`                       | REST API server with MCP proxy                                                        |
-| `a2a-protected-agent/`            | Multi-agent server (Personal + Finance) with decentralized identity via Agent Gateway |
+| `a2a-agent-identity/`             | Multi-agent server (Personal + Finance) with decentralized identity via Agent Gateway |
 | `gateway-prometheus-integration/` | Scrape the Agent Gateway's native Prometheus endpoint and visualise it in Grafana     |
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 affinidi-labs-tgw-get-started/
@@ -230,7 +230,7 @@ affinidi-labs-tgw-get-started/
 │   ├── api_server.py        # REST API server
 │   ├── mcp_client.py        # MCP proxy client
 │   └── run.sh
-├── a2a-protected-agent/
+├── a2a-agent-identity/
 │   ├── agents.py            # Multi-agent server (Personal + Finance agents)
 │   ├── personal_agent.py    # Personal Assistant agent
 │   ├── finance_agent.py     # Finance agent
@@ -574,23 +574,23 @@ ngrok http --url=<YOUR_NGROK_HOST> 10000
 1. Open the Agent Gateway dashboard and go to `Surfaces`.
 2. Click `Add Surface` and select the `A2A Surface Starter` template.
 
-   ![Alt text](/docs/images/a2a/a2a-surface-1.png)
+![Alt text](docs/images/a2a/a2a-surface-1.png)
 
 3. Select the `Managed Agent` element and enter the following details:
    - Select **Endpoint Type:** `Direct URL`
    - **Endpoint URL:** Your ngrok URL (public URL of your MCP server)
    - Note: Make sure your endpoint URL does not have slash(`/`) at the end of url
 
-   ![Alt text](/docs/images/a2a/a2a-surface-2.png)
+![Alt text](docs/images/a2a/a2a-surface-2.png)
 
 4. Review the flow, then click `Agent surface area`, set a name such as `A2A Simple Surface`, and click `Save`.
 
-   ![Alt text](/docs/images/a2a/a2a-surface-3.png)
+![Alt text](docs/images/a2a/a2a-surface-3.png)
 
 5. Open `Access Point` and copy the route URL (shown as `Route URL`, and in some tenants as `Channel Route`).
    Note: Update the prefix/custom path as needed.
 
-   ![Alt text](/docs/images/a2a/a2a-surface-4.png)
+![Alt text](docs/images/a2a/a2a-surface-4.png)
 
 ### 4. Test via Agent Gateway
 
@@ -604,7 +604,7 @@ cd a2a
 
 View traffic metrics and logs in the surface monitoring dashboard after testing.
 
-![Alt text](/docs/images/a2a/a2a-surface-5.png)
+![Alt text](docs/images/a2a/a2a-surface-5.png)
 
 ---
 
@@ -665,11 +665,11 @@ The Agent Gateway can issue a decentralized identity (DID) for the **agent or MC
 - **A2A surface** — VP is injected into the agent card response and every A2A message response
 - **MCP surface** — VP is injected into every MCP response
 
-### Enable Protected Identity
+### Enable Agent Identity
 
 1. Edit the A2A or MCP surface you created
-2. Click on the `Protected Identity` tab
-3. Enable **Protected Identity** and paste the identity schema matching the fields declared in your agent card extension
+2. Click on the `Agent Identity` tab
+3. Enable **Agent Identity** and paste the identity schema matching the fields declared in your agent card extension
 4. Save the configuration
 
    ![Configure surface identity schema](docs/images/surface-identity-schema.jpg)
@@ -679,7 +679,7 @@ The Agent Gateway can issue a decentralized identity (DID) for the **agent or MC
    ![Drag the Identity element onto the surface canvas](docs/images/surface-identity-canvas.jpg)
    ![Alt text](docs/images/channel-mcp-identity-dashboard.jpg)
 
-> For a detailed walkthrough with identity schema configuration and sample request/response messages, see the **[A2A Protected Agent lab](a2a-protected-agent/README.MD)**.
+> For a detailed walkthrough with identity schema configuration and sample request/response messages, see the **[A2A Agent Identity lab](a2a-agent-identity/README.MD)**.
 
 ---
 
@@ -751,9 +751,9 @@ If you have a technical issue with the project's codebase, you can also create a
 
 ---
 
-## Part 3: A2A Protected Agent — Decentralized Identity
+## Part 3: A2A Agent Identity — Decentralized Identity
 
-This lab shows how to give AI agents a **cryptographic, verifiable identity** using the Agent Gateway. A multi-agent server (Personal Assistant + Finance Agent) exposes A2A endpoints. When routed through a Agent Gateway A2A surface with Protected Identity enabled, the gateway automatically issues a **Verifiable Presentation (VP)** signed with Ed25519 — injecting it into every agent card and message response.
+This lab shows how to give AI agents a **cryptographic, verifiable identity** using the Agent Gateway. A multi-agent server (Personal Assistant + Finance Agent) exposes A2A endpoints. When routed through a Agent Gateway A2A surface with Agent Identity enabled, the gateway automatically issues a **Verifiable Presentation (VP)** signed with Ed25519 — injecting it into every agent card and message response.
 
 **What you will learn:**
 
@@ -762,7 +762,7 @@ This lab shows how to give AI agents a **cryptographic, verifiable identity** us
 - How the Agent Gateway issues a `did:webvh` DID and a signed `AgentIdentityCredential` VC for each agent
 - How VPs are injected into A2A agent card responses and message responses
 
-➡️ **[View the full lab guide](a2a-protected-agent/README.MD)**
+➡️ **[View the full lab guide](a2a-agent-identity/README.MD)**
 
 ---
 

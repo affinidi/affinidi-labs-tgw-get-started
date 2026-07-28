@@ -6,7 +6,7 @@
 - [2. Run the App](#2-run-the-app)
 - [3. Set Up A2A Surfaces in Agent Gateway](#3-set-up-a2a-surfaces-in-agent-gateway)
 - [4. Update the GW Route URLs in Settings](#4-update-the-gw-route-urls-in-settings)
-- [5. Enable Protected Identity for Your Agents](#5-enable-protected-identity-for-your-agents)
+- [5. Enable Agent Identity for Your Agents](#5-enable-agent-identity-for-your-agents)
 - [6. Fetch the Agent Identity Cards](#6-fetch-the-agent-identity-cards)
 - [7. Sample A2A Message Exchange](#7-sample-a2a-message-exchange)
 
@@ -45,7 +45,7 @@ Client / Caller
 └─────────────────────────────────────────┘
 ```
 
-**With Agent Gateway — identity-protected A2A traffic**
+**With Agent Gateway — agent identity-enabled A2A traffic**
 
 ```
          Client / Caller
@@ -213,7 +213,7 @@ You will create **two surfaces** — one for each agent.
 
 ---
 
-## 5. Enable Protected Identity for Your Agents
+## 5. Enable Agent Identity for Your Agents
 
 Repeat the following steps for **both** the Personal Agent surface and the Finance Agent surface.
 
@@ -252,7 +252,7 @@ Repeat the following steps for **both** the Personal Agent surface and the Finan
 
 ---
 
-## 6. Fetch the Identity-Protected Agent Cards
+## 6. Fetch the Agent Identity Cards
 
 Now call each agent card through its **GW Route URL**:
 
