@@ -1,6 +1,6 @@
 # Delegation & Consent
 
-**Auth0 credential delegation is owned entirely by the Trust Gateway.** The app
+**Auth0 credential delegation is owned entirely by the Agent Gateway.** The app
 does not manage it, does not check its status, and does not hold any Auth0
 secrets. The app simply calls the MCP server behind the gateway; the gateway
 handles delegation.
@@ -16,18 +16,18 @@ handles delegation.
 
 ## Three outcomes at the first message
 
-| Outcome | What the user sees |
-|---------|--------------------|
-| **Success** | A normal chat response. |
+| Outcome              | What the user sees                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------- |
+| **Success**          | A normal chat response.                                                               |
 | **Consent required** | A **centered popup window** (500×700px) opens automatically for Auth0 authentication. |
-| **Access denied** | A red **"Access Denied"** card with the gateway's reason. |
+| **Access denied**    | A red **"Access Denied"** card with the gateway's reason.                             |
 
 ### Consent required (on-demand) — Automatic Popup Flow
 
 When the gateway needs the user to approve delegation, it returns
 `consent_required` with an Auth0 `authorization_url`. The frontend **automatically
 opens this URL in a popup window** (centered, 500×700px). The user authenticates
-in the popup, Auth0 redirects to the Trust Gateway callback URL
+in the popup, Auth0 redirects to the Agent Gateway callback URL
 (`https://sa-primary.trustgateway.affinidi.io/v1/identity/oauth/callback/chat-auth0-provider`),
 the gateway stores the delegated token, and **the popup closes automatically**.
 
@@ -37,6 +37,7 @@ the gateway now has the stored credential.
 
 **Key UX improvement:** No manual retry needed — authentication and retry are
 fully automated. The user only sees:
+
 1. "🔐 Opening Auth0 authentication..." message
 2. Popup window opens
 3. User authenticates

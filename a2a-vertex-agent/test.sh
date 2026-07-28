@@ -4,7 +4,7 @@
 # Tests the deployed agent using A2A client
 # Usage: ./test.sh [base_url]
 # Example (direct Vertex AI):   ./test.sh
-# Example (Agent Gateway):      ./test.sh https://your-trust-gateway.com/agents/native/bandit
+# Example (Agent Gateway):      ./test.sh https://your-agent-gateway.com/agents/native/bandit
 
 # Optional base URL arg — passed through to a2a_client.py
 BASE_URL=${1:-""}

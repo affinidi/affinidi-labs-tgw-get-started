@@ -98,7 +98,7 @@ class MCPClient:
 
     def call_tool(self, name: str, arguments: Dict) -> Dict:
         """Call a tool"""
-        # Inject custom (X-*) headers as header_* prefixed arguments (TGW convention)
+        # Inject custom (X-*) headers as header_* prefixed arguments (Gateway convention)
         # Standard headers (e.g. Authorization) are sent as normal HTTP headers
         merged_arguments = {**arguments}
         for k, v in self.extra_headers.items():

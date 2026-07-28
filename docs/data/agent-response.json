@@ -20,7 +20,7 @@
                             "type": [
                                 "VerifiablePresentation"
                             ],
-                            "holder": "did:web:your-trust-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be",
+                            "holder": "did:web:your-agent-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be",
                             "verifiableCredential": [
                                 {
                                     "@context": [
@@ -31,10 +31,10 @@
                                         "VerifiableCredential",
                                         "AgentIdentityCredential"
                                     ],
-                                    "issuer": "did:web:your-trust-gateway.com",
+                                    "issuer": "did:web:your-agent-gateway.com",
                                     "issuanceDate": "2026-02-05T14:21:58.250762+00:00",
                                     "credentialSubject": {
-                                        "id": "did:web:your-trust-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be",
+                                        "id": "did:web:your-agent-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be",
                                         "identityFields": {
                                             "type": "channel_identity",
                                             "purpose": "Channel: 94633cd5-b109-434b-a796-253f4723825e"
@@ -49,7 +49,7 @@
                             "exp": 1770387718,
                             "jti": "urn:uuid:10dfc740-5f0f-4508-9b83-a8bc70c6ea99"
                         },
-                        "did": "did:web:your-trust-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be"
+                        "did": "did:web:your-agent-gateway.com:channel:f7aa75fa-cbf7-4211-99d7-bc28cfea30be"
                     }
                 },
                 "parts": [

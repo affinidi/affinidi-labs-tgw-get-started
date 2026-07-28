@@ -6,6 +6,7 @@ A minimal agent server that receives messages and responds with simple text.
 """
 
 from uuid import uuid4
+import os
 import uvicorn
 import logging
 from typing import Any, Optional
@@ -141,7 +142,7 @@ def create_agent_card(port: int, agent_name: str) -> AgentCard:
     return AgentCard(
         name=agent_name,
         description='A simple A2A agent server for testing',
-        url=f'http://localhost:{port}/',
+        url=os.environ.get("PUBLIC_BASE_URL", f"http://localhost:{port}").rstrip("/") + "/",
         version='1.0.0',
         default_input_modes=['text'],
         default_output_modes=['text'],

@@ -6,7 +6,7 @@ At its core, the Agent Gateway is a protocol-aware intercepting proxy for the In
 
 - **Protocol inspection** (understanding A2A, AP2, UCP, MCP, OpenAI protocols)
 - **Identity management** (issuing and validating durable and portable decentralized identities for agents to bridge the decentralized world to AI agents), and
-- **Intelligent routing** (directing traffic based on channels, routes, and connection points)
+- **Intelligent routing** (directing traffic based on surfaces, routes, and connection points)
 
 Built on top of these foundations are advanced features for production deployments including circuit breakers, retry logic, rate limiting, real-time metrics and logging for traffic observability and management; metadata inspection and injection for use-cases such as API key
 management.
@@ -46,31 +46,31 @@ Beyond a simple "hello world", this repo also includes a set of supporting tools
 
 Establish governed MCP and A2A connections by routing clients through the Agent Gateway, which manages identity, policy enforcement, and observability before forwarding requests to your local servers or cloud-deployed agents (e.g., Vertex AI Agent Engine).
 
-![Alt text](docs/images/before-affinidi-tgw.jpg)
-![Alt text](docs/images/after-affinidi-tgw.jpg)
+![Before Agent Gateway](docs/images/before-affinidi-gateway.jpg)
+![After Agent Gateway](docs/images/after-affinidi-gateway.jpg)
 
 ## 📋 Table of Contents
 
 - [Try it in GitHub Codespaces](#try-it-in-github-codespaces-no-local-setup-required)
 - [Overview](#overview)
 - [Project Structure](#project-structure)
-- [Part 1: Run Agents Without Agent Gateway](#part-1-run-agents-without-trust-gateway)
+- [Part 1: Run Agents Without Agent Gateway](#part-1-run-agents-without-agent-gateway)
   - [Prerequisites](#prerequisites)
   - [A2A Server (Local)](#a2a-server-local)
   - [MCP Server (Local)](#mcp-server-local)
   - [A2A Vertex AI Agent](#a2a-vertex-ai-agent)
-- [Part 2: Run Agents With Agent Gateway](#part-2-run-agents-with-trust-gateway)
-  - [What is the Agent Gateway?](#what-is-the-agent-trust-gateway)
+- [Part 2: Run Agents With Agent Gateway](#part-2-run-agents-with-agent-gateway)
+  - [What is the Agent Gateway?](#what-is-the-agent-gateway)
   - [Prerequisites](#prerequisites-1)
-  - [Setup Agent Gateway](#setup-trust-gateway)
-  - [MCP Server via Agent Gateway](#mcp-server-via-trust-gateway)
+  - [Setup Agent Gateway](#setup-agent-gateway)
+  - [MCP Server via Agent Gateway](#mcp-server-via-agent-gateway)
     - [Optional: Enable Authentication on the MCP Surface Route](#optional-enable-authentication-on-the-mcp-surface-route)
-  - [A2A Server via Agent Gateway](#a2a-server-via-trust-gateway)
-  - [A2A Vertex AI Agent via Agent Gateway](#a2a-vertex-ai-agent-via-trust-gateway)
+  - [A2A Server via Agent Gateway](#a2a-server-via-agent-gateway)
+  - [A2A Vertex AI Agent via Agent Gateway](#a2a-vertex-ai-agent-via-agent-gateway)
   - [Create Identity for Your Agent or MCP Server](#create-identity-for-your-agent-or-mcp-server)
   - [Sample MCP Request & Response Messages](#sample-mcp-request--response-messages)
-- [Part 3: A2A Protected Agent — Decentralized Identity](#part-3-a2a-protected-agent--decentralized-identity)
-- [Part 4: Observability — Visualise Agent Gateway Metrics](#part-4-observability--visualise-trust-gateway-metrics)
+- [Part 3: A2A Agent Identity — Decentralized Identity](#part-3-a2a-agent-identity--decentralized-identity)
+- [Part 4: Observability — Visualise Agent Gateway Metrics](#part-4-observability--visualise-agent-gateway-metrics)
 - [Part 5: Identity and Credential Delegation](#part-5-identity-and-credential-delegation)
 
 ---
@@ -88,10 +88,10 @@ Don't want to install anything on your computer? GitHub Codespaces gives you a r
 3. Select the **`Codespaces`** tab. This tab is only visible when you are signed in — create a free GitHub account first if you have not done so already.
 4. Click **`Create codespace on main`**.
 
-   ![alt text](/docs/images/select-codespace.jpg)
+![alt text](docs/images/github/codespace-1.png)
 
 > A new browser tab will open and the environment will take about a minute to set up. You will see a VS Code editor appear in your browser when it is ready.
-> ![alt text](/docs/images/codespace-created.jpg)
+> ![alt text](docs/images/github/codespace-2.png)
 
 > **Heads up:** Codespaces automatically pauses after **30 minutes of inactivity** to save your free quota. If your server stops responding, just reopen the Codespace, re-run `./run.sh`, and re-forward the port.
 
@@ -110,7 +110,7 @@ cd mcp
 
 You will see a message like `MCP server running on port 11000`. Leave this terminal running.
 
-![alt text](/docs/images/codespace-running.jpg)
+![alt text](docs/images/github/codespace-3.png)
 
 ### Step 4 — Forward the port and get your public URL
 
@@ -121,7 +121,7 @@ Codespaces automatically detects that port `11000` is in use and shows a notific
 3. Right-click the row and choose **`Port Visibility → Public`** so the URL can be used from outside.
 4. Copy the **`Forwarded Address`** URL — it looks like `https://<random-name>-11000.app.github.dev`.
 
-![alt text](/docs/images/codespace-url.jpg)
+![alt text](docs/images/github/codespace-4.png)
 
 > **Tip:** This forwarded URL acts as your public endpoint, just like ngrok would on a local machine. You do **not** need to install ngrok.
 
@@ -161,6 +161,7 @@ cd a2a
 ```
 
 **Ports tab — make port `10000` public** and copy the forwarded URL.
+![alt text](docs/images/github/codespace-5.png)
 
 **Terminal 2 — run the interactive client:**
 
@@ -177,10 +178,10 @@ You can now type messages to the agent and see responses in real time.
 
 Once you have your Codespaces forwarded URLs, you can use them exactly like ngrok URLs in all the Agent Gateway steps in Part 2:
 
-- When configuring an MCP channel, set the **Target Endpoint URL** to your Codespaces forwarded address for port `11000`.
-- When configuring an A2A channel, set the **Target Endpoint URL** to your Codespaces forwarded address for port `10000`.
+- When configuring an MCP Surface, set the **Target Endpoint URL** to your Codespaces forwarded address for port `11000`.
+- When configuring an A2A Surface, set the **Target Endpoint URL** to your Codespaces forwarded address for port `10000`.
 
-![alt text](/docs/images/ATG-codespace.jpg)
+![alt text](docs/images/a2a/a2a-surface-2.png)
 
 Everything else stays the same — the Codespace keeps the server running while the Agent Gateway routes traffic to it.
 
@@ -190,16 +191,16 @@ Everything else stays the same — the Codespace keeps the server running while 
 
 ## Overview
 
-| Component                     | Description                                                                           |
-| ----------------------------- | ------------------------------------------------------------------------------------- |
-| `a2a/`                        | Local A2A echo agent server + interactive client                                      |
-| `mcp/`                        | Local MCP server with calculator and weather tools                                    |
-| `a2a-vertex-agent/`           | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
-| `rest-api/`                   | REST API server with MCP proxy                                                        |
-| `a2a-protected-agent/`        | Multi-agent server (Personal + Finance) with decentralized identity via Agent Gateway |
-| `tgw-prometheus-integration/` | Scrape the Agent Gateway's native Prometheus endpoint and visualise it in Grafana     |
+| Component                         | Description                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| `a2a/`                            | Local A2A echo agent server + interactive client                                      |
+| `mcp/`                            | Local MCP server with calculator and weather tools                                    |
+| `a2a-vertex-agent/`               | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
+| `rest-api/`                       | REST API server with MCP proxy                                                        |
+| `a2a-agent-identity/`             | Multi-agent server (Personal + Finance) with decentralized identity via Agent Gateway |
+| `gateway-prometheus-integration/` | Scrape the Agent Gateway's native Prometheus endpoint and visualise it in Grafana     |
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 affinidi-labs-tgw-get-started/
@@ -229,15 +230,15 @@ affinidi-labs-tgw-get-started/
 │   ├── api_server.py        # REST API server
 │   ├── mcp_client.py        # MCP proxy client
 │   └── run.sh
-├── a2a-protected-agent/
+├── a2a-agent-identity/
 │   ├── agents.py            # Multi-agent server (Personal + Finance agents)
 │   ├── personal_agent.py    # Personal Assistant agent
 │   ├── finance_agent.py     # Finance agent
-│   ├── identity-extension.json  # Identity schema for TG credential issuance
+│   ├── identity-extension.json  # Identity schema for Gateway credential issuance
 │   ├── requirements.txt
 │   ├── run.sh               # Start the server (with optional ngrok)
 │   └── README.MD            # Full lab guide
-├── tgw-prometheus-integration/
+├── gateway-prometheus-integration/
 │   ├── docker-compose.yml          # Prometheus + Grafana stack
 │   ├── prometheus.yml.template     # Scrape-config template (committed)
 │   ├── dashboard-template.json     # Grafana dashboard template
@@ -255,8 +256,8 @@ affinidi-labs-tgw-get-started/
     └── images/              # Documentation images
 ```
 
-> **`auth0-mcp-surface`** is the modern (`poodle-chai`) chat surface. It keeps
-> **Google OAuth** as the caller context and uses the Trust Gateway to delegate
+> **`auth0-mcp-surface`** is the modern chat surface. It keeps
+> **Google OAuth** as the caller context and uses the Agent Gateway to delegate
 > **Auth0** credentials to the upstream MCP server (replacing the earlier Glean
 > delegation). Frontend is static Astro + Alpine.js; backend is FastAPI.
 >
@@ -394,8 +395,8 @@ pip install -r requirements.txt
 
 Route your agents through the **Agent Gateway** to add identity management, observability, policy enforcement, and governed routing to all agent communications.
 
-![Before Agent Gateway](docs/images/before-affinidi-tgw.jpg)
-![After Agent Gateway](docs/images/after-affinidi-tgw.jpg)
+![Before Agent Gateway](docs/images/before-affinidi-gateway.jpg)
+![After Agent Gateway](docs/images/after-affinidi-gateway.jpg)
 
 ## What is the Agent Gateway?
 
@@ -403,13 +404,13 @@ The Agent Gateway is an enterprise-grade gateway written in Rust for the Agent-t
 
 - **Protocol inspection** — understands A2A, MCP, UCP, AP2, OpenAI protocols
 - **Identity management** — issues and validates decentralized identities (DIDs) for agents
-- **Intelligent routing** — directs traffic based on channels, routes, and policies
+- **Intelligent routing** — directs traffic based on surfaces, routes, and policies
 - **Observability** — real-time metrics, logging, and payload inspection
-- **Zero-downtime hot reload** — update channel configs without dropping in-flight requests
+- **Zero-downtime hot reload** — update surface configs without dropping in-flight requests
 
-### About Channels
+### About Surfaces
 
-Channels are the fundamental routing unit. Each channel defines:
+Surfaces are the fundamental routing unit. Each surface defines:
 
 - Where to listen (external URL / load balancer)
 - Where to forward (upstream endpoint or proxy)
@@ -435,12 +436,12 @@ Channels are the fundamental routing unit. Each channel defines:
 3. Click on `Agent Gateway` in the left menu
 4. Click `Create Configuration` and provide a name and description
 
-![Alt text](docs/images/create-trust-gateway.jpg)
+![Alt text](docs/images/create-agent-gateway.jpg)
 
 5. Wait until the deployment status is `Complete` (may take a few minutes)
 6. Copy the Agent Gateway dashboard URL
 
-![Alt text](docs/images/trust-gateway-done.jpg)
+![Alt text](docs/images/agent-gateway-done.jpg)
 
 ### Step 2: Register and Login to Agent Gateway Control Plane
 
@@ -488,34 +489,31 @@ For a static domain:
 ngrok http --url=<YOUR_NGROK_HOST> 11000
 ```
 
-<a id="3-configure-mcp-channel-in-trust-gateway"></a>
+<a id="3-configure-mcp-surface-in-agent-gateway"></a>
 
 ### 3. Configure MCP Surface in Agent Gateway
-
-> **UI note:** For MCP, many accounts now show this under **Surfaces** (not **Channels**).
-> If you do not see a `Channels` menu, this is expected for MCP setup.
 
 1. Open the Agent Gateway dashboard and go to `Surfaces`.
 2. Click `Add Surface` and select the `MCP Surface Starter` template.
 
-   ![Alt text](./mcp/docs/channel-create-1.jpg)
-   ![Alt text](./mcp/docs/channel-create-2.jpg)
+   ![Agent Surfaces list](./mcp/docs/surface-list.jpg)
+   ![Surface Starter templates](./mcp/docs/surface-starter-templates.jpg)
 
 3. Select the `Managed Agent` element and enter the following details:
    - Select **Endpoint Type:** `Direct URL`
    - **Endpoint URL:** Your ngrok URL (public URL of your MCP server)
 
-   ![Alt text](./mcp/docs/channel-create-3.jpg)
-   ![Alt text](./mcp/docs/channel-create-4.jpg)
+   ![Managed Agent on the surface canvas](./mcp/docs/surface-canvas-managed-agent.jpg)
+   ![Managed Agent endpoint configuration](./mcp/docs/surface-managed-agent-config.jpg)
 
 4. Review the flow, then click `Agent surface area`, set a name such as `MCP Weather Surface`, and click `Save`.
 
-   ![Alt text](./mcp/docs/channel-create-5.jpg)
+   ![Surface configuration](./mcp/docs/surface-config.jpg)
 
 5. Open `Access Point` and copy the route URL (shown as `Route URL`, and in some tenants as `Channel Route`).
    Note: Update the prefix/custom path as needed.
 
-   ![Alt text](./mcp/docs/channel-create-6.jpg)
+   ![Access Point route URL](./mcp/docs/surface-access-point.jpg)
 
 ### 4. Test via Agent Gateway
 
@@ -531,18 +529,18 @@ cd mcp
 
 View traffic metrics and logs in the surface monitoring dashboard after testing.
 
-![Alt text](./mcp/docs/channel-create-7.jpg)
+![Surface monitoring](./mcp/docs/surface-monitoring.jpg)
 
 If you want real-time capture for troubleshooting, click the `Capture` button in the `Monitoring` section and run the program.
-![Alt text](./mcp/docs/channel-create-8.jpg)
+![Surface capture](./mcp/docs/surface-capture.jpg)
 
 ### Optional: Enable Authentication on the MCP Surface Route
 
 By default the MCP surface route is open. If you need to **lock down the route** so only authorised clients can call it, and/or **inject an API key** from the Agent Gateway to a protected upstream MCP server, follow the optional guide:
 
-➡️ **[Enable Authentication on a Agent Gateway MCP Channel](mcp/enable-auth.md)**
+➡️ **[Enable Authentication on a Agent Gateway MCP Surface](mcp/enable-auth.md)**
 
-Covers Source Authentication (client → gateway) and Target Authentication (gateway → upstream) with screenshots and `curl` test commands. The same pattern applies to A2A channels.
+Covers Target Authentication (gateway → upstream) — store a secret once in the Agent Gateway and have it injected into every forwarded request. Includes screenshots and `curl` test commands. The same pattern applies to A2A surfaces.
 
 ---
 
@@ -571,30 +569,28 @@ For a static domain:
 ngrok http --url=<YOUR_NGROK_HOST> 10000
 ```
 
-### 3. Configure A2A Channel in Agent Gateway
+### 3. Configure A2A Surface in Agent Gateway
 
-1. Open the Agent Gateway dashboard → `Channels` → `Add Channel` → select `A2A/UCP` protocol
+1. Open the Agent Gateway dashboard and go to `Surfaces`.
+2. Click `Add Surface` and select the `A2A Surface Starter` template.
 
-   ![Alt text](docs/images/channel-create-1.jpg)
-   ![Alt text](docs/images/channel-create-2.jpg)
+![Alt text](docs/images/a2a/a2a-surface-1.png)
 
-2. Enter the channel details and click `Next`:
-   - **Channel Name:** `a2a-channel-chat`
-   - **Listen Address:** Your Gateway base URL (e.g., `https://pillar-channel.trustgateway.affinidi.io`)
-   - **Channel Prefix:** `agents`
-   - **Target Endpoint Type:** `Direct URL`
-   - **Target Endpoint URL:** Your ngrok URL
+3. Select the `Managed Agent` element and enter the following details:
+   - Select **Endpoint Type:** `Direct URL`
+   - **Endpoint URL:** Your ngrok URL (public URL of your MCP server)
+   - Note: Make sure your endpoint URL does not have slash(`/`) at the end of url
 
-   ![Alt text](docs/images/channel-create-3-a2a.jpg)
+![Alt text](docs/images/a2a/a2a-surface-2.png)
 
-3. Review and click `Create Channel`
+4. Review the flow, then click `Agent surface area`, set a name such as `A2A Simple Surface`, and click `Save`.
 
-   ![Alt text](docs/images/channel-create-4-a2a.jpg)
+![Alt text](docs/images/a2a/a2a-surface-3.png)
 
-4. Open the newly created channel and copy the `Channel Route` URL
+5. Open `Access Point` and copy the route URL (shown as `Route URL`, and in some tenants as `Channel Route`).
+   Note: Update the prefix/custom path as needed.
 
-   ![Alt text](docs/images/channels-list-2.jpg)
-   ![Alt text](docs/images/channel-a2a.jpg)
+![Alt text](docs/images/a2a/a2a-surface-4.png)
 
 ### 4. Test via Agent Gateway
 
@@ -603,13 +599,12 @@ cd a2a
 ./test.sh https://<GATEWAY_HOST>/agents/<CHANNEL_PATH>
 
 # Example:
-./test.sh https://pillar-channel.trustgateway.affinidi.io/agents/logic/second
+./test.sh https://demo-gateway.proxy.apse1.octo.affinidi.io/agents/ocean/superior
 ```
 
-View traffic metrics and logs in the channel dashboard after testing.
+View traffic metrics and logs in the surface monitoring dashboard after testing.
 
-![Alt text](docs/images/channel-a2a-2.jpg)
-![Alt text](docs/images/channel-a2a-3.jpg)
+![Alt text](docs/images/a2a/a2a-surface-5.png)
 
 ---
 
@@ -637,29 +632,9 @@ https://<LOCATION>-aiplatform.googleapis.com
 # Example: https://us-central1-aiplatform.googleapis.com
 ```
 
-### 2. Configure A2A Channel in Agent Gateway
+### 2. Configure A2A Surface in Agent Gateway
 
-1. Open the Agent Gateway dashboard → `Channels` → `Add Channel` → select `A2A/UCP` protocol
-   ![Alt text](docs/images/channel-create-1.jpg)
-   ![Alt text](docs/images/channel-create-2.jpg)
-
-2. Enter the channel details:
-   - **Channel Name:** `a2a-channel-vertex`
-   - **Listen Address:** Your Gateway base URL (e.g., `https://pillar-channel.trustgateway.affinidi.io`)
-   - **Channel Prefix:** `agents`
-   - **Target Endpoint Type:** `Direct URL`
-   - **Target Endpoint URL:** Vertex AI regional base URL (e.g., `https://us-central1-aiplatform.googleapis.com`)
-
-   ![Alt text](docs/images/channel-create-vertex1.jpg)
-
-3. Review and click `Create Channel`
-   ![Alt text](docs/images/channel-create-vertex2.jpg)
-
-4. Copy the `Channel Route` URL:
-   ```
-   https://<GATEWAY_HOST>/agents/<CHANNEL_PATH>
-   ```
-   ![Alt text](docs/images/channel-create-vertex3.jpg)
+Follow the steps in [Part 2 → A2A Server via Agent Gateway → 3. Configure A2A Surface in Agent Gateway](#3-configure-a2a-surface-in-agent-gateway) to create an A2A surface, and set the target endpoint URL to your Vertex AI public URL.
 
 ### 3. Test via Agent Gateway
 
@@ -679,7 +654,7 @@ python a2a_client.py https://<GATEWAY_HOST>/agents/<CHANNEL_PATH>
 
 > The client still contacts the real Vertex AI management API to look up the deployed agent, but all A2A messaging is routed through the Agent Gateway.
 
-View traffic metrics and logs in the channel dashboard after testing.
+View traffic metrics and logs in the surface monitoring dashboard after testing.
 
 ---
 
@@ -687,24 +662,24 @@ View traffic metrics and logs in the channel dashboard after testing.
 
 The Agent Gateway can issue a decentralized identity (DID) for the **agent or MCP server itself** — a cryptographically signed Verifiable Presentation (VP) that is automatically injected into responses:
 
-- **A2A channel** — VP is injected into the agent card response and every A2A message response
-- **MCP channel** — VP is injected into every MCP response
+- **A2A surface** — VP is injected into the agent card response and every A2A message response
+- **MCP surface** — VP is injected into every MCP response
 
-### Enable Protected Identity
+### Enable Agent Identity
 
-1. Edit the A2A or MCP channel you created
-2. Click on the `Protected Identity` tab
-3. Enable **Protected Identity** and paste the identity schema matching the fields declared in your agent card extension
+1. Edit the A2A or MCP surface you created
+2. Click on the `Agent Identity` tab
+3. Enable **Agent Identity** and paste the identity schema matching the fields declared in your agent card extension
 4. Save the configuration
 
-   ![Alt text](docs/images/channel-mcp-identity.jpg)
+   ![Configure surface identity schema](docs/images/surface-identity-schema.jpg)
 
 5. Call the agent card or send a message through the Agent Gateway — the VP carrying the agent's identity will be injected automatically into each response
 
-   ![Alt text](docs/images/channel-mcp-identity2.jpg)
+   ![Drag the Identity element onto the surface canvas](docs/images/surface-identity-canvas.jpg)
    ![Alt text](docs/images/channel-mcp-identity-dashboard.jpg)
 
-> For a detailed walkthrough with identity schema configuration and sample request/response messages, see the **[A2A Protected Agent lab](a2a-protected-agent/README.MD)**.
+> For a detailed walkthrough with identity schema configuration and sample request/response messages, see the **[A2A Agent Identity lab](a2a-agent-identity/README.MD)**.
 
 ---
 
@@ -776,18 +751,18 @@ If you have a technical issue with the project's codebase, you can also create a
 
 ---
 
-## Part 3: A2A Protected Agent — Decentralized Identity
+## Part 3: A2A Agent Identity — Decentralized Identity
 
-This lab shows how to give AI agents a **cryptographic, verifiable identity** using the Agent Gateway. A multi-agent server (Personal Assistant + Finance Agent) exposes A2A endpoints. When routed through a Agent Gateway A2A channel with Protected Identity enabled, the gateway automatically issues a **Verifiable Presentation (VP)** signed with Ed25519 — injecting it into every agent card and message response.
+This lab shows how to give AI agents a **cryptographic, verifiable identity** using the Agent Gateway. A multi-agent server (Personal Assistant + Finance Agent) exposes A2A endpoints. When routed through a Agent Gateway A2A surface with Agent Identity enabled, the gateway automatically issues a **Verifiable Presentation (VP)** signed with Ed25519 — injecting it into every agent card and message response.
 
 **What you will learn:**
 
 - How to declare identity fields in an agent card using the `agent-identity-credential` extension
-- How to create A2A channels in Agent Gateway with a custom identity schema
+- How to create A2A surfaces in Agent Gateway with a custom identity schema
 - How the Agent Gateway issues a `did:webvh` DID and a signed `AgentIdentityCredential` VC for each agent
 - How VPs are injected into A2A agent card responses and message responses
 
-➡️ **[View the full lab guide](a2a-protected-agent/README.MD)**
+➡️ **[View the full lab guide](a2a-agent-identity/README.MD)**
 
 ---
 
@@ -798,7 +773,7 @@ The Agent Gateway exposes a **native Prometheus endpoint** at
 volume, success/fault rates, latency histograms, throughput, active
 connections, and unique agent identities.
 
-The [`tgw-prometheus-integration/`](tgw-prometheus-integration/) folder
+The [`gateway-prometheus-integration/`](gateway-prometheus-integration/) folder
 is a self-contained, customer-shareable bring-up: Prometheus scrapes
 the Agent Gateway directly (no agent, no OTel Collector, no tunnels)
 and Grafana auto-provisions a dashboard per Agent Gateway.
@@ -817,7 +792,7 @@ and Grafana auto-provisions a dashboard per Agent Gateway.
 **Quick start:**
 
 ```bash
-cd tgw-prometheus-integration
+cd gateway-prometheus-integration
 ./run.sh <YOUR_TGW_HOST>                  # e.g. acme-demo.trustgateway.affinidi.io
 # or several at once:
 ./run.sh <YOUR_TGW_HOST_1> <YOUR_TGW_HOST_2>
@@ -825,7 +800,7 @@ cd tgw-prometheus-integration
 
 Then open Grafana at http://localhost:3000 (admin / admin).
 
-➡️ **[View the full integration guide](tgw-prometheus-integration/readme.md)**
+➡️ **[View the full integration guide](gateway-prometheus-integration/readme.md)**
 
 ---
 

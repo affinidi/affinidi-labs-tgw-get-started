@@ -92,13 +92,13 @@ function renderMetadata(metadataText: string): string {
       <summary>Trace Metadata</summary>
       <div class="meta-list">
         ${rows
-          .map(
-            (row) =>
-              `<div class="meta-row"><div class="meta-key">${escapeHtml(
-                row.key
-              )}</div><div class="meta-value">${escapeHtml(row.value)}</div></div>`
-          )
-          .join('')}
+      .map(
+        (row) =>
+          `<div class="meta-row"><div class="meta-key">${escapeHtml(
+            row.key
+          )}</div><div class="meta-value">${escapeHtml(row.value)}</div></div>`
+      )
+      .join('')}
       </div>
     </details>`;
 }
@@ -112,16 +112,16 @@ function renderToolList(body: any): string {
       <div class="response-title">Available Tools</div>
       <div class="tools-list">
         ${tools
-          .map(
-            (tool: any) => `
+      .map(
+        (tool: any) => `
           <div class="tool-card">
             <div class="tool-name">${escapeHtml(tool.name || 'Unnamed tool')}</div>
             <div class="tool-description">${renderInlineMarkdown(
-              tool.description || 'No description'
-            )}</div>
+          tool.description || 'No description'
+        )}</div>
           </div>`
-          )
-          .join('')}
+      )
+      .join('')}
       </div>
     </div>`;
 }
@@ -241,7 +241,7 @@ function accessDeniedReason(data: any): string | null {
     }
   }
   if (typeof data?.error === 'string') return data.error;
-  return 'The Trust Gateway declined access to the upstream MCP server.';
+  return 'The Agent Gateway declined access to the upstream MCP server.';
 }
 
 /**
@@ -257,7 +257,7 @@ export function renderResponse(data: any, requestBody: unknown): string {
   if (deniedReason) {
     html += `<div class="denied-card">
       <div class="denied-title">🚫 Access Denied</div>
-      <p class="denied-desc">Your Google sign-in is valid, but the Trust Gateway did not grant access to the upstream MCP server for this request.</p>
+      <p class="denied-desc">Your Google sign-in is valid, but the Agent Gateway did not grant access to the upstream MCP server for this request.</p>
       <div class="denied-reason">${escapeHtml(deniedReason)}</div>
     </div>`;
     html += renderRawBlock('Raw MCP request', requestBody);

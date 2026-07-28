@@ -286,7 +286,7 @@ The client accepts an optional `base_url` argument. If omitted, it defaults to t
 ./test.sh
 
 # Via Agent Gateway (or any proxy)
-./test.sh https://<your-trust-gateway-url>/agents/evening/linear
+./test.sh https://<your-agent-gateway-url>/agents/evening/linear
 ```
 
 **Or run directly:**
@@ -296,7 +296,7 @@ The client accepts an optional `base_url` argument. If omitted, it defaults to t
 python a2a_client.py
 
 # Via Agent Gateway (or any proxy)
-python a2a_client.py https://<your-trust-gateway-url>/agents/evening/linear
+python a2a_client.py https://<your-agent-gateway-url>/agents/evening/linear
 ```
 
 > **How it works:** The management API call (`agent_engines.get`) always goes to the real Vertex AI endpoint. Only the A2A messaging URL (agent card URL) is overridden when a custom `base_url` is provided.
@@ -345,12 +345,12 @@ The `test.sh` script automatically:
 ============================================================
   A2A SDK Client — Currency Exchange Agent
 ============================================================
-  Base URL : https://<your-trust-gateway-url>/agents/evening/linear
+  Base URL : https://<your-agent-gateway-url>/agents/evening/linear
 
 [1] Fetching remote agent card...
   Name   : Currency Exchange Agent
   URL    : https://us-central1-aiplatform.googleapis.com/v1beta1/projects/.../a2a/v1
-  URL (override) : https://<your-trust-gateway-url>/agents/evening/linear
+  URL (override) : https://<your-agent-gateway-url>/agents/evening/linear
 
 [2] Building A2A SDK client...
   A2A client ready.

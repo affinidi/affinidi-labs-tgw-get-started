@@ -1,14 +1,14 @@
 """
 Agent Gateway Chat — FastAPI backend (API only)
 
-Caller context:        Google OAuth (user identity → verified by Trust Gateway)
-Credential delegation: Auth0 OAuth (handled by Trust Gateway, on-demand consent)
+Caller context:        Google OAuth (user identity → verified by Agent Gateway)
+Credential delegation: Auth0 OAuth (handled by Agent Gateway, on-demand consent)
 
 This backend exposes a small JSON API consumed by the Astro + Alpine.js frontend.
 It handles the Google OAuth login flow, keeps the user's Google id_token in a
-signed session cookie, and proxies MCP requests to the Affinidi Trust Gateway.
+signed session cookie, and proxies MCP requests to the Affinidi Agent Gateway.
 
-The Trust Gateway is responsible for verifying the Google JWT (caller context)
+The Agent Gateway is responsible for verifying the Google JWT (caller context)
 and for delegating Auth0 credentials to the upstream MCP server on demand. When
 the gateway needs consent it returns a `consent_required` payload containing an
 `authorization_url`; the frontend renders that so the user can authorise.
@@ -20,7 +20,7 @@ Env vars (see .env.example):
     GOOGLE_CLIENT_ID       Google OAuth client ID
     GOOGLE_CLIENT_SECRET   Google OAuth client secret
     REDIRECT_URI           OAuth callback (default http://localhost:8642/api/auth/callback)
-    GATEWAY_URL            Affinidi Trust Gateway MCP surface endpoint
+    GATEWAY_URL            Affinidi Agent Gateway MCP surface endpoint
     FRONTEND_URL           Frontend origin (default = this server's origin)
     BACKEND_URL            Public base URL for ngrok/Codespaces (sets callback + frontend)
     SESSION_SECRET         Session cookie signing secret
@@ -59,7 +59,8 @@ BACKEND_URL = os.environ.get("BACKEND_URL", "").rstrip("/")
 _own_origin = BACKEND_URL or f"http://localhost:{PORT}"
 
 # OAuth callback is always on this backend.
-REDIRECT_URI = os.environ.get("REDIRECT_URI") or f"{_own_origin}/api/auth/callback"
+REDIRECT_URI = os.environ.get(
+    "REDIRECT_URI") or f"{_own_origin}/api/auth/callback"
 
 # Where the browser lands after login. Defaults to this backend's origin
 # (single-origin: the backend serves the UI). For a SPLIT deploy — frontend and
@@ -128,7 +129,8 @@ app.add_middleware(
 
 # CORS for split/two-server modes (frontend on a different origin calling the
 # API). In single-origin mode requests are same-origin, so CORS is a no-op.
-_cors_origins = [FRONTEND_URL, _own_origin, "http://localhost:5137", f"http://localhost:{PORT}"]
+_cors_origins = [FRONTEND_URL, _own_origin,
+                 "http://localhost:5137", f"http://localhost:{PORT}"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=list(dict.fromkeys(_cors_origins)),
@@ -176,7 +178,7 @@ def _chat_tool_request_body(message: str) -> dict:
 async def _proxy_gateway_request(
     req_headers: dict[str, str], body: dict, label: str
 ) -> tuple[int, dict]:
-    """Forward a JSON-RPC body to the Trust Gateway and return (status, json)."""
+    """Forward a JSON-RPC body to the Agent Gateway and return (status, json)."""
     print(f"\n[{label}] POST {GATEWAY_URL}")
     print(f"[{label}] Headers: {req_headers}")
     print(f"[{label}] Request body: {body}")
@@ -288,7 +290,7 @@ def _require_auth(request: Request):
 
 @app.post("/api/gateway")
 async def gateway_request(request: Request):
-    """Proxy a raw JSON-RPC body (e.g. tools/list) to the Trust Gateway."""
+    """Proxy a raw JSON-RPC body (e.g. tools/list) to the Agent Gateway."""
     guard = _require_auth(request)
     if guard:
         return guard
@@ -311,7 +313,7 @@ async def gateway_request(request: Request):
 
 @app.post("/api/gateway/chat")
 async def gateway_chat_request(request: Request):
-    """Proxy a chat message as an MCP tools/call to the Trust Gateway."""
+    """Proxy a chat message as an MCP tools/call to the Agent Gateway."""
     guard = _require_auth(request)
     if guard:
         return guard
@@ -355,7 +357,8 @@ if __name__ == "__main__":
     print(f"\n{'='*60}")
     print("  Agent Gateway Chat — FastAPI backend")
     print(f"  App:              http://localhost:{PORT}")
-    print(f"  Serving frontend: {'yes (dist found)' if _DIST.is_dir() else 'no (run npm build for single-origin)'}")
+    print(
+        f"  Serving frontend: {'yes (dist found)' if _DIST.is_dir() else 'no (run npm build for single-origin)'}")
     print(f"  Callback:         {REDIRECT_URI}")
     print(f"  Frontend origin:  {FRONTEND_URL}")
     print(f"  Backend URL:      {BACKEND_URL or '(not set)'}")

@@ -2,11 +2,11 @@
 
 This guide walks you through the **complete** setup of the `auth0-mcp-surface`
 chat demo: a browser app where users sign in with **Google OAuth** (the caller
-context), and the **Affinidi Trust Gateway** delegates **Auth0** credentials to
+context), and the **Affinidi Agent Gateway** delegates **Auth0** credentials to
 an upstream MCP server on their behalf — with an automatic, popup-based consent
 flow.
 
-By the end you will have configured Google, Auth0, and the Trust Gateway, wired
+By the end you will have configured Google, Auth0, and the Agent Gateway, wired
 up the app's environment, exposed it publicly, and had a real conversation that
 crosses all three trust boundaries.
 
@@ -16,11 +16,11 @@ crosses all three trust boundaries.
 
 The demo exercises **three trust boundaries**:
 
-| Boundary | Mechanism | What it proves |
-|----------|-----------|----------------|
-| Human → Trust Gateway | Google OAuth JWT (**caller context**) | Who the user is |
-| User identity | `email` claim from the Google JWT | Scopes stored credentials per user |
-| Trust Gateway → MCP Server | Auth0 OAuth (**credential delegation**) | The upstream credential acted on the user's behalf |
+| Boundary                   | Mechanism                               | What it proves                                     |
+| -------------------------- | --------------------------------------- | -------------------------------------------------- |
+| Human → Agent Gateway      | Google OAuth JWT (**caller context**)   | Who the user is                                    |
+| User identity              | `email` claim from the Google JWT       | Scopes stored credentials per user                 |
+| Agent Gateway → MCP Server | Auth0 OAuth (**credential delegation**) | The upstream credential acted on the user's behalf |
 
 The landing page summarizes the flow:
 
@@ -31,7 +31,7 @@ The landing page summarizes the flow:
 - **Frontend** — Astro + Alpine.js (served by the backend in single-origin mode)
 - **Backend** — FastAPI (Python); proxies MCP requests to the gateway with the Google JWT as a bearer token
 - **MCP Server** — Python MCP server exposing a `chat` tool (answers via AWS Bedrock when configured)
-- **Trust Gateway** — verifies the Google JWT, delegates Auth0 credentials, and builds a Verifiable Presentation for the MCP server
+- **Agent Gateway** — verifies the Google JWT, delegates Auth0 credentials, and builds a Verifiable Presentation for the MCP server
 
 ---
 
@@ -39,16 +39,16 @@ The landing page summarizes the flow:
 
 - An **Auth0** account (free tier is fine)
 - **Google Cloud Console** access (to create an OAuth 2.0 client)
-- Access to an **Affinidi Trust Gateway** instance
+- Access to an **Affinidi Agent Gateway** instance
 - **Python 3.10+** and **Node.js 18+**
 - **AWS credentials** with Bedrock access (optional — enables real LLM answers; otherwise the `chat` tool runs in stub mode)
-- **ngrok** *or* your own public hosting — see [Part 1](#part-1-expose-services-publicly-required)
+- **ngrok** _or_ your own public hosting — see [Part 1](#part-1-expose-services-publicly-required)
 
 > ⚠️ **localhost will not work.** OAuth callbacks (Google and Auth0) and the
 > gateway's credential-delegation redirect all require **publicly reachable
 > HTTPS URLs**. `http://localhost:8642`, `:9740`, `:5137` are fine for the
 > processes themselves, but every URL you register with Google, Auth0, and the
-> Trust Gateway must be a public ngrok or hosted URL.
+> Agent Gateway must be a public ngrok or hosted URL.
 
 ---
 
@@ -83,7 +83,7 @@ docker compose up --build
 
 ### After any URL change, remember to update
 
-- Trust Gateway **External Target** — `https://YOUR_MCP_SERVER_URL` (Part 2)
+- Agent Gateway **External Target** — `https://YOUR_MCP_SERVER_URL` (Part 2)
 - Auth0 **Allowed Callback URLs** — from Part 2 credential provider
 - Google **Authorized redirect URIs** — Agent Gateway Access Point URL from Part 2
 - `backend/.env` — `GATEWAY_URL` (Access Point URL from Part 2)
@@ -92,12 +92,12 @@ docker compose up --build
 
 ---
 
-## Part 2: Set up the Trust Gateway MCP surface
+## Part 2: Set up the Agent Gateway MCP surface
 
 Go to **Surfaces → Add Surface → MCP Surface Starter** and build the flow
 **Human → Caller → Access Point → Chat (Managed Agent) → External Target**:
 
-![Agent surface overview](docs/images/04-tgw-surface-diagram.jpg)
+![Agent surface overview](docs/images/04-gw-surface-diagram.jpg)
 
 ### Configure the Managed Agent
 
@@ -110,12 +110,13 @@ Go to **Surfaces → Add Surface → MCP Surface Starter** and build the flow
 
 ### Configure Access Point
 
-1. **Access Point** — Caller = *Human*
+1. **Access Point** — Caller = _Human_
 2. **Caller Context** — Select the `Google OAuth` JWT verification strategy (you'll create this in Part 7)
 
 ### Configure Caller Identity
 
 Extract the user identity from the JWT:
+
 - **Identity Extraction Type:** `From JWT Claims`
 - **JWT Claim:** `email`
 
@@ -124,6 +125,7 @@ Extract the user identity from the JWT:
 ### Configure Credential Delegation
 
 Add a delegation to the external target:
+
 - **Provider:** `Chat Auth0 Provider` (you'll create this in Part 6)
 - **Binding:** `credential-callback`
 
@@ -167,14 +169,14 @@ After completing the surface configuration, **copy and save** these two URLs:
    Web Application** works well for this demo).
 
 2. Note the **Domain**, **Client ID**, and **Client Secret** from the settings
-   page — these become Trust Gateway secrets in [Part 5](#part-5-create-trust-gateway-secrets).
+   page — these become Agent Gateway secrets in [Part 5](#part-5-create-agent-gateway-secrets).
 
    ![Auth0 application settings](docs/images/10-auth0-app-settings.jpg)
 
 3. Configure the **Application URIs**:
    - **Allowed Callback URLs** — add the **Credential Provider Callback URL** from Part 2:
      - `https://YOUR_TGW_HOST/v1/identity/oauth/callback/chat-auth0-provider`
-     - ⚠️ This is the **Trust Gateway's** callback, not your app's callback
+     - ⚠️ This is the **Agent Gateway's** callback, not your app's callback
    - **Allowed Logout URLs** and **Allowed Web Origins** — your frontend URL (optional)
 
    ![Auth0 application URIs](docs/images/11-auth0-uris.jpg)
@@ -185,23 +187,23 @@ After completing the surface configuration, **copy and save** these two URLs:
 
 ---
 
-## Part 5: Create Trust Gateway secrets
+## Part 5: Create Agent Gateway secrets
 
-In the Trust Gateway console, go to **Secrets** and create the credentials the
+In the Agent Gateway console, go to **Secrets** and create the credentials the
 gateway will reference (values are never shown again after creation):
 
-| Secret name | Value |
-|-------------|-------|
-| `Chat Auth0 Client ID` | Auth0 application Client ID (Part 4) |
+| Secret name                | Value                                    |
+| -------------------------- | ---------------------------------------- |
+| `Chat Auth0 Client ID`     | Auth0 application Client ID (Part 4)     |
 | `Chat Auth0 Client Secret` | Auth0 application Client Secret (Part 4) |
 
-![Trust Gateway secrets](docs/images/08-tgw-secrets.jpg)
+![Agent Gateway secrets](docs/images/08-gw-secrets.jpg)
 
-> **Note:** Google OAuth credentials are configured in `backend/.env` (Part 8), not in the Trust Gateway.
+> **Note:** Google OAuth credentials are configured in `backend/.env` (Part 8), not in the Agent Gateway.
 
 ---
 
-## Part 6: Create the Trust Gateway credential provider
+## Part 6: Create the Agent Gateway credential provider
 
 Go to **Credentials → New Provider** and configure an OAuth 2.0 provider that
 represents Auth0:
@@ -261,9 +263,11 @@ FRONTEND_URL=<your public frontend URL>    # leave unset for single-origin
 ```
 
 > **Backend URL:** If you haven't exposed the backend yet, run:
+>
 > ```bash
 > ngrok http 8642
 > ```
+>
 > Copy the HTTPS URL into `BACKEND_URL`.
 
 See [configuration.md](configuration.md) for the full variable reference.
@@ -294,6 +298,7 @@ PORT=9740
 ### What you will build
 
 A browser-based chat interface where:
+
 - Users sign in with **Google OAuth** (landing page with Google sign-in button)
 - After login, they see a chat screen with a message input
 - First message triggers **automatic Auth0 consent popup** if no credentials are stored
@@ -335,23 +340,27 @@ consent/retry mechanics.
 ## Troubleshooting
 
 **OAuth errors**
-- *Redirect URI mismatch* — the URL registered in Google must match the **Access Point URL** from Part 2.
-- *Invalid callback URL* — the gateway delegation callback must be in Auth0's
+
+- _Redirect URI mismatch_ — the URL registered in Google must match the **Access Point URL** from Part 2.
+- _Invalid callback URL_ — the gateway delegation callback must be in Auth0's
   **Allowed Callback URLs** (Part 4).
-- *Popup blocked* — allow popups for your domain; a manual fallback link is shown.
+- _Popup blocked_ — allow popups for your domain; a manual fallback link is shown.
 
 **Authentication errors**
-- *`consent_required` persists after auth* — check the provider's Client
+
+- _`consent_required` persists after auth_ — check the provider's Client
   ID/Secret **references** point at the correct secrets (Part 6).
-- *Google login fails* — verify the Google client credentials in `backend/.env`.
+- _Google login fails_ — verify the Google client credentials in `backend/.env`.
 
 **Service errors**
-- *Bedrock error* — check AWS credentials / region in `mcp-server/.env`.
-- *Connection refused* — MCP server not running, or the gateway can't reach the
+
+- _Bedrock error_ — check AWS credentials / region in `mcp-server/.env`.
+- _Connection refused_ — MCP server not running, or the gateway can't reach the
   External Target URL.
-- *CORS errors* — see [cors-and-preflight.md](cors-and-preflight.md).
+- _CORS errors_ — see [cors-and-preflight.md](cors-and-preflight.md).
 
 **Common mistakes**
+
 - Using localhost URLs (OAuth requires public URLs).
 - Forgetting to update all URL locations after an ngrok restart.
 - Using backend URL for Google OAuth redirect (should be Access Point URL).
@@ -360,10 +369,10 @@ consent/retry mechanics.
 
 ## Architecture explained
 
-**Boundary 1 — Human → Trust Gateway.** The user's Google OAuth JWT is the
+**Boundary 1 — Human → Agent Gateway.** The user's Google OAuth JWT is the
 caller context; the gateway validates its signature against Google's JWKS.
 
-**Boundary 2 — Trust Gateway → MCP Server.** The gateway delegates the user's
+**Boundary 2 — Agent Gateway → MCP Server.** The gateway delegates the user's
 Auth0 credential and builds a **Verifiable Presentation** for the MCP server.
 
 **Boundary 3 — User identity.** The `email` claim is the identity used to scope

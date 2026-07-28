@@ -1,6 +1,6 @@
-# Test Agent Surface — Chat UI with Google OAuth + Glean via Trust Gateway
+# Test Agent Surface — Chat UI with Google OAuth + Glean via Agent Gateway
 
-A browser-based chat app that authenticates the **user with Google OAuth**, then routes MCP requests through the **Affinidi Trust Gateway (Agent Gateway)**, which handles Glean OAuth credential delegation transparently.
+A browser-based chat app that authenticates the **user with Google OAuth**, then routes MCP requests through the **Affinidi Agent Gateway (Agent Gateway)**, which handles Glean OAuth credential delegation transparently.
 
 ---
 
@@ -14,7 +14,7 @@ Browser (User)
 Glean Chat App (localhost:8081 or your public app URL)
   │  Google id_token → Bearer header
   ▼
-Affinidi Trust Gateway
+Affinidi Agent Gateway
   │  Verifies Google JWT (jwt_bearer strategy)
   │  Injects agentIdentity from MCP payload
   │  Delegates Glean OAuth credentials on behalf of the user (consent_mode: on_demand)
@@ -27,7 +27,7 @@ The UI shows an **"Authorise Glean Access →"** button. The user clicks it, app
 
 ---
 
-## Why Trust Gateway?
+## Why Agent Gateway?
 
 ### 🔑 Credential Risk
 
@@ -83,7 +83,7 @@ Agent Gateway creates **audit-ready, tamper-proof logs** that answer: who did wh
 
 - Python 3.10+
 - A Google Cloud project (for OAuth 2.0 credentials)
-- An Affinidi Trust Gateway instance
+- An Affinidi Agent Gateway instance
 - A Glean admin account (to create an OAuth app)
 
 ---
@@ -110,7 +110,7 @@ Agent Gateway creates **audit-ready, tamper-proof logs** that answer: who did wh
 1. Go to [Glean Admin → Third-Party OAuth](https://app.glean.com/admin/third-party-oauth)
 2. Click **Create OAuth App** (or **New App**)
 3. Fill in:
-   - **App name**: e.g. `Affinidi Trust Gateway`
+   - **App name**: e.g. `Affinidi Agent Gateway`
 
 - **Redirect URI**: use a placeholder for now — you will get the exact Agent Gateway callback URL after completing [Part 3, Step 2](#step-2--credential-provider-glean-oauth) and update it then
 
@@ -134,7 +134,7 @@ Edit `.env`:
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Trust Gateway MCP surface endpoint (from your Agent Gateway dashboard — set after Part 3)
+# Agent Gateway MCP surface endpoint (from your Agent Gateway dashboard — set after Part 3)
 GATEWAY_URL=https://<your-agent-gateway-host>/<your-surface-route>
 
 # OAuth redirect URI (must match Google OAuth settings)
@@ -161,7 +161,7 @@ Open in your browser: `http://localhost:8081`
 
 ---
 
-## Part 3 — Trust Gateway Setup
+## Part 3 — Agent Gateway Setup
 
 ### Step 1 — Add Secrets in Agent Gateway
 
