@@ -56,7 +56,9 @@ case "$EXPOSE_CHOICE" in
         ngrok http "${PORT}" --log=stdout > /tmp/ngrok-rest-api.log 2>&1 &
         NGROK_PID=$!
         NGROK_URL=""
-        for attempt in $(seq 1 20); do
+        attempt=0
+        while [ "$attempt" -lt 20 ]; do
+            attempt=$((attempt + 1))
             NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null \
                 | python3 -c "import sys,json; t=json.load(sys.stdin).get('tunnels',[]); print(next((x['public_url'] for x in t if x['proto']=='https'), ''))" 2>/dev/null || true)
             [ -n "$NGROK_URL" ] && break
