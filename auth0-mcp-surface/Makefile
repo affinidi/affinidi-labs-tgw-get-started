@@ -54,6 +54,11 @@ _ensure-mcp-env:
 		cp mcp-server/.env.example mcp-server/.env; \
 	fi
 
+# Clear any stored AWS creds from mcp-server/.env so the MCP server runs in a
+# clean stub mode instead of calling Bedrock with a stale/invalid token
+# (which otherwise surfaces as `UnrecognizedClientException`).
+_clear-aws-creds = sed -i '' -E 's|^(AWS_ACCESS_KEY_ID\|AWS_SECRET_ACCESS_KEY\|AWS_SESSION_TOKEN)=.*|\1=|' mcp-server/.env 2>/dev/null || true
+
 _refresh-aws-creds: _ensure-mcp-env
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "🔐 Checking AWS credentials..."
@@ -61,30 +66,37 @@ _refresh-aws-creds: _ensure-mcp-env
 	@if [ -z "$(AWS_PROFILE_NAME)" ]; then \
 		echo "ℹ️  No AWS_PROFILE_NAME set - MCP server will run in stub mode"; \
 		echo "   (Returns mock responses instead of calling Bedrock)"; \
-	elif aws sts get-caller-identity --profile "$(AWS_PROFILE_NAME)" > /dev/null 2>&1; then \
-		echo "✓ AWS credentials still valid for profile: $(AWS_PROFILE_NAME)"; \
-		echo "Exporting credentials to mcp-server/.env..."; \
-		eval "$$(aws configure export-credentials --profile "$(AWS_PROFILE_NAME)" --format env)" && \
-		if [ -n "$$AWS_ACCESS_KEY_ID" ]; then \
-			grep -q '^AWS_ACCESS_KEY_ID=' mcp-server/.env && \
-			sed -i '' 's|^AWS_ACCESS_KEY_ID=.*|AWS_ACCESS_KEY_ID='"$$AWS_ACCESS_KEY_ID"'|' mcp-server/.env || \
-			echo "AWS_ACCESS_KEY_ID=$$AWS_ACCESS_KEY_ID" >> mcp-server/.env; \
-			grep -q '^AWS_SECRET_ACCESS_KEY=' mcp-server/.env && \
-			sed -i '' 's|^AWS_SECRET_ACCESS_KEY=.*|AWS_SECRET_ACCESS_KEY='"$$AWS_SECRET_ACCESS_KEY"'|' mcp-server/.env || \
-			echo "AWS_SECRET_ACCESS_KEY=$$AWS_SECRET_ACCESS_KEY" >> mcp-server/.env; \
-			grep -q '^AWS_SESSION_TOKEN=' mcp-server/.env && \
-			sed -i '' 's|^AWS_SESSION_TOKEN=.*|AWS_SESSION_TOKEN='"$$AWS_SESSION_TOKEN"'|' mcp-server/.env || \
-			echo "AWS_SESSION_TOKEN=$$AWS_SESSION_TOKEN" >> mcp-server/.env; \
-			echo "✓ AWS credentials exported to mcp-server/.env"; \
-		else \
-			echo "⚠️  Failed to export credentials - continuing in stub mode"; \
-			echo "   MCP server will run without Bedrock (returns mock responses)"; \
-		fi; \
+		$(_clear-aws-creds); \
 	else \
-		echo "⚠️  AWS SSO session expired or profile not found - continuing in stub mode"; \
-		echo "   Profile: $(AWS_PROFILE_NAME)"; \
-		echo "   To use Bedrock: aws sso login --profile \"$(AWS_PROFILE_NAME)\""; \
-		echo "   MCP server will run without Bedrock (returns mock responses)"; \
+		if ! aws sts get-caller-identity --profile "$(AWS_PROFILE_NAME)" > /dev/null 2>&1; then \
+			echo "⚠️  AWS SSO session expired/invalid - logging in for profile: $(AWS_PROFILE_NAME)"; \
+			aws sso login --profile "$(AWS_PROFILE_NAME)" || true; \
+		fi; \
+		if aws sts get-caller-identity --profile "$(AWS_PROFILE_NAME)" > /dev/null 2>&1; then \
+			echo "✓ AWS session valid for profile: $(AWS_PROFILE_NAME)"; \
+			echo "Exporting fresh credentials to mcp-server/.env..."; \
+			eval "$$(aws configure export-credentials --profile "$(AWS_PROFILE_NAME)" --format env)" && \
+			if [ -n "$$AWS_ACCESS_KEY_ID" ]; then \
+				grep -q '^AWS_ACCESS_KEY_ID=' mcp-server/.env && \
+				sed -i '' 's|^AWS_ACCESS_KEY_ID=.*|AWS_ACCESS_KEY_ID='"$$AWS_ACCESS_KEY_ID"'|' mcp-server/.env || \
+				echo "AWS_ACCESS_KEY_ID=$$AWS_ACCESS_KEY_ID" >> mcp-server/.env; \
+				grep -q '^AWS_SECRET_ACCESS_KEY=' mcp-server/.env && \
+				sed -i '' 's|^AWS_SECRET_ACCESS_KEY=.*|AWS_SECRET_ACCESS_KEY='"$$AWS_SECRET_ACCESS_KEY"'|' mcp-server/.env || \
+				echo "AWS_SECRET_ACCESS_KEY=$$AWS_SECRET_ACCESS_KEY" >> mcp-server/.env; \
+				grep -q '^AWS_SESSION_TOKEN=' mcp-server/.env && \
+				sed -i '' 's|^AWS_SESSION_TOKEN=.*|AWS_SESSION_TOKEN='"$$AWS_SESSION_TOKEN"'|' mcp-server/.env || \
+				echo "AWS_SESSION_TOKEN=$$AWS_SESSION_TOKEN" >> mcp-server/.env; \
+				echo "✓ Fresh AWS credentials exported to mcp-server/.env"; \
+			else \
+				echo "⚠️  Failed to export credentials - clearing stale creds, continuing in stub mode"; \
+				$(_clear-aws-creds); \
+			fi; \
+		else \
+			echo "⚠️  AWS login failed or unavailable - clearing stale creds, continuing in stub mode"; \
+			echo "   Profile: $(AWS_PROFILE_NAME)"; \
+			echo "   MCP server will run without Bedrock (returns mock responses)"; \
+			$(_clear-aws-creds); \
+		fi; \
 	fi
 
 local-up: _refresh-aws-creds _build-frontend ## Run frontend (:5137) + chat backend (:$(PORT)) + chat MCP server (:$(MCP_PORT))
