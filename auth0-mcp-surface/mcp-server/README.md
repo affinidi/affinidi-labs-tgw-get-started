@@ -8,8 +8,13 @@ chat surface talks to **through the Agent Gateway**.
   AWS credentials, see [.env.example](.env.example)); otherwise it returns a
   **stub** reply — so getting-started works with no LLM.
 - The LLM is _your_ infrastructure. Credential delegation at the gateway scopes
-  _who_ can call this / what data it may reach — it does not borrow the user's
-  own LLM account.
+  _who_ can call this **through the gateway** / what data it may reach — it does
+  not borrow the user's own LLM account. It does **not** protect the server's own
+  origin: this server has no auth of its own. Before exposing it beyond local
+  dev, restrict it to the gateway — either via network isolation
+  ([VPC-PEERING.md](../../VPC-PEERING.md)) or by requiring a gateway-injected key
+  ([target authentication](../../mcp/enable-auth.md), which also needs this
+  server to validate the key).
 
 ## Run
 

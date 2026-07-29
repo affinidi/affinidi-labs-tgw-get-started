@@ -27,7 +27,7 @@ FastAPI backend  ── Authorization: Bearer <Google id_token> ──▶ Agent 
 serves built UI (single-origin)                          Upstream MCP server
 ```
 
-## Three trust boundaries
+## Four trust boundaries
 
 1. **Caller context (Google OAuth)** — who the user is. The gateway verifies the
    Google JWT via Google's JWKS.
@@ -36,6 +36,11 @@ serves built UI (single-origin)                          Upstream MCP server
    store, never in this app.
 3. **Session** — the backend↔browser trust. A signed httpOnly cookie holds the
    Google token; the frontend only ever asks `/api/auth/me`.
+4. **Origin reachability** — everything above assumes the MCP server is reachable
+   *only* via the gateway. The server has no auth of its own; if its origin is
+   publicly reachable, the three boundaries above can be bypassed by calling it
+   directly. Lock the origin down before any non-local use — see the hardening
+   note in the [main README](../README.md) Part 1.
 
 ## Backend API surface
 
