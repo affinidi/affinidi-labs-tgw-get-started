@@ -1,5 +1,5 @@
 # ── Stage 1: build the Astro frontend (single-origin: relative API base) ──────
-FROM node:20-slim AS frontend
+FROM node:22-slim AS frontend
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm install
