@@ -1,11 +1,11 @@
 # ── Stage 1: build the Astro frontend (single-origin: relative API base) ──────
-FROM node:20-slim AS frontend
+FROM node:22-slim AS frontend
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm install
 COPY frontend/ ./
-# Empty PUBLIC_API_BASE → the built client calls /api/* relative to its origin.
-ENV PUBLIC_API_BASE=""
+# Empty PUBLIC_BACKEND_URL → the built client calls /api/* relative to its origin.
+ENV PUBLIC_BACKEND_URL=""
 RUN npm run build
 
 # ── Stage 2: FastAPI runtime that serves the API + the built frontend ─────────
