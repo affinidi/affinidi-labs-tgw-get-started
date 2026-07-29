@@ -100,6 +100,8 @@ cd auth0-mcp-surface
 docker compose up --build
 ```
 
+**Important — the MCP server's public URL is a local-development affordance, not part of the architecture.** Unlike the OAuth callbacks, it does not need to be publicly reachable — only reachable *by the gateway*. This demo server has no authentication of its own, so while its URL is public anyone who has it can call your `chat` tool directly and spend your Bedrock budget, bypassing caller context and credential delegation entirely. Before any non-local use, lock the origin to the gateway — either at the network layer ([VPC-PEERING.md](../VPC-PEERING.md)) or by requiring a gateway-injected API key ([target authentication](../mcp/enable-auth.md)).
+
 ### 3. After any URL change, remember to update
 
 - Agent Gateway **External Target** — `https://YOUR_MCP_SERVER_URL` (Part 3)
@@ -472,6 +474,13 @@ Example response (trimmed):
 ```
 
 Copy `authorization_endpoint` and `token_endpoint` straight into the credential provider (Part 3, Step 3). This is standard across all OpenID providers (Auth0, Okta, Google, Azure AD) and stays correct even if endpoint layouts change.
+
+### Production Considerations
+
+The MCP server has no authentication of its own — the gateway is meant to be its only ingress. Exposing it with a public URL is fine for local development, but before any non-local deployment lock the origin down so it can only be reached through the gateway:
+
+- **Network isolation** — private VPC peering between your account and Affinidi (`10.42.0.0/16`), so the origin is never publicly reachable. See [VPC-PEERING.md](../VPC-PEERING.md).
+- **Target authentication** — have the gateway inject an API key on every upstream request and have the MCP server require it. See [target authentication](../mcp/enable-auth.md).
 
 ### Related Documentation
 
