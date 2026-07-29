@@ -175,8 +175,6 @@ The Gateway needs to verify incoming Google OAuth JWTs (caller context).
 
 ![JWT verification strategy](docs/images/05-jwt-verification.jpg)
 
-<!-- TODO: Add link to JWT Verification docs when available -->
-
 ### Step 3: Create Credential Provider
 
 The Credential Provider handles Auth0 OAuth delegation (gateway → MCP server).
@@ -201,8 +199,6 @@ The Credential Provider handles Auth0 OAuth delegation (gateway → MCP server).
 **Save the Callback URL** — you'll register this in Auth0's Allowed Callback URLs in Part 4.
 
 Format: `https://YOUR_GW_HOST/v1/identity/oauth/callback/chat-auth0-provider`
-
-<!-- TODO: Add link to Credential Delegation docs when available -->
 
 ### Step 4: Create the MCP Surface
 
@@ -254,8 +250,6 @@ After saving the surface, copy and save these two URLs:
 
 **Save these URLs now** — you'll need them in Parts 4 and 5.
 
-<!-- TODO: Add link to MCP Surfaces guide when available -->
-
 ---
 
 ## Part 4: Register OAuth Callbacks
@@ -270,8 +264,6 @@ Now that you have the Gateway URLs, configure the OAuth redirect URIs.
    - Example: `https://abc123.ngrok-free.app/api/auth/callback`
 
 **Note:** The backend handles the Google OAuth flow directly. The Gateway verifies the resulting JWT but doesn't participate in the OAuth redirect.
-
-<!-- TODO: Screenshot of Google OAuth redirect URI configuration -->
 
 ### Auth0 Callback URLs
 
