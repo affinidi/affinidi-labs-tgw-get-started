@@ -685,8 +685,8 @@ The Agent Gateway can issue a decentralized identity (DID) for the **agent or MC
 
 5. Call the agent card or send a message through the Agent Gateway — the VP carrying the agent's identity will be injected automatically into each response
 
-   ![Drag the Identity element onto the surface canvas](docs/images/surface-identity-canvas.jpg)
-   ![Alt text](docs/images/channel-mcp-identity-dashboard.jpg)
+   ![Identity element on the surface canvas](docs/images/surface-identity-canvas.jpg)
+   ![Injected agent identity shown in the surface dashboard](docs/images/channel-mcp-identity-dashboard.jpg)
 
 > For a detailed walkthrough with identity schema configuration and sample request/response messages, see the **[A2A Agent Identity lab](a2a-agent-identity/README.MD)**.
 
