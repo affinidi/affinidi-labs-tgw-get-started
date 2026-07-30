@@ -95,7 +95,7 @@ You may need Gateway access first, so request it if needed.
 3. Open the Gateway URL, then create an account if this is your first time.
 4. Sign in to Agent Gateway.
 
-<img src="gateway-sign-in.png" alt="Gateway sign-in" width="760" />
+<img src="../docs/images/copilot-studio/gateway-sign-in.png" alt="Gateway sign-in" width="760" />
 
 ### 2. Add a secret for direct link
 
@@ -104,7 +104,7 @@ You may need Gateway access first, so request it if needed.
 3. Name it clearly, for example: copilot-direct-link-secret.
 4. Save the secret.
 
-<img src="creating-secret.png" alt="Create secret" width="760" />
+<img src="../docs/images/copilot-studio/creating-secret.png" alt="Create secret" width="760" />
 
 ### 3. Add an A2A proxy and use the secret
 
@@ -112,11 +112,11 @@ You may need Gateway access first, so request it if needed.
 2. Create an A2A proxy.
 3. Provide a name for the proxy.
 
-<img src="A2A-proxy-name.png" alt="A2A proxy name" width="760" />
+<img src="../docs/images/copilot-studio/A2A-proxy-name.png" alt="A2A proxy name" width="760" />
 
 4. Go to the Backend tab and select the secret created in the previous step.
 
-<img src="direct-line-secret.png" alt="Select Direct Line secret" width="760" />
+<img src="../docs/images/copilot-studio/direct-line-secret.png" alt="Select Direct Line secret" width="760" />
 
 5. Click Create to save the proxy.
 
@@ -128,7 +128,7 @@ You may need Gateway access first, so request it if needed.
 
 2. Select an A2A surface and choose Managed Agent.
 
-<img src="edit-surface.png" alt="Create or edit surface" width="760" />
+<img src="../docs/images/copilot-studio/edit-surface.png" alt="Create or edit surface" width="760" />
 
 3. Set the target to the A2A proxy created above.
 4. Choose endpoint type Via A2A proxy, then select your proxy from the dropdown.
