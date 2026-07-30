@@ -103,9 +103,31 @@ Apply the same sequence on both gateways.
 Create two policy categories:
 
 - Inbound Access Point policy (Trust Check enforced)
-- Transit Point outbound policy (start permissive, then harden)
+- Transit Point outbound policy (check if target is trusted before sending message)
 
-Baseline inbound policy:
+Baseline inbound policy on Access Point:
+
+```rego
+
+package surface.policy
+
+default allow := false
+
+allow if {
+  trust_registry_authorized
+}
+
+trust_registry_authorized if {
+  every r in input.trust_check_results.caller { r.ok }
+}
+
+deny_reason := "Caller failed Trust Registry verification" if {
+  not trust_registry_authorized
+}
+
+```
+
+Baseline outbound transit policy:
 
 ```rego
 package surface.policy
@@ -113,61 +135,49 @@ package surface.policy
 default allow := false
 
 allow if {
-  every r in input.trust_check_results.caller { r.ok }
+  trust_registry_authorized
 }
 
-deny_reason := "Caller failed Trust Registry verification" if {
-  not allow
+trust_registry_authorized if {
+  every r in input.trust_check_results.target { r.ok }
 }
-```
 
-Baseline transit policy:
+deny_reason := "Target failed Trust Registry verification" if {
+  not trust_registry_authorized
+}
 
-```rego
-package surface.policy
-
-default allow = true
 ```
 
 ### Step 2: Connect Gateways
 
-Create a gateway-to-gateway OOB connection and verify both sides are active.
+Set up the gateway-to-gateway (GW-GW) DIDComm connection by following the dedicated guide:
 
-This establishes the DIDComm-backed trust channel used for governed cross-gateway routing.
+- [Gateway to Gateway Connection (Fabric Connection)](../../feature-guide/fabric-connection-guide.md)
 
-When active, inter-agent traffic between the two surfaces can flow through this channel instead of direct endpoint coupling.
-
-Capture both gateway IDs. These are used in transit targets:
+After setup, capture both gateway IDs for transit targets:
 
 - `fabric://<remote_gateway_id>/<remote_surface_id>`
 
 ### Step 3: Configure Trust Registry
 
-On each gateway:
+Configure Trust Registry integration by following the dedicated guide:
 
-- Add and connect a Trust Registry integration
-- Verify connection status is healthy
+- [Trust Registry Integration with Affinidi Gateway](../../feature-guide/trust-registry-guide.md)
 
-Use that registry in caller-leg Trust Check queries on Access Points.
-
-Recommended Trust Check tuple:
-
-- Query type: `recognition`
-- Authority: `{{ input.agent.provider_did }}`
-- Entity ID: `{{ input.agent.did }}`
-- Action: `is`
-- Resource: `ownedAgent`
+Use the connected registry in caller-leg Trust Check queries on Access Points.
 
 ### Step 4: Create Secrets
 
 Create secrets for:
 
 - Local Copilot Direct Line credential
-- Remote Access Point API key (used by transit target auth)
+  - Follow this guide: [Copilot Studio setup - Add a secret for direct link](../README.md#2-add-a-secret-for-direct-link)
+- Remote Access Point API key (used by local agent surface to connect to target agent on transit point leg)
+  - It will be provided by other gateway agent where you want to connect
 
 ### Step 5: Create Access Point API Keys
 
-For each surface:
+For each surface: ( this will be given to other gateway and they save in secret as in 4.2 )
 
 - Create API key for callers of that surface
 - Exchange keys securely between teams
@@ -175,49 +185,45 @@ For each surface:
 
 ### Step 6: Create A2A Proxies
 
-Create one local A2A proxy per managed agent:
+Create one local A2A proxy per managed agent by following:
+
+- [Copilot Studio setup - Add an A2A proxy and use the secret](../README.md#3-add-an-a2a-proxy-and-use-the-secret)
+
+Apply these values in each gateway:
 
 - Backend kind: `copilot_direct_line`
-- Secret: local Direct Line secret
+- Secret: local Direct Line secret (created in Step 4)
 - Base URL: `https://directline.botframework.com/v3/directline`
 
 ### Step 7: Build Surface A (Orchestrator)
 
-Create surface from `A2A Surface Starter` and configure:
+Import the Surface A JSON template (orchestrator) that you will add to this repo.
 
-Access Point:
+After import, update these gateway-specific values:
 
-- Protocol: `a2a`
-- Caller auth: `api_key_provider` via `Authorization` header
-- Inbound policy attached
-- Trust Check query configured
+- Access Point caller auth: `api_key_provider` via `Authorization` header
+- Inbound policy: `inbound-trust-check-enforced`
+- Trust Check: caller-leg query enabled
+- Target endpoint type: local A2A proxy (from Step 6)
+- Transit endpoint: `fabric://<gateway_b_id>/<surface_b_id>`
+- Transit target auth: remote Access Point API key secret (from Step 4/5)
+- Transit policy: `transit-outbound-policy`
 
-Target:
+Optional but recommended for Copilot interoperability:
 
-- Endpoint type: A2A proxy
-- Local proxy selected
-- Identity injection enabled
-- Trust Registry injection enabled
-- Agent context requirement enabled
-
-Transit Point:
-
-- Protocol: `a2a`
-- Target endpoint: `fabric://<gateway_b_id>/<surface_b_id>`
-- Target auth: static secret with remote AP API key
-- Transit policy attached
-- Timeout and retry configured
-
-Optional but recommended (Copilot interoperability):
-
-- Header metadata mapping with extension URI:
-  - `https://fabric.affinidi.io/extensions/header-metadata/v1`
-- Map relevant Copilot headers (Entra agent id, tenant id, session id, correlation id)
-- Configure managed identity extraction from mapped metadata
+- Header metadata extension: `https://fabric.affinidi.io/extensions/header-metadata/v1`
+- Map Copilot headers (agent id, tenant id, session id, correlation id)
+- Enable managed identity extraction from mapped metadata
 
 ### Step 8: Build Surface B (Worker)
 
-Repeat Step 7 symmetrically for the worker agent.
+Import the Surface B JSON template (worker) that you will add to this repo.
+
+Apply the same configuration pattern as Step 7, with mirrored values:
+
+- Transit endpoint: `fabric://<gateway_a_id>/<surface_a_id>`
+- Remote Access Point API key secret for Gateway A
+- Local A2A proxy for worker agent
 
 ## Validation Strategy
 
