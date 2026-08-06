@@ -1,0 +1,691 @@
+{
+    "surface_id": "defe8943-0859-4cd7-97cd-2f27f6f581ed",
+    "name": "Thatcher",
+    "status": "active",
+    "tags": [],
+    "access_point": {
+        "route": "/agents/org-a/thatcher-agent",
+        "protocol": "a2a",
+        "caller_authentication": {
+            "methods": [
+                {
+                    "type": "jwt_bearer",
+                    "jwt_verification_strategy_id": "",
+                    "audiences": [],
+                    "token_header": "Authorization",
+                    "token_scheme": "Bearer"
+                }
+            ]
+        }
+    },
+    "target": {
+        "endpoint": "",
+        "identity_injection": {
+            "inject_vp": true
+        },
+        "mcp_tool_policies_enabled": false,
+        "policy": {
+            "policy_definition_id": "",
+            "require_agent_context": true
+        },
+        "trust_check_list": [
+            {
+                "id": "092f6a3e-5f48-4a4a-8d12-5ca2af58b7d2",
+                "trust_registry_id": "",
+                "query_type": "recognition",
+                "query": {
+                    "authority_id": "",
+                    "entity_id": "{{ input.agent.did }}"
+                },
+                "name": "TP Trust Check"
+            }
+        ]
+    },
+    "transit": {
+        "sign_requests": true,
+        "transit_token_mode": "embedded",
+        "points": [
+            {
+                "id": "cb5d6ece-f3a2-42c3-ba24-3c7512aa1c88",
+                "alias": "tp-qkmucvv7",
+                "target_endpoint": "",
+                "protocol": "a2a",
+                "listen_path": "/outbound/agents/org-a/dexter-agent",
+                "require_transit_token": true,
+                "policy": {
+                    "policy_definition_id": "",
+                    "require_agent_context": true
+                },
+                "managed_identity": {
+                    "type": "from_payload",
+                    "meta_field": "agentIdentity",
+                    "fields": [
+                        "agentIdentity.name",
+                        "agentIdentity.model",
+                        "agentIdentity.role"
+                    ],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "agentIdentity": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "model": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "version": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "model",
+                                    "role"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "workload_binding": {
+                    "enabled": true,
+                    "caller_source": "transit_token",
+                    "caller_context_fields": [
+                        "sub",
+                        "email",
+                        "unique_name",
+                        "name",
+                        "oid"
+                    ],
+                    "chain_caller_credentials": true
+                }
+            }
+        ]
+    },
+    "identity_slots": {
+        "inbound": {
+            "type": "from_jwt_claim",
+            "claim": "oid",
+            "namespace_claims": [
+                "iss",
+                "tid"
+            ],
+            "meta_field": "agentIdentity",
+            "fields": [
+                "agentIdentity.name",
+                "agentIdentity.model",
+                "agentIdentity.role"
+            ],
+            "json_schema": {
+                "type": "object",
+                "properties": {
+                    "agentIdentity": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "model": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "role": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "version": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "model",
+                            "role"
+                        ]
+                    }
+                }
+            }
+        },
+        "protected": {
+            "type": "from_payload",
+            "meta_field": "serverIdentity",
+            "fields": [
+                "agentIdentity.name",
+                "agentIdentity.model",
+                "agentIdentity.role"
+            ],
+            "json_schema": {
+                "type": "object",
+                "properties": {
+                    "agentIdentity": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "model": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "role": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "version": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "model",
+                            "role"
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "canvas": {
+        "version": 1,
+        "surface": {
+            "width": 750,
+            "height": 790
+        },
+        "view": {
+            "x": -69.06535372743838,
+            "y": 158.8133560178155,
+            "k": 0.7907906053138954
+        },
+        "nodes": [
+            {
+                "id": "access-point",
+                "type": "access-point",
+                "label": "Access Point",
+                "parentId": null,
+                "position": {
+                    "x": -370,
+                    "y": 0
+                },
+                "config": {
+                    "route": "/agents/org-a/thatcher-agent",
+                    "protocol": "a2a",
+                    "publish_to_did_document": false,
+                    "route_prefix": "/agents",
+                    "route_suffix": "org-a/thatcher-agent",
+                    "trust_registry_verification": {
+                        "enabled": true,
+                        "mode": "both",
+                        "target_on_failure": "reject"
+                    },
+                    "caller_authentication": {
+                        "methods": [
+                            {
+                                "type": "jwt_bearer",
+                                "jwt_verification_strategy_id": "",
+                                "audiences": [],
+                                "token_header": "Authorization",
+                                "token_scheme": "Bearer"
+                            }
+                        ]
+                    },
+                    "terminate_trace_id": false
+                }
+            },
+            {
+                "id": "target",
+                "type": "target",
+                "label": "Managed Agent",
+                "parentId": "policy",
+                "position": {
+                    "x": 0,
+                    "y": 0
+                },
+                "config": {
+                    "endpoint": "",
+                    "endpoint_type": "url",
+                    "inject_vp": true,
+                    "mcp_tool_policies_enabled": false,
+                    "identity_injection": {
+                        "inject_vp": true
+                    },
+                    "mpp_auto_pay": false,
+                    "trust_registry_injection": {
+                        "enabled": true
+                    },
+                    "policy": {
+                        "policy_definition_id": "",
+                        "require_agent_context": true
+                    }
+                }
+            },
+            {
+                "id": "caller-auth",
+                "type": "caller-auth",
+                "label": "",
+                "parentId": "access-point",
+                "position": {
+                    "x": -287.6186997808619,
+                    "y": 32
+                },
+                "config": {
+                    "method_type": "jwt_bearer",
+                    "extraction_source": "http_header",
+                    "extraction_field": "Authorization",
+                    "jwt_token_header": "Authorization",
+                    "jwt_token_scheme": "Bearer",
+                    "jwt_strategy_id": "",
+                    "audiences": [],
+                    "name": "User Context"
+                },
+                "slotId": "request:caller-auth"
+            },
+            {
+                "id": "identity-inbound",
+                "type": "identity",
+                "label": "",
+                "parentId": "access-point",
+                "position": {
+                    "x": -195.1698319941563,
+                    "y": 32
+                },
+                "config": {
+                    "meta_field": "agentIdentity",
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "agentIdentity": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "model": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "version": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "model",
+                                    "role"
+                                ]
+                            }
+                        }
+                    },
+                    "fields": [
+                        "agentIdentity.name",
+                        "agentIdentity.model",
+                        "agentIdentity.role"
+                    ],
+                    "type": "from_jwt_claim",
+                    "name": "User Identity",
+                    "claim": "oid",
+                    "namespace_claims": [
+                        "iss",
+                        "tid"
+                    ]
+                },
+                "slotId": "request:identity-inbound"
+            },
+            {
+                "id": "policy",
+                "type": "policy",
+                "label": "",
+                "parentId": "caller-auth",
+                "position": {
+                    "x": -92.44886778670559,
+                    "y": 32
+                },
+                "radius": 14,
+                "config": {
+                    "require_agent_context": true,
+                    "policy_definition_id": "",
+                    "name": "User Scope Policy"
+                },
+                "slotId": "request:policy"
+            },
+            {
+                "id": "identity-protected",
+                "type": "identity",
+                "label": "",
+                "parentId": "target",
+                "position": {
+                    "x": -195.1698319941563,
+                    "y": -32
+                },
+                "config": {
+                    "meta_field": "serverIdentity",
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "agentIdentity": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "model": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "version": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "model",
+                                    "role"
+                                ]
+                            }
+                        }
+                    },
+                    "fields": [
+                        "agentIdentity.name",
+                        "agentIdentity.model",
+                        "agentIdentity.role"
+                    ],
+                    "type": "from_payload",
+                    "name": "Agent Identity"
+                },
+                "slotId": "response:identity-protected"
+            },
+            {
+                "id": "trust-check-target",
+                "type": "trust-check",
+                "label": "",
+                "parentId": "target",
+                "position": {
+                    "x": 32,
+                    "y": -246.1932938856016
+                },
+                "radius": 22,
+                "config": {
+                    "queries": [
+                        {
+                            "id": "092f6a3e-5f48-4a4a-8d12-5ca2af58b7d2",
+                            "trust_registry_id": "",
+                            "query_type": "recognition",
+                            "name": "TP Trust Check",
+                            "query": {
+                                "authority_id": "",
+                                "entity_id": "{{ input.agent.did }}"
+                            }
+                        }
+                    ],
+                    "_edge": "ma-tp"
+                },
+                "slotId": "request:trust-check-target_trust_check_list"
+            },
+            {
+                "id": "target-variant",
+                "type": "target-variant",
+                "label": "Variants",
+                "parentId": null,
+                "config": {
+                    "variants": []
+                }
+            },
+            {
+                "id": "transit-point-a2a-1",
+                "type": "transit-point-a2a",
+                "label": "",
+                "parentId": null,
+                "position": {
+                    "x": 0,
+                    "y": -390
+                },
+                "config": {
+                    "listen_address": "",
+                    "route_prefix": "/outbound/agents",
+                    "route_suffix": "org-a/dexter-agent",
+                    "listen_path": "/outbound/agents/org-a/dexter-agent",
+                    "endpoint_type": "gateway",
+                    "target_endpoint": "",
+                    "gateway_id": "",
+                    "gateway_channel": "",
+                    "fabric_remote_channel_name": "Dexter Agent",
+                    "fabric_remote_gateway_name": "Dexter Gateway",
+                    "id": "cb5d6ece-f3a2-42c3-ba24-3c7512aa1c88",
+                    "name": "",
+                    "alias": "tp-qkmucvv7",
+                    "protocol": "a2a",
+                    "identity_injection": {
+                        "inject_vp": false
+                    },
+                    "require_transit_token": true,
+                    "extension_inspection": {
+                        "enabled": true,
+                        "watch_extensions": []
+                    },
+                    "policy": {
+                        "policy_definition_id": "",
+                        "require_agent_context": true
+                    },
+                    "workload_binding": {
+                        "enabled": true,
+                        "caller_source": "transit_token",
+                        "caller_context_fields": [
+                            "sub",
+                            "email",
+                            "unique_name",
+                            "name",
+                            "oid"
+                        ],
+                        "chain_caller_credentials": true
+                    },
+                    "auth_type": "none",
+                    "transit_credentials": null,
+                    "managed_identity": {
+                        "type": "from_payload",
+                        "meta_field": "agentIdentity",
+                        "fields": [
+                            "agentIdentity.name",
+                            "agentIdentity.model",
+                            "agentIdentity.role"
+                        ],
+                        "json_schema": {
+                            "type": "object",
+                            "properties": {
+                                "agentIdentity": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "x-identity": true
+                                        },
+                                        "model": {
+                                            "type": "string",
+                                            "x-identity": true
+                                        },
+                                        "role": {
+                                            "type": "string",
+                                            "x-identity": true
+                                        },
+                                        "version": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "model",
+                                        "role"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "id": "policy-transit-point-a2a-1",
+                "type": "policy",
+                "label": "",
+                "parentId": "transit-point-a2a-1",
+                "position": {
+                    "x": 32,
+                    "y": -328.2577251808021
+                },
+                "config": {
+                    "policy_definition_id": "",
+                    "require_agent_context": true,
+                    "name": "Simple Dispatch Policy"
+                },
+                "slotId": "request:policy"
+            },
+            {
+                "id": "identity-transit-point-a2a-1-request",
+                "type": "identity",
+                "label": "",
+                "parentId": "transit-point-a2a-1",
+                "position": {
+                    "x": 32,
+                    "y": -82.0644312952005
+                },
+                "config": {
+                    "meta_field": "agentIdentity",
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "agentIdentity": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "model": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "version": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "model",
+                                    "role"
+                                ]
+                            }
+                        }
+                    },
+                    "fields": [
+                        "agentIdentity.name",
+                        "agentIdentity.model",
+                        "agentIdentity.role"
+                    ],
+                    "type": "from_payload",
+                    "name": "Agent Identity"
+                },
+                "slotId": "request:identity-managed_identity"
+            },
+            {
+                "id": "workload-binding-transit-point-a2a-1",
+                "type": "workload-binding",
+                "label": "",
+                "parentId": "transit-point-a2a-1",
+                "position": {
+                    "x": 32,
+                    "y": -164.12886259040104
+                },
+                "config": {
+                    "enabled": true,
+                    "caller_source": "transit_token",
+                    "caller_context_fields": [
+                        "sub",
+                        "email",
+                        "unique_name",
+                        "name",
+                        "oid"
+                    ],
+                    "chain_caller_credentials": true
+                },
+                "slotId": "request:workload-binding"
+            },
+            {
+                "id": "__human__",
+                "type": "human",
+                "label": "Human",
+                "parentId": null,
+                "position": {
+                    "x": -461,
+                    "y": 0
+                },
+                "config": {}
+            },
+            {
+                "id": "__caller__",
+                "type": "caller",
+                "label": "Portal",
+                "parentId": null,
+                "position": {
+                    "x": -355,
+                    "y": 0
+                },
+                "config": {
+                    "name": "Portal"
+                }
+            },
+            {
+                "id": "__managed-agent-npc__",
+                "type": "npc-endpoint",
+                "label": "Thatcher Agent",
+                "parentId": "target",
+                "position": {
+                    "x": 500,
+                    "y": 0
+                },
+                "config": {
+                    "name": "Thatcher Agent",
+                    "npc_description": "External agent endpoint",
+                    "connection_direction": "outbound",
+                    "connected_to": "target"
+                }
+            },
+            {
+                "id": "npc-endpoint-1",
+                "type": "npc-endpoint",
+                "label": "External Target",
+                "parentId": "transit-point-a2a-1",
+                "position": {
+                    "x": 0,
+                    "y": -580
+                },
+                "config": {
+                    "npc_name": "External Target",
+                    "npc_description": "Destination service",
+                    "connection_direction": "outbound",
+                    "connected_to": "transit-point-a2a-1"
+                }
+            }
+        ]
+    }
+}
