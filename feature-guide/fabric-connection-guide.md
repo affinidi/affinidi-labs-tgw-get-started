@@ -13,6 +13,7 @@ Before you begin, ensure you have:
 1. **A DIDComm Mediator** - Create one from the Affinidi Developer Portal if you don't already have one
    - See [Mediator Guide](./mediator-guide.md) for detailed instructions on creating and configuring a mediator
 2. **Two Affinidi Gateways** - Both must be created from the Affinidi Developer Portal (portal.affinidi.com)
+   - See [Gateway Guide](./gateway-guide.md) for detailed instructions on creating a gateway
    - You must have admin privileges to both gateways
    - Each gateway will have a unique URL (AG1 and AG2)
    - Note: Gateway URLs will be used throughout this process
