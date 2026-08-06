@@ -75,15 +75,16 @@ This lets CPS agents participate in the standard A2A ecosystem without any custo
 
 ```
 copilot-studio-agent-communication/
-├── README.md                       # This guide
-├── gateway-config/                 # Reference surface configuration JSONs
-│   ├── thatcher-surface.json        # TODO: Add surface config for Thatcher
-│   ├── dexter-surface.json          # TODO: Add surface config for Dexter
+├── README.md                        # This guide
+├── gateway-config/                  # Reference surface configuration JSONs
+│   ├── Thatcher-surface.json        # Thatcher surface configuration
+│   ├── Dexter-surface.json          # Dexter surface configuration
+│   ├── Thatcher_surface_details.md  # Thatcher surface component details
 │   └── policies/
-│       ├── gateway-only.rego       # TODO: Inbound Trust Check policy
-│       └── transit-outbound.rego   # TODO: Transit outbound policy
+│       ├── inbound-trust-check.rego # Inbound Trust Check policy
+│       └── transit-outbound.rego    # Transit outbound policy
 └── docs/
-    └── images/                     # Screenshots for this guide
+  └── images/                      # Screenshots for this guide
 ```
 
 ---
