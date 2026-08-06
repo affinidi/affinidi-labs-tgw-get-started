@@ -1,0 +1,10 @@
+# Gateway Config
+
+Reference surface configuration JSONs for the Copilot Studio cross-org guide.
+
+TODO: Export and add surface configs after gateway setup:
+
+- `org-a-surface.json` — Primary surface for Org A
+- `org-b-surface.json` — Primary surface for Org B
+- `org-a-inbound.json` — Inbound surface (Org B → Org A)
+- `org-b-inbound.json` — Inbound surface (Org A → Org B)
