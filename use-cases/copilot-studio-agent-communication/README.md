@@ -113,7 +113,9 @@ For **each** agent:
 2. Go to **Settings → Security → Web channel security**
 3. Turn on **Require secured access**
 4. Copy **Secret 1** (or Secret 2) — you will store this in the Gateway
+![alt text](image-1.png)
 5. Copy **Entra Agent ID** and **Client Tenant ID** from agent metada in same setting page.
+![alt text](image.png)
 
 > Propagation can take up to 2 hours. For quick testing, you can temporarily disable secured access.
 
