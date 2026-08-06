@@ -1,11 +1,11 @@
 {
-  "surface_id": "dd8aa3c1-f06e-4ab9-ace2-c75b69dcb551",
-  "name": "Thatcher surface",
+  "surface_id": "0982da7f-0d19-4eeb-9525-0caa5652fd1e",
+  "name": "Dexter surface",
   "status": "active",
   "tags": [],
   "access_point": {
-    "listen_address": "https://temasek-atg.proxy.apse1.octo.affinidi.io",
-    "route": "/agents/copilot/Thatcher",
+    "listen_address": "https://canvas-delete.agent-6oduza.agentgateway.affinidi.io",
+    "route": "/agents/copilot/dexter",
     "protocol": "a2a",
     "name": "External Access Point",
     "caller_authentication": {
@@ -16,17 +16,17 @@
             "source": "http_header",
             "field": "Authorization"
           },
-          "agent_id": "dd8aa3c1-f06e-4ab9-ace2-c75b69dcb551"
+          "agent_id": "0982da7f-0d19-4eeb-9525-0caa5652fd1e"
         }
       ]
     },
     "trust_check_list": [
       {
         "id": "a897b27b-3575-47e9-8ce6-5f02e33cbff7",
-        "trust_registry_id": "a17a1083-a7c7-4b7a-8590-b02fc51f468c",
+        "trust_registry_id": "313a7a67-764c-4ad3-baaa-492bde3270f4",
         "query_type": "recognition",
         "query": {
-          "authority_id": "{{ input.gateway.source_id }}",
+          "authority_id": "did:webvh:QmTiBAwtQ2fDDV3WGbSP2twxCDovTASs2RFQkvRMyQiVKo:sanjay-primary.agent-6oduza.agentgateway.affinidi.io:issuers:316c57e7-8fd3-4bf4-8a0b-ef79c7c6df83",
           "entity_id": "{{ input.agent.did }}",
           "action": "is",
           "resource": "ownedAgent"
@@ -35,14 +35,14 @@
     ]
   },
   "target": {
-    "endpoint": "a2a-proxy://b5189686-5370-45df-8621-847c1f65db09",
-    "a2a_proxy_id": "b5189686-5370-45df-8621-847c1f65db09",
+    "endpoint": "a2a-proxy://769cf3d8-67ea-47f4-b9cd-516db0c6a911",
+    "a2a_proxy_id": "769cf3d8-67ea-47f4-b9cd-516db0c6a911",
     "identity_injection": {
       "inject_vp": true
     },
     "mcp_tool_policies_enabled": false,
     "policy": {
-      "policy_definition_id": "32cae288-84be-4b13-a3a2-522a0c283736",
+      "policy_definition_id": "e8d05964-9f6b-4088-81e6-c70bf54e6ad5",
       "require_agent_context": true
     }
   },
@@ -53,11 +53,11 @@
       {
         "id": "0a191d54-b52e-4e46-b962-ff82d264d20b",
         "alias": "to-external",
-        "name": "for Thatcher use",
-        "target_endpoint": "fabric://c2f5d370-2a70-4e8f-8dbb-8e4ecb376680/0cd7aa33-80de-405c-92bf-8acdd50a03d2",
+        "name": "for Dexter use",
+        "target_endpoint": "fabric://2c2246f0-9cb9-408f-91bb-9c90d77ab9f9/7dcf4aa2-267d-437f-8810-b61b80b3bc43",
         "protocol": "a2a",
-        "listen_address": "https://tp-orchestrator.proxy.apse1.octo.affinidi.io",
-        "listen_path": "/agents/transitpoint/to-worker",
+        "listen_address": "https://canvas-delete.agent-6oduza.agentgateway.affinidi.io",
+        "listen_path": "/outbound/agents/transitpoint/to-thatcher",
         "header_metadata_mapping": {
           "extension_uri": "https://fabric.affinidi.io/extensions/header-metadata/v1",
           "headers": [
@@ -93,14 +93,14 @@
           "method": {
             "static_secret": {
               "secret_id": "worker_surface_secret",
-              "header_name": "Authorization2",
+              "header_name": "Authorization",
               "header_format": "{value}"
             }
           },
           "fallback": "reject"
         },
         "policy": {
-          "policy_definition_id": "d04cba67-1617-44d4-8fb9-c9c3dee5a4e6"
+          "policy_definition_id": "86ea43c5-1908-4a96-88fc-766debd6cf9b"
         },
         "networking": {
           "timeout": {
@@ -157,9 +157,9 @@
       "height": 946
     },
     "view": {
-      "x": 153.74176292635684,
-      "y": 330.6381483468697,
-      "k": 0.5711049519395259
+      "x": -291.03836596103747,
+      "y": -68.5021332683192,
+      "k": 1.1097074934839217
     },
     "nodes": [
       {
@@ -169,16 +169,16 @@
         "parentId": null,
         "position": {
           "x": -301.5,
-          "y": 134.4794921875
+          "y": 216.48309326171875
         },
         "config": {
-          "listen_address": "https://temasek-atg.proxy.apse1.octo.affinidi.io",
-          "route": "/agents/copilot/Thatcher",
+          "listen_address": "https://canvas-delete.agent-6oduza.agentgateway.affinidi.io",
+          "route": "/agents/copilot/dexter",
           "protocol": "a2a",
           "publish_to_did_document": false,
           "terminate_trace_id": false,
           "route_prefix": "/agents",
-          "route_suffix": "copilot/Thatcher",
+          "route_suffix": "copilot/dexter",
           "override_agent_card_location": false,
           "agent_card_path": "",
           "name": "External Access Point",
@@ -190,7 +190,7 @@
                   "source": "http_header",
                   "field": "Authorization"
                 },
-                "agent_id": "dd8aa3c1-f06e-4ab9-ace2-c75b69dcb551"
+                "agent_id": "0982da7f-0d19-4eeb-9525-0caa5652fd1e"
               }
             ]
           },
@@ -215,15 +215,15 @@
         "label": "Managed Agent",
         "parentId": "policy",
         "position": {
-          "x": 2.5,
-          "y": 138
+          "x": 15.115966796875,
+          "y": 313.72198486328125
         },
         "config": {
-          "endpoint": "a2a-proxy://b5189686-5370-45df-8621-847c1f65db09",
+          "endpoint": "a2a-proxy://769cf3d8-67ea-47f4-b9cd-516db0c6a911",
           "endpoint_type": "a2a-proxy",
           "inject_vp": true,
           "mcp_proxy_id": "",
-          "a2a_proxy_id": "b5189686-5370-45df-8621-847c1f65db09",
+          "a2a_proxy_id": "769cf3d8-67ea-47f4-b9cd-516db0c6a911",
           "fabric_hop_name": "",
           "fabric_remote_gateway_name": "",
           "fabric_remote_channel_name": "",
@@ -234,12 +234,12 @@
             "inject_vp": true
           },
           "mpp_auto_pay": false,
-          "name": "Thatcher",
+          "name": "Dexter",
           "trust_registry_injection": {
             "enabled": true
           },
           "policy": {
-            "policy_definition_id": "32cae288-84be-4b13-a3a2-522a0c283736",
+            "policy_definition_id": "e8d05964-9f6b-4088-81e6-c70bf54e6ad5",
             "require_agent_context": true
           }
         }
@@ -250,8 +250,8 @@
         "label": "",
         "parentId": "trust-check-caller",
         "position": {
-          "x": -217.70160456638416,
-          "y": 167.45207507703014
+          "x": -248.07958385901196,
+          "y": 266.36469249436243
         },
         "config": {
           "method_type": "api_key_provider",
@@ -268,11 +268,11 @@
         "label": "",
         "parentId": "caller-auth",
         "position": {
-          "x": -92.45784083047329,
-          "y": 168.90247523722473
+          "x": -133.2238326040548,
+          "y": 301.6391167727246
         },
         "config": {
-          "policy_definition_id": "32cae288-84be-4b13-a3a2-522a0c283736",
+          "policy_definition_id": "e8d05964-9f6b-4088-81e6-c70bf54e6ad5",
           "require_agent_context": true
         },
         "slotId": "request:policy"
@@ -283,17 +283,17 @@
         "label": "",
         "parentId": "access-point",
         "position": {
-          "x": -154.37639138597433,
-          "y": 168.18542016824676
+          "x": -190.00671287317425,
+          "y": 284.19999519217674
         },
         "config": {
           "queries": [
             {
               "id": "a897b27b-3575-47e9-8ce6-5f02e33cbff7",
-              "trust_registry_id": "a17a1083-a7c7-4b7a-8590-b02fc51f468c",
+              "trust_registry_id": "313a7a67-764c-4ad3-baaa-492bde3270f4",
               "query_type": "recognition",
               "query": {
-                "authority_id": "{{ input.gateway.source_id }}",
+                "authority_id": "did:webvh:QmTiBAwtQ2fDDV3WGbSP2twxCDovTASs2RFQkvRMyQiVKo:sanjay-primary.agent-6oduza.agentgateway.affinidi.io:issuers:316c57e7-8fd3-4bf4-8a0b-ef79c7c6df83",
                 "entity_id": "{{ input.agent.did }}",
                 "action": "is",
                 "resource": "ownedAgent"
@@ -316,24 +316,24 @@
       {
         "id": "transit-point-a2a-1",
         "type": "transit-point-a2a",
-        "label": "for Thatcher use",
+        "label": "for Dexter use",
         "parentId": null,
         "position": {
           "x": 2.5,
           "y": -473
         },
         "config": {
-          "listen_address": "https://tp-orchestrator.proxy.apse1.octo.affinidi.io",
-          "route_prefix": "/agents",
-          "route_suffix": "transitpoint/to-worker",
-          "listen_path": "/agents/transitpoint/to-worker",
-          "name": "for Thatcher use",
+          "listen_address": "https://canvas-delete.agent-6oduza.agentgateway.affinidi.io",
+          "route_prefix": "/outbound/agents",
+          "route_suffix": "transitpoint/to-thatcher",
+          "listen_path": "/outbound/agents/transitpoint/to-thatcher",
+          "name": "for Dexter use",
           "endpoint_type": "gateway",
-          "target_endpoint": "fabric://c2f5d370-2a70-4e8f-8dbb-8e4ecb376680/0cd7aa33-80de-405c-92bf-8acdd50a03d2",
-          "gateway_id": "c2f5d370-2a70-4e8f-8dbb-8e4ecb376680",
-          "gateway_channel": "0cd7aa33-80de-405c-92bf-8acdd50a03d2",
-          "fabric_remote_channel_name": "Worker Surface",
-          "fabric_remote_gateway_name": "tpc2",
+          "target_endpoint": "fabric://2c2246f0-9cb9-408f-91bb-9c90d77ab9f9/7dcf4aa2-267d-437f-8810-b61b80b3bc43",
+          "gateway_id": "2c2246f0-9cb9-408f-91bb-9c90d77ab9f9",
+          "gateway_channel": "7dcf4aa2-267d-437f-8810-b61b80b3bc43",
+          "fabric_remote_channel_name": "Thatcher Surface",
+          "fabric_remote_gateway_name": "OrgA",
           "transit_credentials": null,
           "require_transit_token": false,
           "id": "0a191d54-b52e-4e46-b962-ff82d264d20b",
@@ -367,16 +367,16 @@
             }
           },
           "policy": {
-            "policy_definition_id": "d04cba67-1617-44d4-8fb9-c9c3dee5a4e6"
+            "policy_definition_id": "86ea43c5-1908-4a96-88fc-766debd6cf9b"
           },
           "auth_type": "api_key",
-          "auth_header_name": "Authorization2",
+          "auth_header_name": "Authorization",
           "auth_secret": "worker_surface_secret",
           "target_auth": {
             "method": {
               "static_secret": {
                 "secret_id": "worker_surface_secret",
-                "header_name": "Authorization2",
+                "header_name": "Authorization",
                 "header_format": "{value}"
               }
             },
@@ -415,11 +415,11 @@
         "label": "",
         "parentId": "transit-point-a2a-1",
         "position": {
-          "x": 34.5,
-          "y": -225.18062961462772
+          "x": 38.47715222977831,
+          "y": -225.2444076981722
         },
         "config": {
-          "policy_definition_id": "d04cba67-1617-44d4-8fb9-c9c3dee5a4e6"
+          "policy_definition_id": "86ea43c5-1908-4a96-88fc-766debd6cf9b"
         },
         "slotId": "request:policy"
       },
@@ -429,8 +429,8 @@
         "label": "",
         "parentId": "transit-point-a2a-1",
         "position": {
-          "x": 34.5,
-          "y": -344.45570068359376
+          "x": 36.564934823412955,
+          "y": -344.488814222647
         },
         "config": {
           "timeout": {
@@ -453,8 +453,8 @@
         "label": "",
         "parentId": "transit-point-a2a-1",
         "position": {
-          "x": 34.5,
-          "y": 23.86555175781251
+          "x": 42.46985949661223,
+          "y": 23.73774614830927
         },
         "config": {
           "header_metadata_mapping": {
@@ -496,8 +496,8 @@
         "label": "",
         "parentId": "transit-point-a2a-1",
         "position": {
-          "x": 34.5,
-          "y": -62.879737622810126
+          "x": 41.07915940490648,
+          "y": -62.98524180116112
         },
         "config": {
           "meta_field": "agentIdentity",
@@ -527,8 +527,8 @@
         "label": "",
         "parentId": "transit-point-a2a-1",
         "position": {
-          "x": 34.5,
-          "y": -147.22630467781596
+          "x": 39.726915618805606,
+          "y": -147.31012411487978
         },
         "config": {
           "enabled": true,
@@ -561,20 +561,20 @@
       {
         "id": "__caller__",
         "type": "caller",
-        "label": "worker-dexter",
+        "label": "External Client",
         "parentId": null,
         "position": {
           "x": -431.5,
           "y": 138
         },
         "config": {
-          "name": "worker-dexter"
+          "name": "External Client"
         }
       },
       {
         "id": "__managed-agent-npc__",
         "type": "npc-endpoint",
-        "label": "Thatcher CPS agent",
+        "label": " CPS agent Dexter",
         "parentId": "target",
         "position": {
           "x": 444.5,
@@ -582,7 +582,7 @@
         },
         "radius": 18,
         "config": {
-          "name": "Thatcher CPS agent",
+          "name": " CPS agent Dexter",
           "npc_description": "External agent endpoint",
           "connection_direction": "inbound",
           "connected_to": "target"

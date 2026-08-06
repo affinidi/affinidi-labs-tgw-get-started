@@ -113,9 +113,11 @@ For **each** agent:
 2. Go to **Settings → Security → Web channel security**
 3. Turn on **Require secured access**
 4. Copy **Secret 1** (or Secret 2) — you will store this in the Gateway
-![alt text](image-1.png)
-5. Copy **Entra Agent ID** and **Client Tenant ID** from agent metada in same setting page.
-![alt text](image.png)
+   ![Direct Line secret in Copilot Studio](./docs/images/copilot-studio-security-direct-line-secret.png)
+5. Keep the authentication option under **Security** set to **Authenticate with Microsoft**.
+   ![Authenticate with Microsoft in Copilot Studio](./docs/images/copilot-studio-security-authenticate-with-microsoft.png)
+6. Copy **Entra Agent ID** and **Client Tenant ID** from the agent metadata on the same settings page.
+   ![Agent metadata in Copilot Studio security settings](./docs/images/copilot-studio-security-agent-metadata.png)
 
 > Propagation can take up to 2 hours. For quick testing, you can temporarily disable secured access.
 
@@ -142,6 +144,10 @@ You will create:
 
 > Important: On each gateway, enable the Copilot integration option to enable the A2A proxy by navigating to **Settings -> Admin -> Feature Flags** and enabling `copilot_integration`.
 
+Also enable VP audit on each gateway from **Settings -> Security**.
+
+![Gateway VP audit setting](./docs/images/gateway-security-enable-vp-audit.png)
+
 ![Copilot integration feature flag](./docs/images/gateway-feature-flag-copilot-integration.png)
 
 ### Step 2.2 — Setup Trust Registry
@@ -152,6 +158,8 @@ On **each** gateway:
 
 - Add an **Issuer** (your own org's DID) — used to sign VPs
 - Add an **Authority** (the peer org's issuer DID) — what you trust from the other gateway
+
+> Note: You can use one Trust Registry for both gateways or maintain separate Trust Registries for each side. If you use separate Trust Registries, additional trust configuration is required.
 
 ### Step 2.3 — Create Policies
 
@@ -230,13 +238,17 @@ On **each** gateway, create one A2A proxy:
    - Entra Agent ID
    - Client Tenant ID
 
-![A2A proxy agent card fields](./docs/images/a2a-proxy-agent-card-fields.png) 5. Click **Create**
+![A2A proxy agent card fields](./docs/images/a2a-proxy-agent-card-fields.png)
+
+5. Click **Create**.
 
 Repeat on the other gateway for the other agent.
 
 #### Create Access Point API Keys
 
 → Follow [surface-api-key.md](../../feature-guide/surface-api-key.md)
+
+> You may need to return to this step after creating the surfaces in Step 2.5.
 
 For each surface:
 
@@ -266,19 +278,22 @@ Create **2 surfaces per gateway** (4 total), following the same pattern as the h
 
 1. Click **Surfaces → Add Surface**
 2. Select **A2A Surface Starter Template**
-3. Open **Config** section, paste the JSON template
-4. Open **Surface** section to verify visual layout
-5. Update element settings:
+3. Select **Managed Agent**, then set the target to the local A2A Proxy created in Step 2.4. Press `Ctrl+S` or `Cmd+S` to save the surface.
+4. Open the **Config** section and paste the JSON template.
+5. Open the **Surface** section to verify the visual layout. If needed, change the name slightly to force a refresh.
+6. Update element settings:
    - **Surface area:** Select Issuer
 
+- **Access point:** Select the listener from the dropdown if it is not already set.
 - **Managed Agent:** Set target to the local A2A Proxy created in Step 2.4
 - **Endpoint type:** Via A2A proxy -> select your proxy
-- **Transit Point:** Select the remote gateway and remote surface via `fabric://<remote_gateway_id>/<remote_surface_id>`
+- **Transit Point:** Select the remote gateway and remote surface using the remote gateway name and remote surface dropdowns.
 - **Caller auth:** Configure the surface to require the API key created above
+- **Target auth:** Configure the Transit Point to use the secret created for the other gateway's surface access point.
 - **Policy:** Select the inbound/transit policies created in Step 2.3
 - **Trust Check:** Select Trust Registry, then set the Authority ID and Entity ID
 
-6. Save the surface
+7. Save the surface
 
 After creating the surfaces, note:
 
@@ -287,49 +302,80 @@ After creating the surfaces, note:
 
 **✅ Checkpoint:** 2 surfaces created (1 per gateway), all active.
 
----
+### Step 2.6 — Configure Copilot Studio Agent-to-Agent Connection
+
+Before testing, establish the connection between the agents in Copilot Studio.
+
+> This guide validates a one-way connection from Thatcher to Dexter. You can extend the same pattern for two-way communication.
+
+Confirm the following before connecting the agents:
+
+1. Both Copilot Studio agents are created.
+2. Both A2A proxies are created.
+3. Agent instructions are updated:
+
+- **Thatcher:** `You are Thatcher. You provide information to other agents. You always respond with your name.`
+- **Dexter:** `You are Dexter. You always respond with your name.`
+
+4. The Transit Point agent card URL is reachable, for example:
+
+```text
+https://<gateway-domain>/outbound/agents/transitpoint/to-dexter/.well-known/agent-card.json
+```
+
+5. Thatcher authentication is set to **Authenticate with Microsoft**.
+6. Dexter authentication is set to **No authentication** or **Authenticate manually**.
+
+![Copilot Studio no authentication option](./docs/images/copilot-studio-auth-no-authentication.png)
+![Copilot Studio authenticate manually option](./docs/images/copilot-studio-auth-authenticate-manually.png)
+
+#### Add Dexter to Thatcher
+
+1. Open the Thatcher Copilot Studio agent.
+2. Go to **Agent -> Add agent -> Connect to an external agent -> Agent2Agent**.
+
+![Add external agent in Copilot Studio](./docs/images/copilot-studio-add-external-agent.png)
+
+3. Add the Thatcher Transit Point URL. Make sure the agent card URL is working in the browser first.
+4. Ignore the Copilot Studio validation error if the agent card URL opens correctly in the browser.
+5. Provide a name and description.
+6. Set **Authentication -> OAuth 2.0 -> Manual**.
+7. Add the details from your Entra auth project.
+
+![Manual OAuth configuration for external agent](./docs/images/copilot-studio-agent-connection-oauth-manual.png)
+
+8. After the connection is created, verify it appears correctly.
+
+![External agent connection created](./docs/images/copilot-studio-agent-connection-created.png)
+
+9. Go to **Thatcher -> Settings -> Connection settings** and click **Connect** for the newly added Dexter agent.
+
+![Connection settings connect button](./docs/images/copilot-studio-connection-settings-connect.png)
+
+10. Verify the connection status.
+
+![External agent connection verified](./docs/images/copilot-studio-connection-verified.png)
+
+11. Open a new test chat panel and test the connection with a prompt such as `test connection with dexter agent`.
 
 ## Part 3 — Test and Validate
 
-### Step 3.1 — Basic Connectivity (curl)
+### Step 3.1 — Basic Connectivity (Test Session)
 
-Test the Access Point of each surface:
+1. Go to the Thatcher agent in Copilot Studio and start a new test session.
+2. Type any message that should be sent to the Dexter agent.
 
-```bash
-# Test Thatcher surface
-curl -X POST "<THATCHER_ACCESS_POINT_URL>" \
-    -H "Content-Type: application/json" \
-  -H "Authorization: <THATCHER_SURFACE_API_KEY>" \
-    -d '{
-        "message": "Hello from curl to Thatcher agent",
-        "sessionId": "test-session-1"
-    }'
+![Test session with connection request](./docs/images/copilot-studio-test-session-request.png)
 
-# Test Dexter surface
-curl -X POST "<DEXTER_ACCESS_POINT_URL>" \
-    -H "Content-Type: application/json" \
-  -H "Authorization: <DEXTER_SURFACE_API_KEY>" \
-    -d '{
-        "message": "Hello from curl to Dexter agent",
-        "sessionId": "test-session-2"
-    }'
-```
+Check the Thatcher gateway audit log. Thatcher uses its own Transit Point to connect to Dexter's Access Point.
 
-Expected: HTTP 200 with agent response in the body.
+You should see successful trust-check and policy evaluation results.
 
-### Step 3.2 — Cross-Org Communication (Transit)
+![Trust check and policy filtering passed](./docs/images/gateway-audit-trust-check-passed.png)
 
-Trigger a message that causes Thatcher to forward to Dexter through the Transit Point:
+On the Dexter gateway side, the audit log should also show the activity.
 
-```bash
-curl -X POST "<THATCHER_ACCESS_POINT_URL>" \
-    -H "Content-Type: application/json" \
-  -H "Authorization: <THATCHER_SURFACE_API_KEY>" \
-    -d '{
-        "message": "Forward this to Dexter: What is your status?",
-        "sessionId": "test-cross-org-1"
-    }'
-```
+![Dexter gateway-side audit view](./docs/images/gateway-dexter-audit-view.png)
 
 > Whether cross-org forwarding works depends on your CPS agent's instructions and topic routing. Configure one agent's topic to recognize forwarding intent and invoke the peer via the Transit Point path.
 
