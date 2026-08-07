@@ -65,6 +65,10 @@ You will create:
 - A gateway for **Org B (Dexter)**
 - A Fabric Connection between them using mediator
 
+Also enable VP audit on each gateway from **Settings -> Security**.
+
+![Gateway VP audit setting](images/gateway-security-enable-vp-audit.png)
+
 Verification screenshots for this step:
 
 After adding mediators on both gateways:
@@ -90,7 +94,8 @@ On **each** gateway:
 
 Issuer creates your local department identity in the gateway. Authority imports the peer department DID into your gateway so it can be used for Trust Registry queries and trust checks.
 
-**Note:** Your Trust Registry setup should match the issuer and authority examples shown in the screenshots later in this guide.
+> Note: Your Trust Registry setup should match the issuer and authority examples shown in the screenshots later in this guide.
+> Note: You can use one Trust Registry for both gateways or maintain separate Trust Registries for each side. If you use separate Trust Registries, additional trust configuration is required.
 
 Verification screenshots for this step:
 
