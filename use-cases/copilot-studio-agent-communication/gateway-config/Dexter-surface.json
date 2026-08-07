@@ -1,0 +1,609 @@
+{
+  "surface_id": "0982da7f-0d19-4eeb-9525-0caa5652fd1e",
+  "name": "Dexter surface",
+  "status": "active",
+  "tags": [],
+  "access_point": {
+    "listen_address": "https://canvas-delete.agent-6oduza.agentgateway.affinidi.io",
+    "route": "/agents/copilot/dexter",
+    "protocol": "a2a",
+    "name": "External Access Point",
+    "caller_authentication": {
+      "methods": [
+        {
+          "type": "api_key_provider",
+          "extraction": {
+            "source": "http_header",
+            "field": "Authorization"
+          },
+          "agent_id": "0982da7f-0d19-4eeb-9525-0caa5652fd1e"
+        }
+      ]
+    },
+    "trust_check_list": [
+      {
+        "id": "a897b27b-3575-47e9-8ce6-5f02e33cbff7",
+        "trust_registry_id": "313a7a67-764c-4ad3-baaa-492bde3270f4",
+        "query_type": "recognition",
+        "query": {
+          "authority_id": "did:webvh:QmTiBAwtQ2fDDV3WGbSP2twxCDovTASs2RFQkvRMyQiVKo:sanjay-primary.agent-6oduza.agentgateway.affinidi.io:issuers:316c57e7-8fd3-4bf4-8a0b-ef79c7c6df83",
+          "entity_id": "{{ input.agent.did }}",
+          "action": "is",
+          "resource": "ownedAgent"
+        }
+      }
+    ]
+  },
+  "target": {
+    "endpoint": "a2a-proxy://769cf3d8-67ea-47f4-b9cd-516db0c6a911",
+    "a2a_proxy_id": "769cf3d8-67ea-47f4-b9cd-516db0c6a911",
+    "identity_injection": {
+      "inject_vp": true
+    },
+    "mcp_tool_policies_enabled": false,
+    "policy": {
+      "policy_definition_id": "e8d05964-9f6b-4088-81e6-c70bf54e6ad5",
+      "require_agent_context": true
+    }
+  },
+  "transit": {
+    "sign_requests": true,
+    "transit_token_mode": "embedded",
+    "points": [
+      {
+        "id": "0a191d54-b52e-4e46-b962-ff82d264d20b",
+        "alias": "to-external",
+        "name": "for Dexter use",
+        "target_endpoint": "fabric://2c2246f0-9cb9-408f-91bb-9c90d77ab9f9/7dcf4aa2-267d-437f-8810-b61b80b3bc43",
+        "protocol": "a2a",
+        "listen_address": "https://canvas-delete.agent-6oduza.agentgateway.affinidi.io",
+        "listen_path": "/outbound/agents/transitpoint/to-thatcher",
+        "header_metadata_mapping": {
+          "extension_uri": "https://fabric.affinidi.io/extensions/header-metadata/v1",
+          "headers": [
+            {
+              "header": "x-ms-entra-agent-id",
+              "field": "entra_agent_id"
+            },
+            {
+              "header": "x-ms-client-tenant-id",
+              "field": "client_tenant_id"
+            },
+            {
+              "header": "x-ms-client-session-id",
+              "field": "session_id"
+            },
+            {
+              "header": "x-ms-correlation-id",
+              "field": "correlation_id"
+            },
+            {
+              "header": "x-ms-coreframework-caller-activity-id",
+              "field": "activity_id"
+            },
+            {
+              "header": "x-ms-apim-referrer",
+              "field": "referrer"
+            }
+          ],
+          "strip_mapped_headers": true
+        },
+        "require_transit_token": false,
+        "target_auth": {
+          "method": {
+            "static_secret": {
+              "secret_id": "worker_surface_secret",
+              "header_name": "Authorization",
+              "header_format": "{value}"
+            }
+          },
+          "fallback": "reject"
+        },
+        "policy": {
+          "policy_definition_id": "86ea43c5-1908-4a96-88fc-766debd6cf9b"
+        },
+        "networking": {
+          "timeout": {
+            "request_secs": 90,
+            "connect_secs": 90,
+            "idle_secs": 90
+          },
+          "retry": {
+            "max_attempts": 3
+          }
+        },
+        "managed_identity": {
+          "type": "from_payload",
+          "meta_field": "agentIdentity",
+          "extension_uri": "https://fabric.affinidi.io/extensions/header-metadata/v1",
+          "fields": ["entra_agent_id", "client_tenant_id"],
+          "json_schema": {
+            "type": "object",
+            "properties": {
+              "entra_agent_id": {
+                "type": "string",
+                "x-identity": true
+              },
+              "client_tenant_id": {
+                "type": "string",
+                "x-identity": true
+              }
+            },
+            "required": ["entra_agent_id", "client_tenant_id"]
+          }
+        },
+        "workload_binding": {
+          "enabled": true,
+          "caller_source": "authorization_bearer_jwt",
+          "caller_context_fields": [
+            "sub",
+            "name",
+            "email",
+            "org",
+            "unique_name",
+            "scp",
+            "upn",
+            "given_name"
+          ],
+          "chain_caller_credentials": true
+        }
+      }
+    ]
+  },
+  "canvas": {
+    "version": 1,
+    "surface": {
+      "width": 603,
+      "height": 946
+    },
+    "view": {
+      "x": -291.03836596103747,
+      "y": -68.5021332683192,
+      "k": 1.1097074934839217
+    },
+    "nodes": [
+      {
+        "id": "access-point",
+        "type": "access-point",
+        "label": "Access Point",
+        "parentId": null,
+        "position": {
+          "x": -301.5,
+          "y": 216.48309326171875
+        },
+        "config": {
+          "listen_address": "https://canvas-delete.agent-6oduza.agentgateway.affinidi.io",
+          "route": "/agents/copilot/dexter",
+          "protocol": "a2a",
+          "publish_to_did_document": false,
+          "terminate_trace_id": false,
+          "route_prefix": "/agents",
+          "route_suffix": "copilot/dexter",
+          "override_agent_card_location": false,
+          "agent_card_path": "",
+          "name": "External Access Point",
+          "caller_authentication": {
+            "methods": [
+              {
+                "type": "api_key_provider",
+                "extraction": {
+                  "source": "http_header",
+                  "field": "Authorization"
+                },
+                "agent_id": "0982da7f-0d19-4eeb-9525-0caa5652fd1e"
+              }
+            ]
+          },
+          "trust_check_lis t": [
+            {
+              "id": "a897b27b-3575-47e9-8ce6-5f02e33cbff7",
+              "trust_registry_id": "a17a1083-a7c7-4b7a-8590-b02fc51f468c",
+              "query_type": "recognition",
+              "query": {
+                "authority_id": "{{ input.gateway.source_id }}",
+                "entity_id": "{{ input.agent.did }}",
+                "action": "is",
+                "resource": "ownedAgent"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "target",
+        "type": "target",
+        "label": "Managed Agent",
+        "parentId": "policy",
+        "position": {
+          "x": 15.115966796875,
+          "y": 313.72198486328125
+        },
+        "config": {
+          "endpoint": "a2a-proxy://769cf3d8-67ea-47f4-b9cd-516db0c6a911",
+          "endpoint_type": "a2a-proxy",
+          "inject_vp": true,
+          "mcp_proxy_id": "",
+          "a2a_proxy_id": "769cf3d8-67ea-47f4-b9cd-516db0c6a911",
+          "fabric_hop_name": "",
+          "fabric_remote_gateway_name": "",
+          "fabric_remote_channel_name": "",
+          "gateway_id": "",
+          "gateway_channel": "",
+          "mcp_tool_policies_enabled": false,
+          "identity_injection": {
+            "inject_vp": true
+          },
+          "mpp_auto_pay": false,
+          "name": "Dexter",
+          "trust_registry_injection": {
+            "enabled": true
+          },
+          "policy": {
+            "policy_definition_id": "e8d05964-9f6b-4088-81e6-c70bf54e6ad5",
+            "require_agent_context": true
+          }
+        }
+      },
+      {
+        "id": "caller-auth",
+        "type": "caller-auth",
+        "label": "",
+        "parentId": "trust-check-caller",
+        "position": {
+          "x": -248.07958385901196,
+          "y": 266.36469249436243
+        },
+        "config": {
+          "method_type": "api_key_provider",
+          "extraction_source": "http_header",
+          "extraction_field": "Authorization",
+          "jwt_token_header": "Authorization",
+          "jwt_token_scheme": "Bearer"
+        },
+        "slotId": "request:caller-auth"
+      },
+      {
+        "id": "policy",
+        "type": "policy",
+        "label": "",
+        "parentId": "caller-auth",
+        "position": {
+          "x": -133.2238326040548,
+          "y": 301.6391167727246
+        },
+        "config": {
+          "policy_definition_id": "e8d05964-9f6b-4088-81e6-c70bf54e6ad5",
+          "require_agent_context": true
+        },
+        "slotId": "request:policy"
+      },
+      {
+        "id": "trust-check-caller",
+        "type": "trust-check",
+        "label": "",
+        "parentId": "access-point",
+        "position": {
+          "x": -190.00671287317425,
+          "y": 284.19999519217674
+        },
+        "config": {
+          "queries": [
+            {
+              "id": "a897b27b-3575-47e9-8ce6-5f02e33cbff7",
+              "trust_registry_id": "313a7a67-764c-4ad3-baaa-492bde3270f4",
+              "query_type": "recognition",
+              "query": {
+                "authority_id": "did:webvh:QmTiBAwtQ2fDDV3WGbSP2twxCDovTASs2RFQkvRMyQiVKo:sanjay-primary.agent-6oduza.agentgateway.affinidi.io:issuers:316c57e7-8fd3-4bf4-8a0b-ef79c7c6df83",
+                "entity_id": "{{ input.agent.did }}",
+                "action": "is",
+                "resource": "ownedAgent"
+              }
+            }
+          ],
+          "_edge": "ap-ma"
+        },
+        "slotId": "request:trust-check-access_point_trust_check_list"
+      },
+      {
+        "id": "target-variant",
+        "type": "target-variant",
+        "label": "Variants",
+        "parentId": null,
+        "config": {
+          "variants": []
+        }
+      },
+      {
+        "id": "transit-point-a2a-1",
+        "type": "transit-point-a2a",
+        "label": "for Dexter use",
+        "parentId": null,
+        "position": {
+          "x": 2.5,
+          "y": -473
+        },
+        "config": {
+          "listen_address": "https://canvas-delete.agent-6oduza.agentgateway.affinidi.io",
+          "route_prefix": "/outbound/agents",
+          "route_suffix": "transitpoint/to-thatcher",
+          "listen_path": "/outbound/agents/transitpoint/to-thatcher",
+          "name": "for Dexter use",
+          "endpoint_type": "gateway",
+          "target_endpoint": "fabric://2c2246f0-9cb9-408f-91bb-9c90d77ab9f9/7dcf4aa2-267d-437f-8810-b61b80b3bc43",
+          "gateway_id": "2c2246f0-9cb9-408f-91bb-9c90d77ab9f9",
+          "gateway_channel": "7dcf4aa2-267d-437f-8810-b61b80b3bc43",
+          "fabric_remote_channel_name": "Thatcher Surface",
+          "fabric_remote_gateway_name": "OrgA",
+          "transit_credentials": null,
+          "require_transit_token": false,
+          "id": "0a191d54-b52e-4e46-b962-ff82d264d20b",
+          "alias": "to-external",
+          "protocol": "a2a",
+          "identity_injection": {
+            "inject_vp": false
+          },
+          "extension_inspection": {
+            "enabled": true,
+            "watch_extensions": []
+          },
+          "managed_identity": {
+            "type": "from_payload",
+            "meta_field": "agentIdentity",
+            "extension_uri": "https://fabric.affinidi.io/extensions/header-metadata/v1",
+            "fields": ["entra_agent_id", "client_tenant_id"],
+            "json_schema": {
+              "type": "object",
+              "properties": {
+                "entra_agent_id": {
+                  "type": "string",
+                  "x-identity": true
+                },
+                "client_tenant_id": {
+                  "type": "string",
+                  "x-identity": true
+                }
+              },
+              "required": ["entra_agent_id", "client_tenant_id"]
+            }
+          },
+          "policy": {
+            "policy_definition_id": "86ea43c5-1908-4a96-88fc-766debd6cf9b"
+          },
+          "auth_type": "api_key",
+          "auth_header_name": "Authorization",
+          "auth_secret": "worker_surface_secret",
+          "target_auth": {
+            "method": {
+              "static_secret": {
+                "secret_id": "worker_surface_secret",
+                "header_name": "Authorization",
+                "header_format": "{value}"
+              }
+            },
+            "fallback": "reject"
+          },
+          "networking": {
+            "timeout": {
+              "request_secs": 90,
+              "connect_secs": 90,
+              "idle_secs": 90
+            },
+            "retry": {
+              "max_attempts": 3
+            }
+          },
+          "workload_binding": {
+            "enabled": true,
+            "caller_source": "authorization_bearer_jwt",
+            "caller_context_fields": [
+              "sub",
+              "name",
+              "email",
+              "org",
+              "unique_name",
+              "scp",
+              "upn",
+              "given_name"
+            ],
+            "chain_caller_credentials": true
+          }
+        }
+      },
+      {
+        "id": "policy-transit-point-a2a-1",
+        "type": "policy",
+        "label": "",
+        "parentId": "transit-point-a2a-1",
+        "position": {
+          "x": 38.47715222977831,
+          "y": -225.2444076981722
+        },
+        "config": {
+          "policy_definition_id": "86ea43c5-1908-4a96-88fc-766debd6cf9b"
+        },
+        "slotId": "request:policy"
+      },
+      {
+        "id": "networking-transit-point-a2a-1",
+        "type": "networking",
+        "label": "",
+        "parentId": "transit-point-a2a-1",
+        "position": {
+          "x": 36.564934823412955,
+          "y": -344.488814222647
+        },
+        "config": {
+          "timeout": {
+            "request_secs": 90,
+            "connect_secs": 90,
+            "idle_secs": 90
+          },
+          "retry_enabled": true,
+          "timeout_secs": "90",
+          "connect_timeout_secs": "90",
+          "idle_timeout_secs": "90",
+          "retry": {
+            "max_attempts": 3
+          }
+        }
+      },
+      {
+        "id": "metadata-extraction-transit-point-a2a-1",
+        "type": "metadata-extraction",
+        "label": "",
+        "parentId": "transit-point-a2a-1",
+        "position": {
+          "x": 42.46985949661223,
+          "y": 23.73774614830927
+        },
+        "config": {
+          "header_metadata_mapping": {
+            "extension_uri": "https://fabric.affinidi.io/extensions/header-metadata/v1",
+            "headers": [
+              {
+                "header": "x-ms-entra-agent-id",
+                "field": "entra_agent_id"
+              },
+              {
+                "header": "x-ms-client-tenant-id",
+                "field": "client_tenant_id"
+              },
+              {
+                "header": "x-ms-client-session-id",
+                "field": "session_id"
+              },
+              {
+                "header": "x-ms-correlation-id",
+                "field": "correlation_id"
+              },
+              {
+                "header": "x-ms-coreframework-caller-activity-id",
+                "field": "activity_id"
+              },
+              {
+                "header": "x-ms-apim-referrer",
+                "field": "referrer"
+              }
+            ],
+            "strip_mapped_headers": true
+          }
+        },
+        "slotId": "request:metadata-extraction"
+      },
+      {
+        "id": "identity-transit-point-a2a-1-request",
+        "type": "identity",
+        "label": "",
+        "parentId": "transit-point-a2a-1",
+        "position": {
+          "x": 41.07915940490648,
+          "y": -62.98524180116112
+        },
+        "config": {
+          "meta_field": "agentIdentity",
+          "json_schema": {
+            "type": "object",
+            "properties": {
+              "entra_agent_id": {
+                "type": "string",
+                "x-identity": true
+              },
+              "client_tenant_id": {
+                "type": "string",
+                "x-identity": true
+              }
+            },
+            "required": ["entra_agent_id", "client_tenant_id"]
+          },
+          "fields": ["entra_agent_id", "client_tenant_id"],
+          "type": "from_payload",
+          "extension_uri": "https://fabric.affinidi.io/extensions/header-metadata/v1"
+        },
+        "slotId": "request:identity-managed_identity"
+      },
+      {
+        "id": "workload-binding-transit-point-a2a-1",
+        "type": "workload-binding",
+        "label": "",
+        "parentId": "transit-point-a2a-1",
+        "position": {
+          "x": 39.726915618805606,
+          "y": -147.31012411487978
+        },
+        "config": {
+          "enabled": true,
+          "caller_source": "authorization_bearer_jwt",
+          "caller_context_fields": [
+            "sub",
+            "name",
+            "email",
+            "org",
+            "unique_name",
+            "scp",
+            "upn",
+            "given_name"
+          ],
+          "chain_caller_credentials": true
+        },
+        "slotId": "request:workload-binding"
+      },
+      {
+        "id": "__human__",
+        "type": "human",
+        "label": "Human",
+        "parentId": null,
+        "position": {
+          "x": -537.5,
+          "y": 138
+        },
+        "config": {}
+      },
+      {
+        "id": "__caller__",
+        "type": "caller",
+        "label": "External Client",
+        "parentId": null,
+        "position": {
+          "x": -431.5,
+          "y": 138
+        },
+        "config": {
+          "name": "External Client"
+        }
+      },
+      {
+        "id": "__managed-agent-npc__",
+        "type": "npc-endpoint",
+        "label": " CPS agent Dexter",
+        "parentId": "target",
+        "position": {
+          "x": 444.5,
+          "y": 138
+        },
+        "radius": 18,
+        "config": {
+          "name": " CPS agent Dexter",
+          "npc_description": "External agent endpoint",
+          "connection_direction": "inbound",
+          "connected_to": "target"
+        }
+      },
+      {
+        "id": "npc-endpoint-1",
+        "type": "npc-endpoint",
+        "label": "External Target",
+        "parentId": "transit-point-a2a-1",
+        "position": {
+          "x": 0,
+          "y": -520
+        },
+        "config": {
+          "npc_name": "External Target",
+          "npc_description": "Destination service",
+          "connection_direction": "outbound",
+          "connected_to": "transit-point-a2a-1"
+        }
+      }
+    ]
+  }
+}
