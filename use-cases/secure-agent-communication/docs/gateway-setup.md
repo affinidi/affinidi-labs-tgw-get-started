@@ -65,6 +65,16 @@ You will create:
 - A gateway for **Org B (Dexter)**
 - A Fabric Connection between them using mediator
 
+Verification screenshots for this step:
+
+After adding mediators on both gateways:
+
+![Gateway mediators](images/gateway-mediators.png)
+
+After establishing Fabric Connection between gateways:
+
+![Gateway fabric connection](images/gateway-fabric.png)
+
 ---
 
 ### Step 2 — Setup Trust Registry {#step-trust-registry}
@@ -80,7 +90,23 @@ On **each** gateway:
 
 Issuer creates your local department identity in the gateway. Authority imports the peer department DID into your gateway so it can be used for Trust Registry queries and trust checks.
 
-Note: Your Trust Registry setup should match the issuer and authority examples shown in the screenshots later in this guide.
+**Note:** Your Trust Registry setup should match the issuer and authority examples shown in the screenshots later in this guide.
+
+Verification screenshots for this step:
+
+After adding Trust Registry:
+
+![Gateway trust registry](images/gateway-trust-registry.png)
+
+After adding issuers:
+
+![Gateway issuers](images/gateway-issuers.png)
+
+After adding authorities (other department):
+
+![Gateway authority](images/gateway-authority.png)
+
+---
 
 ### Step 3 — Create Surface Policies
 
@@ -96,7 +122,7 @@ Create the following **surface policies** on each gateway.
    **Policy content:** Copy from [use-cases/secure-agent-communication/gateway-config/policies/gateway-only.rego](../gateway-config/policies/gateway-only.rego)
    Replace `<remote_gateway_did>` with Dexter Gateway DID.
 
-Note: You can get Dexter Gateway DID from **Connections**. Open the **remote gateway** record (not local gateway) and copy the **Gateway DID**.
+**Note:** You can get Dexter Gateway DID from **Connections**. Open the **remote gateway** record (not local gateway) and copy the **Gateway DID**.
 
 2. **Name:** `User Scope Policy`  
    **Type:** `Agent surfaces`  
@@ -113,7 +139,7 @@ Note: You can get Dexter Gateway DID from **Connections**. Open the **remote gat
    **Policy content:** Copy from [use-cases/secure-agent-communication/gateway-config/policies/gateway-only.rego](../gateway-config/policies/gateway-only.rego)
    Replace `<remote_gateway_did>` with Thatcher Gateway DID.
 
-Note: Similar to Thatcher setup, get Thatcher Gateway DID from **Connections** by opening the **remote gateway** record and copying the **Gateway DID**.
+**Note:** Similar to Thatcher setup, get Thatcher Gateway DID from **Connections** by opening the **remote gateway** record and copying the **Gateway DID**.
 
 2. **Name:** `User Scope Policy`  
    **Type:** `Agent surfaces`  
@@ -122,6 +148,12 @@ Note: Similar to Thatcher setup, get Thatcher Gateway DID from **Connections** b
 3. **Name:** `Acknowledge Policy`  
    **Type:** `Agent surfaces`  
    **Policy content:** Copy from [use-cases/secure-agent-communication/gateway-config/policies/acknowledge-policy.rego](../gateway-config/policies/acknowledge-policy.rego)
+
+Verification screenshot for this step:
+
+**Note:** The screenshot may include additional policies. As long as the policies listed above are present, your setup is correct.
+
+![Gateway policies](images/gateway-policies.png)
 
 ---
 
@@ -142,6 +174,13 @@ Create the same JWT strategy on **both gateways**.
 | JWKS URI        | `https://login.microsoftonline.com/{tenant_id}/discovery/keys` |
 
 Replace `{tenant_id}` with your Microsoft tenant ID.
+
+Verification screenshot for this step:
+
+After adding JWT strategies:
+**Note:** The screenshot may include additional JWT strategies. As long as the above JWT strategy is present, your setup is correct.
+
+![Gateway JWT strategies](images/gateway-jwt-stragies.png)
 
 ---
 
@@ -183,7 +222,7 @@ Create these two surfaces on Dexter Gateway:
 
 4. Open the **Surface** section to view the visual layout generated from config.
 
-Note: If the visual view does not render correctly, click in the surface and make a small name change to refresh it.
+**Note:** If the visual view does not render correctly, click in the surface and make a small name change to refresh it.
 
 ![Visual surface view](images/surface-create-4.png)
 
@@ -201,7 +240,7 @@ Note: If the visual view does not render correctly, click in the surface and mak
 
 - **Transit Point**: Select your remote gateway and the remote surface
 
-Note: If the remote surface on the remote gateway has not been created yet, temporarily set Endpoint Type to Direct URL, enter a placeholder HTTP URL, and save the surface. Once the remote gateway surface is ready, change the endpoint to Via gateway as shown below.
+**Note:** If the remote surface on the remote gateway has not been created yet, temporarily set Endpoint Type to Direct URL, enter a placeholder HTTP URL, and save the surface. Once the remote gateway surface is ready, change the endpoint to Via gateway as shown below.
 ![Configure transit point](images/surface-create-7.png)
 ![Configure transit point](images/surface-create-7-1.png)
 
@@ -222,40 +261,10 @@ Note: If the remote surface on the remote gateway has not been created yet, temp
 
 Repeat the same process until all 4 surfaces are created (2 per gateway).
 
-After creating the surfaces, note:
+After creating the surfaces, **Note:**
 
 - **Access Point URL** (for example, Thatcher inbound surface URL)
 - **Transit Point outbound path** (for example, path used to route from local gateway to remote gateway)
-
-#### Expected Screens After Gateway Setup
-
-After adding mediators on both gateways:
-
-![Gateway mediators](images/gateway-mediators.png)
-
-After adding Trust Registry:
-
-![Gateway trust registry](images/gateway-trust-registry.png)
-
-After establishing Fabric Connection between gateways:
-
-![Gateway fabric connection](images/gateway-fabric.png)
-
-After adding issuers:
-
-![Gateway issuers](images/gateway-issuers.png)
-
-After adding authorities (other department):
-
-![Gateway authority](images/gateway-authority.png)
-
-After adding policies:
-
-![Gateway policies](images/gateway-policies.png)
-
-After adding JWT strategies:
-
-![Gateway JWT strategies](images/gateway-jwt-stragies.png)
 
 After adding surfaces on both gateways:
 
