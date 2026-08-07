@@ -1,0 +1,338 @@
+{
+    "surface_id": "6690ec69-d0d5-44c0-a888-1134aa5d0460",
+    "name": "Dexter -> Thatcher",
+    "status": "active",
+    "tags": [],
+    "access_point": {
+        "listen_address": "",
+        "route": "/agents/burger/nominal",
+        "protocol": "a2a",
+        "trust_check_list": [
+            {
+                "id": "5ccfe283-b477-42a4-b1de-94c73688dbe9",
+                "trust_registry_id": "",
+                "query_type": "recognition",
+                "query": {
+                    "authority_id": "",
+                    "entity_id": "{{ input.agent.did }}"
+                }
+            }
+        ]
+    },
+    "target": {
+        "endpoint": "",
+        "identity_injection": {
+            "inject_vp": true
+        },
+        "mcp_tool_policies_enabled": false,
+        "policy": {
+            "policy_definition_id": "",
+            "require_agent_context": true
+        }
+    },
+    "identity_slots": {
+        "inbound": {
+            "type": "from_payload",
+            "meta_field": "agentIdentity",
+            "fields": [
+                "agentIdentity.name",
+                "agentIdentity.model",
+                "agentIdentity.role"
+            ],
+            "json_schema": {
+                "type": "object",
+                "properties": {
+                    "agentIdentity": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "model": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "role": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "version": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "model",
+                            "role"
+                        ]
+                    }
+                }
+            }
+        },
+        "protected": {
+            "type": "static",
+            "did": "",
+            "meta_field": "serverIdentity",
+            "json_schema": {
+                "type": "object",
+                "required": [],
+                "properties": {
+                    "serverIdentity": {
+                        "type": "object",
+                        "required": [],
+                        "properties": {}
+                    }
+                }
+            }
+        }
+    },
+    "canvas": {
+        "version": 1,
+        "surface": {
+            "width": 750,
+            "height": 200
+        },
+        "view": {
+            "x": 94.13508771929827,
+            "y": 35.80877192982456,
+            "k": 0.9175438596491228
+        },
+        "nodes": [
+            {
+                "id": "access-point",
+                "type": "access-point",
+                "label": "Access Point",
+                "parentId": null,
+                "position": {
+                    "x": -370,
+                    "y": 0
+                },
+                "config": {
+                    "listen_address": "",
+                    "route": "/agents/burger/nominal",
+                    "protocol": "a2a",
+                    "publish_to_did_document": false,
+                    "route_prefix": "/agents",
+                    "route_suffix": "burger/nominal",
+                    "trust_registry_verification": {
+                        "enabled": true,
+                        "mode": "both",
+                        "target_on_failure": "reject"
+                    },
+                    "caller_authentication": {
+                        "methods": [
+                            {
+                                "type": "jwt_bearer",
+                                "jwt_verification_strategy_id": "",
+                                "audiences": [],
+                                "token_header": "Authorization",
+                                "token_scheme": "Bearer"
+                            }
+                        ]
+                    },
+                    "terminate_trace_id": false
+                }
+            },
+            {
+                "id": "target",
+                "type": "target",
+                "label": "Managed Agent",
+                "parentId": "policy",
+                "position": {
+                    "x": 0,
+                    "y": 0
+                },
+                "config": {
+                    "endpoint": "",
+                    "endpoint_type": "url",
+                    "inject_vp": true,
+                    "mcp_tool_policies_enabled": false,
+                    "identity_injection": {
+                        "inject_vp": true
+                    },
+                    "mpp_auto_pay": false,
+                    "trust_registry_injection": {
+                        "enabled": true
+                    },
+                    "policy": {
+                        "policy_definition_id": "",
+                        "require_agent_context": true
+                    }
+                }
+            },
+            {
+                "id": "identity-inbound",
+                "type": "identity",
+                "label": "",
+                "parentId": "access-point",
+                "position": {
+                    "x": -299.43719762415634,
+                    "y": 32
+                },
+                "config": {
+                    "meta_field": "agentIdentity",
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "agentIdentity": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "model": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "version": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "model",
+                                    "role"
+                                ]
+                            }
+                        }
+                    },
+                    "fields": [
+                        "agentIdentity.name",
+                        "agentIdentity.model",
+                        "agentIdentity.role"
+                    ],
+                    "type": "from_payload",
+                    "name": "Dexter Identity"
+                },
+                "slotId": "request:identity-inbound"
+            },
+            {
+                "id": "policy",
+                "type": "policy",
+                "label": "",
+                "parentId": "trust-check-caller",
+                "position": {
+                    "x": -96.24767066490739,
+                    "y": 32
+                },
+                "config": {
+                    "require_agent_context": true,
+                    "policy_definition_id": "",
+                    "name": "Dexter Gateway Only"
+                },
+                "slotId": "request:policy"
+            },
+            {
+                "id": "identity-protected",
+                "type": "identity",
+                "label": "",
+                "parentId": "target",
+                "position": {
+                    "x": -203.18952695924895,
+                    "y": -32
+                },
+                "config": {
+                    "meta_field": "serverIdentity",
+                    "json_schema": {
+                        "type": "object",
+                        "required": [],
+                        "properties": {
+                            "serverIdentity": {
+                                "type": "object",
+                                "required": [],
+                                "properties": {}
+                            }
+                        }
+                    },
+                    "fields": [],
+                    "type": "static",
+                    "static_did": "",
+                    "name": "Static Agent Identity"
+                },
+                "slotId": "response:identity-protected"
+            },
+            {
+                "id": "trust-check-caller",
+                "type": "trust-check",
+                "label": "",
+                "parentId": "access-point",
+                "position": {
+                    "x": -203.18952695924895,
+                    "y": 32
+                },
+                "config": {
+                    "queries": [
+                        {
+                            "id": "5ccfe283-b477-42a4-b1de-94c73688dbe9",
+                            "trust_registry_id": "",
+                            "query_type": "recognition",
+                            "query": {
+                                "authority_id": "",
+                                "entity_id": "{{ input.agent.did }}"
+                            }
+                        }
+                    ],
+                    "_edge": "ap-ma"
+                },
+                "slotId": "request:trust-check-access_point_trust_check_list"
+            },
+            {
+                "id": "target-variant",
+                "type": "target-variant",
+                "label": "Variants",
+                "parentId": null,
+                "config": {
+                    "variants": []
+                }
+            },
+            {
+                "id": "__human__",
+                "type": "human",
+                "label": "Remote Gateway",
+                "parentId": null,
+                "position": {
+                    "x": -461,
+                    "y": 0
+                },
+                "config": {
+                    "name": "Remote Gateway"
+                }
+            },
+            {
+                "id": "__caller__",
+                "type": "caller",
+                "label": "Dexter Agent",
+                "parentId": null,
+                "position": {
+                    "x": -355,
+                    "y": 0
+                },
+                "config": {
+                    "name": "Dexter Agent"
+                }
+            },
+            {
+                "id": "__managed-agent-npc__",
+                "type": "npc-endpoint",
+                "label": "Thatcher Agent",
+                "parentId": "target",
+                "position": {
+                    "x": 500,
+                    "y": 0
+                },
+                "config": {
+                    "name": "Thatcher Agent",
+                    "npc_description": "External agent endpoint",
+                    "connection_direction": "outbound",
+                    "connected_to": "target"
+                }
+            }
+        ]
+    }
+}
