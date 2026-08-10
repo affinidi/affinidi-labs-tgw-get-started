@@ -73,6 +73,9 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
 - [Part 3: A2A Agent Identity — Decentralized Identity](#part-3-a2a-agent-identity--decentralized-identity)
 - [Part 4: Observability — Visualise Agent Gateway Metrics](#part-4-observability--visualise-agent-gateway-metrics)
 - [Part 5: Identity and Credential Delegation](#part-5-identity-and-credential-delegation)
+- [Use Cases](#use-cases)
+  - [Cross-Org Secure Agent Communication](#cross-org-secure-agent-communication)
+  - [Cross-Org Secure Agent Communication (Copilot Studio)](#cross-org-secure-agent-communication-copilot-studio)
 
 ---
 
@@ -830,3 +833,68 @@ This lab walks you through building a browser-based chat surface that routes MCP
 > This demo uses **Google OAuth** for caller context and **Auth0 OAuth** for credential delegation — but the pattern works with any OAuth 2.0 provider (Okta, Azure AD, etc.).
 
 ➡️ **[View the complete setup guide](auth0-mcp-surface/README.md)**
+
+---
+
+## Use Cases
+
+The `use-cases/` directory contains end-to-end labs that demonstrate how to apply the Agent Gateway to realistic, production-oriented scenarios. Each use case builds on the gateway concepts introduced in the earlier parts and focuses on a specific cross-organization or cross-system communication pattern.
+
+---
+
+### Cross-Org Secure Agent Communication
+
+**Directory:** [`use-cases/secure-agent-communication/`](use-cases/secure-agent-communication/)
+
+A hands-on lab where two independent organizations — **Org A (Thatcher Corp)** and **Org B (Dexter Labs)** — each run their own portal and AI agent. The lab walks you through two phases:
+
+| Phase       | What you run                              | Goal                                  |
+| ----------- | ----------------------------------------- | ------------------------------------- |
+| **Phase 1** | Agents + portals with a direct connection | Understand the A2A flow               |
+| **Phase 2** | Add Affinidi Trust Gateway                | Add auth, policy, identity, and trust |
+
+**What you will learn:**
+
+- How to run cross-org A2A communication with and without the gateway
+- How to add JWT-based token validation and caller identity verification
+- How to enforce access policy between organizations
+- How to establish cross-org trust using Fabric Connections and Trust Registry
+
+**Key concepts covered:** Fabric Connection, Trust Registry, Policy enforcement, API key auth, A2A Surfaces
+
+➡️ **[View the lab guide](use-cases/secure-agent-communication/README.md)**
+
+---
+
+### Cross-Org Secure Agent Communication (Copilot Studio)
+
+**Directory:** [`use-cases/copilot-studio-agent-communication/`](use-cases/copilot-studio-agent-communication/)
+
+A low-code variant of the secure agent communication lab that replaces custom Python agents with **Microsoft Copilot Studio** agents. The gateway concepts are identical, but the agent implementation uses CPS's built-in Direct Line API — no custom agent code required.
+
+```
+Org A (Thatcher Corp)                              Org B (Dexter Labs)
+┌──────────────────────┐                          ┌──────────────────────┐
+│  Copilot Studio      │                          │  Copilot Studio      │
+│  Thatcher Agent      │                          │  Dexter Agent        │
+└──────────┬───────────┘                          └──────────┬───────────┘
+           │ Direct Line                                     │ Direct Line
+           ▼                                                 ▼
+┌──────────────────────┐                          ┌──────────────────────┐
+│  Thatcher A2A Proxy  │                          │  Dexter A2A Proxy    │
+│  (Gateway)           │                          │  (Gateway)           │
+└──────────┬───────────┘                          └──────────┬───────────┘
+           │           Fabric Connection                     │
+           └─────────────────────────────────────────────────┘
+```
+
+**What you will learn:**
+
+- How the Gateway's A2A Proxy bridges the A2A protocol to Copilot Studio's Direct Line API
+- How to configure two CPS agents across separate organizations to communicate securely
+- How to apply the same gateway concepts (Fabric Connection, Trust Registry, Policy, API key auth) in a low-code environment
+- How to test and validate cross-org agent calls via curl and CPS test chat
+
+**Key concepts covered:** A2A Proxy, Direct Line, Fabric Connection, Trust Registry, Policy enforcement, API key auth
+
+➡️ **[View the lab guide](use-cases/copilot-studio-agent-communication/README.md)**
