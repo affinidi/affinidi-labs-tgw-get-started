@@ -685,6 +685,8 @@
             scrollBottom();
         }
 
+        const clientIdentity = { name: 'Chat App Client', role: "chat app", model: "no modal", version: '1.0.0' };
+
         // ─── Agent metadata ───────────────────────────────────────────────────────────
         const AGENTS = {
             personal: {
@@ -717,7 +719,7 @@
                         messageId: uuidv4(),
                         ...(contextId ? { contextId } : {}),
                         extensions: [IDENTITY_EXT],
-                        metadata: { [IDENTITY_EXT]: { name: 'Chat App', version: '1.0.0' } },
+                        metadata: { [IDENTITY_EXT]: clientIdentity },
                     }
                 }
             };
@@ -756,7 +758,7 @@
                         messageId: uuidv4(),
                         ...(contextIds[target] ? { contextId: contextIds[target] } : {}),
                         extensions: [IDENTITY_EXT],
-                        metadata: { [IDENTITY_EXT]: { name: 'Chat App', version: '1.0.0' } },
+                        metadata: { [IDENTITY_EXT]: clientIdentity },
                     }
                 }
             };

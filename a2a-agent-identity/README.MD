@@ -180,13 +180,13 @@ You will create **two surfaces** — one for each agent.
 4. For the **Personal Agent surface**, set the Target URL:
 
    ```
-   https://<your-ngrok-domain>/a2a/personal-agent/
+   https://<your-ngrok-domain>/a2a/personal-agent
    ```
 
 5. Repeat steps 2–4 for the **Finance Agent surface**, setting the Target URL:
 
    ```
-   https://<your-ngrok-domain>/a2a/finance-agent/
+   https://<your-ngrok-domain>/a2a/finance-agent
    ```
 
 6. Complete surface creation. You will see both surfaces in the list.
@@ -200,10 +200,10 @@ You will create **two surfaces** — one for each agent.
 ## 4. Update the GW Route URLs in Settings
 
 1. Copy the **GW Route URL** from each surface you created.
-2. Update your `.env` with both surface URLs:
+2. Update your `.env` with both surface Access Point URLs, below is e.g:
    ```
-   PERSONAL_AGENT_TG_URL=https://<your-tgw-domain>/channels/<personal-channel-id>
-   FINANCE_AGENT_TG_URL=https://<your-tgw-domain>/channels/<finance-channel-id>
+   PERSONAL_AGENT_TG_URL=https://my-gateway.agent-6oduza.agentgateway.affinidi.io/agents/meter/icon
+   FINANCE_AGENT_TG_URL=https://my-gateway.agent-6oduza.agentgateway.affinidi.io/agents/budget/magenta
    ```
 3. Restart the app. All traffic to both agents will now route through the Agent Gateway instead of hitting them directly.
 
@@ -360,7 +360,9 @@ A caller sends a message to the Personal Agent via the GW Route. The request inc
       "extensions": ["https://fabric.affinidi.io/extensions/agent-identity/v1"],
       "metadata": {
         "https://fabric.affinidi.io/extensions/agent-identity/v1": {
-          "name": "Chat App",
+          "name": "Chat App Client",
+          "role": "chat app",
+          "model": "no modal",
           "version": "1.0.0"
         }
       }
