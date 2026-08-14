@@ -1,0 +1,7 @@
+fastapi>=0.110.0
+uvicorn>=0.30.0
+httpx
+pyjwt[crypto]>=2.8.0
+base58
+cryptography
+python-dotenv

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>A2A DID Auth Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f1220;
+            --panel: #171b2e;
+            --border: #2a2f45;
+            --text: #e6e8f0;
+            --muted: #8a90ab;
+            --accent: #5b8cff;
+            --ok: #34d399;
+            --err: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 15px;
+            margin: 0 0 4px 0;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 18px;
+        }
+
+        .layout {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .sidebar {
+            width: 200px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            position: sticky;
+            top: 24px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            text-align: left;
+            padding: 10px 12px;
+        }
+
+        .nav-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        label {
+            font-size: 12px;
+            color: var(--muted);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        input[type=text] {
+            flex: 1;
+            min-width: 220px;
+            background: #0d0f1c;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 9px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        button.secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+        }
+
+        .dot.ok {
+            background: var(--ok);
+        }
+
+        .dot.err {
+            background: var(--err);
+        }
+
+        .mono {
+            font-family: "SF Mono", Menlo, monospace;
+            font-size: 12px;
+            word-break: break-all;
+            color: var(--muted);
+        }
+
+        .hint {
+            font-size: 12px;
+            color: var(--muted);
+            background: #0d0f1c;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-top: 8px;
+        }
+
+        .hint a {
+            color: var(--accent);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            width: min(90vw, 900px);
+            max-height: 85vh;
+            overflow: auto;
+        }
+
+        .modal-box .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #diagramModalContent {
+            width: 100%;
+        }
+
+        #diagramModalContent svg {
+            width: 100% !important;
+            height: auto !important;
+            min-width: 600px;
+        }
+
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .step-block {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        .step-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        details.flow-collapse {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-top: 12px;
+        }
+
+        details.flow-collapse>summary {
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .c2-block {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-top: 12px;
+        }
+
+        details.rr-box {
+            background: #0d0f1c;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 10px;
+            margin-top: 6px;
+        }
+
+        details.rr-box summary {
+            font-size: 11px;
+            color: var(--muted);
+            cursor: pointer;
+        }
+
+        details.rr-box pre {
+            margin: 8px 0 0 0;
+            font-size: 11px;
+            color: var(--text);
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .reply-line {
+            font-size: 13px;
+            margin-top: 8px;
+            color: var(--ok);
+        }
+
+        .error-line {
+            font-size: 13px;
+            margin-top: 8px;
+            color: var(--err);
+        }
+
+        .chat-log {
+            height: 280px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 4px 2px;
+        }
+
+        .msg-block {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .msg {
+            max-width: 75%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .msg.user {
+            align-self: flex-end;
+            background: var(--accent);
+            color: white;
+        }
+
+        .msg.agent {
+            align-self: flex-start;
+            background: #232742;
+        }
+
+        .msg.system {
+            align-self: center;
+            background: transparent;
+            color: var(--err);
+            font-size: 12px;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <div>
+            <h1>A2A DID Auth Portal</h1>
+            <div class="subtitle">Pick a section, run its steps, and watch the exact request/response at each stage.
+            </div>
+        </div>
+
+        <div class="layout">
+            <div class="sidebar">
+                <button class="nav-btn" data-section="agent">Agent Info</button>
+                <button class="nav-btn" data-section="a">Phase A: Direct to Agent</button>
+                <button class="nav-btn" data-section="b">Phase B: Gateway, no DID Auth</button>
+                <button class="nav-btn" data-section="c">Phase C: Gateway + DID Auth</button>
+            </div>
+
+            <div class="main-content">
+                <!-- Agent Info -->
+                <div class="panel section-content" data-section="agent">
+                    <h2 id="agentName">Agent</h2>
+                    <div class="subtitle">
+                        The Echo Agent receives an A2A <code>message/send</code> request and replies with
+                        <code>Echo: &lt;your text&gt;</code>.
+                        It has no authentication code at all - it does not know about DIDs, challenges, or sessions.
+                    </div>
+                    <label style="margin-top: 10px;">Agent URL</label>
+                    <div class="mono" id="agentUrl">loading...</div>
+                    <div class="row" style="margin-top: 10px;">
+                        <button class="secondary" id="viewCardBtn">View Agent Card</button>
+                    </div>
+                </div>
+
+                <!-- Phase A -->
+                <div class="panel section-content" data-section="a" style="display:none;">
+                    <h2>Phase A &mdash; Direct to Agent</h2>
+                    <div class="subtitle">Message goes straight to the Agent URL, no gateway involved.</div>
+                    <div class="row" style="margin-top: 10px;"><button class="secondary" data-diagram-btn="a">View
+                            Diagram</button></div>
+                </div>
+
+                <!-- Phase B -->
+                <div class="panel section-content" data-section="b" style="display:none;">
+                    <h2>Phase B &mdash; Gateway, no DID Auth</h2>
+                    <div class="subtitle">Same plain message, sent to the gateway instead of the agent directly. The
+                        gateway is not enforcing DID Auth yet.</div>
+                    <div class="row" style="margin-top: 10px;"><button class="secondary" data-diagram-btn="b">View
+                            Diagram</button></div>
+                    <label style="margin-top: 10px;">Gateway Access Point URL (mandatory)</label>
+                    <div class="row">
+                        <input type="text" id="phaseBGatewayUrl" placeholder="https://<gateway-host>/<access-point>" />
+                    </div>
+                    <div class="hint">Follow this guide to create an A2A surface in the gateway: <a
+                            href="https://github.com/affinidi/affinidi-labs-tgw-get-started/blob/main/a2a-did-auth/readme.md#phase-b--through-the-gateway-no-did-auth-yet"
+                            id="phaseBGuideLink" target="_blank" rel="noopener noreferrer">A2A surface setup
+                            guide (README - Phase B)</a></div>
+                </div>
+
+                <!-- Phase C -->
+                <div class="panel section-content" data-section="c" style="display:none;">
+                    <h2>Phase C &mdash; Gateway + DID Auth</h2>
+                    <div class="subtitle">Create caller identity &rarr; Create session (DID Auth challenge) &rarr;
+                        pass session to gateway &rarr; gateway validates &rarr; forwards to agent.</div>
+                    <div class="row" style="margin-top: 10px;"><button class="secondary" data-diagram-btn="c">View
+                            Diagram</button></div>
+
+                    <div class="row" style="justify-content: space-between; margin-top: 12px;">
+                        <div>
+                            <label>Caller Identity (did:key)</label>
+                            <div class="mono" id="callerDid">not created yet</div>
+                        </div>
+                        <button id="createDidBtn">Create DID</button>
+                        <button class="secondary" id="regenerateDidBtn" style="display:none;">Regenerate DID</button>
+                    </div>
+
+                    <div class="c2-block">
+                        <div class="step-title">Gateway Access Point</div>
+                        <label>Gateway Access Point URL (mandatory)</label>
+                        <div class="row">
+                            <input type="text" id="phaseCGatewayUrl"
+                                placeholder="https://<gateway-host>/<access-point>" />
+                        </div>
+                        <div class="hint">Follow this guide to create an A2A surface with DID Auth in the gateway: <a
+                                href="https://github.com/affinidi/affinidi-labs-tgw-get-started/blob/main/a2a-did-auth/readme.md#phase-c--gateway--did-auth"
+                                id="phaseCGuideLink" target="_blank" rel="noopener noreferrer">A2A surface + DID
+                                Auth setup guide (README - Phase C)</a>
+                        </div>
+                    </div>
+
+                    <div class="c2-block">
+                        <div class="step-title">Session: DID Auth Challenge</div>
+                        <div class="row" style="justify-content: space-between;">
+                            <span class="badge"><span class="dot" id="sessionDot"></span><span id="sessionText">No
+                                    session</span></span>
+                            <div class="row">
+                                <button id="createSessionBtn">Create Session</button>
+                                <button class="secondary" id="logoutBtn" style="display:none;">Clear session</button>
+                            </div>
+                        </div>
+                        <div class="hint" id="noSessionHint"
+                            style="display:none; color: var(--err); border-color: var(--err);">
+                            No session yet - click "Create Session" above to run the DID Auth flow before sending an
+                            authenticated message.
+                        </div>
+                        <div class="mono" id="sessionTokenInfo" style="margin-top: 8px; display:none;"></div>
+                    </div>
+                </div>
+
+                <!-- Chat: hidden on Agent Info, cleared whenever the section changes -->
+                <div class="panel" id="chatPanel">
+                    <h2>Chat with agent</h2>
+                    <div class="subtitle" id="chatModeInfo">Sends through: Phase A (direct to agent)</div>
+                    <div class="chat-log" id="chatLog"></div>
+                    <div class="chat-input">
+                        <input type="text" id="chatInput" placeholder="Type a message..." />
+                        <button id="sendBtn">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="sessionModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 style="margin:0;">Create Session &mdash; DID Auth flow</h2>
+                <button class="secondary" id="closeSessionModalBtn">Close</button>
+            </div>
+            <div class="step-list">
+                <div class="step-block">
+                    <div class="step-title">Step 1 &mdash; Request a challenge from the gateway</div>
+                    <button id="challengeBtn">Request Challenge</button>
+                    <div id="challengeResult"></div>
+                </div>
+
+                <div class="step-block">
+                    <div class="step-title">Step 2 &mdash; Sign the challenge (done locally by the portal,
+                        no network call to the gateway)</div>
+                    <button id="signBtn" disabled>Sign Challenge</button>
+                    <div id="signResult"></div>
+                </div>
+
+                <div class="step-block">
+                    <div class="step-title">Step 3 &mdash; Authenticate with the gateway (exchange the
+                        signed challenge for a session)</div>
+                    <button id="authenticateBtn" disabled>Authenticate</button>
+                    <div id="authenticateResult"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="diagramModal">
+
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 style="margin:0;">Flow diagram</h2>
+                <button class="secondary" id="closeDiagramBtn">Close</button>
+            </div>
+            <div id="diagramModalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+
+        const api = (path, opts) => fetch(path, opts).then(async r => {
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(data.detail || r.statusText);
+            return data;
+        });
+
+        const el = id => document.getElementById(id);
+        const pretty = obj => JSON.stringify(obj, null, 2);
+
+        const diagramSource = {
+            a: `graph LR
+  Portal[Portal] -->|A2A message/send| Agent[Echo Agent]
+  Agent -->|Echo: text| Portal`,
+            b: `graph LR
+  Portal[Portal] -->|A2A message/send| Gateway["Agent Gateway (no DID Auth)"]
+  Gateway -->|forwards as-is| Agent[Echo Agent]
+  Agent -->|response| Gateway
+  Gateway -->|relays| Portal`,
+            c: `graph TD
+  Portal[Portal] -->|"1 request challenge"| Gateway["Agent Gateway (DID Auth)"]
+  Gateway -->|"2 challenge"| Portal
+  Portal -->|"3 sign challenge locally"| Portal
+  Portal -->|"4 authenticate with signed challenge"| Gateway
+  Gateway -->|"5 session token"| Portal
+  Portal -->|"6 A2A message + Authorization: token"| Gateway
+  Gateway -->|"7 verified, forwards"| Agent[Echo Agent]
+  Agent -->|"8 response"| Gateway
+  Gateway -->|"9 relays"| Portal`,
+        };
+
+        const renderedDiagrams = {};
+        async function openDiagramModal(section) {
+            if (!diagramSource[section]) return;
+            if (!renderedDiagrams[section]) {
+                const { svg } = await mermaid.render(`mermaid-${section}`, diagramSource[section]);
+                renderedDiagrams[section] = svg;
+            }
+            el('diagramModalContent').innerHTML = renderedDiagrams[section];
+            el('diagramModal').classList.add('open');
+        }
+
+        document.querySelectorAll('[data-diagram-btn]').forEach(btn => {
+            btn.addEventListener('click', () => openDiagramModal(btn.dataset.diagramBtn));
+        });
+        el('closeDiagramBtn').addEventListener('click', () => el('diagramModal').classList.remove('open'));
+        el('diagramModal').addEventListener('click', e => { if (e.target.id === 'diagramModal') el('diagramModal').classList.remove('open'); });
+
+        function openSessionModal() {
+            el('sessionModal').classList.add('open');
+        }
+        function closeSessionModal() {
+            el('sessionModal').classList.remove('open');
+        }
+        el('createSessionBtn').addEventListener('click', openSessionModal);
+        el('closeSessionModalBtn').addEventListener('click', closeSessionModal);
+        el('sessionModal').addEventListener('click', e => { if (e.target.id === 'sessionModal') closeSessionModal(); });
+
+        function rrHtml(request, response) {
+            return `
+    <details class="rr-box"><summary>Request</summary><pre>${pretty(request)}</pre></details>
+    <details class="rr-box"><summary>Response ${response && response.status_code ? `(HTTP ${response.status_code})` : ''}</summary><pre>${pretty(response ? response.body : {})}</pre></details>
+  `;
+        }
+
+        function renderRequestResponse(container, request, response, extra) {
+            container.innerHTML = `${rrHtml(request, response)}${extra || ''}`;
+        }
+
+        function renderError(container, message) {
+            container.innerHTML = `<div class="error-line">Error: ${message}</div>`;
+        }
+
+        // ---- Identity ----
+        async function loadIdentity() {
+            const data = await api('/api/identity');
+            el('callerDid').textContent = data.did || 'not created yet';
+            el('createDidBtn').style.display = data.did ? 'none' : 'inline-block';
+            el('regenerateDidBtn').style.display = data.did ? 'inline-block' : 'none';
+            return data.did;
+        }
+
+        el('createDidBtn').addEventListener('click', async () => {
+            el('createDidBtn').disabled = true;
+            try {
+                await api('/api/identity/create', { method: 'POST' });
+                await loadIdentity();
+            } catch (e) {
+                alert(`Error creating DID: ${e.message}`);
+                el('createDidBtn').disabled = false;
+            }
+        });
+
+        el('regenerateDidBtn').addEventListener('click', async () => {
+            if (!confirm('Regenerate the DID? Any active gateway session will be cleared and you will need to re-authenticate.')) return;
+            el('regenerateDidBtn').disabled = true;
+            try {
+                await api('/api/identity/regenerate', { method: 'POST' });
+                await loadIdentity();
+                el('challengeResult').innerHTML = '';
+                el('signResult').innerHTML = '';
+                el('authenticateResult').innerHTML = '';
+                el('signBtn').disabled = true;
+                el('authenticateBtn').disabled = true;
+                lastChallenge = null;
+                lastJws = null;
+                await loadStatus();
+            } catch (e) {
+                alert(`Error regenerating DID: ${e.message}`);
+            } finally {
+                el('regenerateDidBtn').disabled = false;
+            }
+        });
+
+        // ---- Agent info ----
+        async function loadAgentCard() {
+            try {
+                const data = await api('/api/agent-card');
+                el('agentName').textContent = `Agent: ${data.name || 'Echo Agent'}`;
+            } catch (e) {
+                el('agentName').textContent = 'Agent (card unavailable - is it running?)';
+            }
+        }
+
+        el('viewCardBtn').addEventListener('click', () => {
+            window.open(`${el('agentUrl').textContent.replace(/\/$/, '')}/.well-known/agent-card.json`, '_blank');
+        });
+
+        // ---- Status / agent url ----
+        async function loadStatus() {
+            const data = await api('/api/status');
+            el('agentUrl').textContent = data.agent_url;
+            if (!el('phaseBGatewayUrl').value) el('phaseBGatewayUrl').value = data.gateway_agent_url || '';
+            if (!el('phaseCGatewayUrl').value) el('phaseCGatewayUrl').value = data.gateway_agent_url || '';
+            if (data.authenticated) {
+                el('sessionDot').className = 'dot ok';
+                el('sessionText').textContent = `Session active (expires_in ${data.expires_in}s)`;
+                el('createSessionBtn').style.display = 'none';
+                el('logoutBtn').style.display = 'inline-block';
+                el('sessionTokenInfo').style.display = 'block';
+                el('sessionTokenInfo').textContent = `Session token: ${data.session_token} | Expires at: ${data.expires_at || 'n/a'}`;
+                el('noSessionHint').style.display = 'none';
+            } else {
+                el('sessionDot').className = 'dot';
+                el('sessionText').textContent = 'No session';
+                el('createSessionBtn').style.display = 'inline-block';
+                el('logoutBtn').style.display = 'none';
+                el('sessionTokenInfo').style.display = 'none';
+                el('noSessionHint').style.display = 'block';
+            }
+            return data;
+        }
+
+        // ---- Sidebar navigation ----
+        let currentPhase = 'a';
+        const chatModeInfoText = {
+            agent: 'Sends through: Phase A (direct to agent)',
+            a: 'Sends through: Phase A (direct to agent)',
+            b: 'Sends through: Phase B (gateway, no DID Auth)',
+            c: 'Sends through: Phase C (gateway, DID Auth session required)',
+        };
+
+        function setSection(section) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.section === section));
+            document.querySelectorAll('.section-content').forEach(c => c.style.display = c.dataset.section === section ? 'block' : 'none');
+            if (section !== 'agent') currentPhase = section;
+            el('chatModeInfo').textContent = chatModeInfoText[section];
+            el('chatPanel').style.display = section === 'agent' ? 'none' : 'block';
+            el('chatLog').innerHTML = '';
+            el('chatInput').value = '';
+            loadStatus();
+        }
+
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => setSection(btn.dataset.section));
+        });
+
+        // ---- Phase C: challenge / sign / authenticate ----
+        let lastChallenge = null;
+        let lastJws = null;
+
+        el('challengeBtn').addEventListener('click', async () => {
+            const gatewayUrl = el('phaseCGatewayUrl').value.trim();
+            if (!gatewayUrl) return alert('Enter the Gateway Access Point URL first');
+            const resultEl = el('challengeResult');
+            try {
+                const data = await api('/api/flow/challenge', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ surface_url: gatewayUrl }),
+                });
+                renderRequestResponse(resultEl, data.request, data.response);
+                lastChallenge = data.response && data.response.body && data.response.body.challenge;
+                el('signBtn').disabled = !lastChallenge;
+            } catch (e) {
+                renderError(resultEl, e.message);
+            }
+        });
+
+        el('signBtn').addEventListener('click', async () => {
+            if (!lastChallenge) return;
+            const resultEl = el('signResult');
+            try {
+                const data = await api('/api/flow/sign', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ challenge: lastChallenge }),
+                });
+                resultEl.innerHTML = `
+      <div class="subtitle">${data.note}</div>
+      <details class="rr-box"><summary>Header + Payload signed</summary><pre>${pretty({ header: data.header, payload: data.payload })}</pre></details>
+      <details class="rr-box"><summary>Resulting compact JWS</summary><pre>${data.jws}</pre></details>
+    `;
+                lastJws = data.jws;
+                el('authenticateBtn').disabled = false;
+            } catch (e) {
+                renderError(resultEl, e.message);
+            }
+        });
+
+        el('authenticateBtn').addEventListener('click', async () => {
+            const gatewayUrl = el('phaseCGatewayUrl').value.trim();
+            if (!lastJws) return;
+            const resultEl = el('authenticateResult');
+            try {
+                const data = await api('/api/flow/authenticate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ surface_url: gatewayUrl, challenge_response: lastJws }),
+                });
+                renderRequestResponse(resultEl, data.request, data.response);
+                await loadStatus();
+                if (data.session_established) closeSessionModal();
+            } catch (e) {
+                renderError(resultEl, e.message);
+            }
+        });
+
+        el('logoutBtn').addEventListener('click', async () => {
+            await api('/api/logout', { method: 'POST' });
+            el('challengeResult').innerHTML = '';
+            el('signResult').innerHTML = '';
+            el('authenticateResult').innerHTML = '';
+            el('signBtn').disabled = true;
+            el('authenticateBtn').disabled = true;
+            lastChallenge = null;
+            lastJws = null;
+            await loadStatus();
+        });
+
+        // ---- Shared chat, behaviour depends on the active phase ----
+        function addChatMessage(text, cls) {
+            const div = document.createElement('div');
+            div.className = 'msg ' + cls;
+            div.textContent = text;
+            el('chatLog').appendChild(div);
+            return div;
+        }
+
+        async function sendChat() {
+            const input = el('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            let targetUrl, useSession;
+            if (currentPhase === 'a') {
+                const status = await api('/api/status');
+                targetUrl = status.agent_url;
+                useSession = false;
+            } else if (currentPhase === 'b') {
+                targetUrl = el('phaseBGatewayUrl').value.trim();
+                if (!targetUrl) return alert('Enter the Gateway Access Point URL in Phase B first');
+                useSession = false;
+            } else {
+                targetUrl = el('phaseCGatewayUrl').value.trim();
+                if (!targetUrl) return alert('Enter the Gateway Access Point URL in Phase C first');
+                useSession = true;
+            }
+
+            addChatMessage(message, 'user');
+            input.value = '';
+
+            const block = document.createElement('div');
+            block.className = 'msg-block';
+            el('chatLog').appendChild(block);
+
+            try {
+                const data = await api('/api/flow/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target_url: targetUrl, message, use_session: useSession }),
+                });
+                const statusCode = data.response && data.response.status_code;
+                const bubble = document.createElement('div');
+                if (statusCode && statusCode !== 200) {
+                    bubble.className = 'msg system';
+                    bubble.textContent = `Error (HTTP ${statusCode}): ${JSON.stringify(data.response.body)}`;
+                } else {
+                    bubble.className = 'msg agent';
+                    bubble.textContent = data.reply || '(no text)';
+                }
+                block.appendChild(bubble);
+                const rr = document.createElement('div');
+                rr.innerHTML = rrHtml(data.request, data.response);
+                block.appendChild(rr);
+            } catch (e) {
+                addChatMessage(`Error: ${e.message}`, 'system');
+                if (currentPhase === 'c') await loadStatus();
+            }
+            el('chatLog').scrollTop = el('chatLog').scrollHeight;
+        }
+
+        el('sendBtn').addEventListener('click', sendChat);
+        el('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendChat(); });
+
+        setSection('agent');
+        loadIdentity();
+        loadAgentCard();
+        loadStatus();
+    </script>
+</body>
+
+</html>
