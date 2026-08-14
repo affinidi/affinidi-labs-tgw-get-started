@@ -14,9 +14,8 @@ Every step returns the exact request that was sent and the raw response, so
 the UI can show what happened instead of hiding it behind one big button.
 
 The managed agent (a2a-did-auth/agent.py) is never touched - all of the
-DID Auth logic lives here, on the caller side. The did:key identity is only
-created when the user explicitly asks for it (POST /api/identity/create),
-not automatically on startup.
+DID Auth logic lives here, on the caller side. A did:key identity is
+loaded or created automatically when the server starts.
 """
 
 import os
@@ -51,10 +50,9 @@ app.add_middleware(
 STATIC_DIR = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-# Created on demand via POST /api/identity/create - not at import/startup time.
-identity: Optional[CallerIdentity] = None
-if IDENTITY_FILE.exists():
-    identity = CallerIdentity.load_or_create(IDENTITY_FILE)
+# Ensure caller identity exists as soon as the server starts.
+identity: Optional[CallerIdentity] = CallerIdentity.load_or_create(
+    IDENTITY_FILE)
 
 
 def _require_identity() -> CallerIdentity:
