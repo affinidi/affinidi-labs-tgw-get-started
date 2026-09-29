@@ -168,29 +168,43 @@ exists).
 
    ![Plain surface, no auth](images/phase-c-1.png)
 
-3. Add DID Auth to the access point so a valid DID Auth session token must be
-   presented, otherwise the gateway rejects the request with `401`.
-
-   Find the **Caller Context** element in the left palette, under
-   **Security & Policy**. Drag it between the **Access Point** and the
-   **Managed Agent**, set the authentication method to **DID Auth**, and
-   click **Save surface**.
+3. Find the **Caller Context** element in the left palette, under
+   **Security & Policy**. Drop it on the **Caller → Access Point** request
+   edge, set the authentication method to **DID Auth**, and click
+   **Save surface**. Only one Caller Context instance is allowed per surface.
 
    ![Add Caller Context / DID Auth](images/phase-c-2.png)
 
-4. Back in the portal, click the **Phase C** tab and try sending a message.
+   Caller Context validates an inbound credential and populates
+   `input.source_auth` for policy evaluation. It does not allow or deny the
+   request. Without Caller Context, all callers are anonymous. When validation
+   fails, the gateway records the failure and its reason in `source_auth`, but
+   still forwards the request unless an OPA policy denies it.
+
+4. Add an **OPA Policy** element that evaluates inbound requests and paste the
+   contents of [`did-auth-policy.rego`](did-auth-policy.rego). This policy
+   allows only callers whose `input.source_auth.method` is `did_auth`. If the
+   credential is missing or invalid, it denies the request and returns the
+   reason recorded by Caller Context, for example `Missing credential: DID
+Auth session token not found in request`.
+
+   A surface with Caller Context but no policy rule checking
+   `input.source_auth.method` forwards failed authentication attempts as if
+   Caller Context were not configured.
+
+5. Back in the portal, click the **Phase C** tab and try sending a message.
    This time the gateway responds with `401` because no DID Auth session
    token has been established yet — this is expected.
 
    ![401 without a session](images/phase-c-3.png)
 
-5. Create a DID Auth session using the **Create Session** button. This walks
+6. Create a DID Auth session using the **Create Session** button. This walks
    through the DID Auth flow: **Request Challenge → Sign Challenge →
    Authenticate**.
 
    ![Create Session flow](images/phase-c-4.png)
 
-6. Once a session token exists (with its own expiry), sending a message again
+7. Once a session token exists (with its own expiry), sending a message again
    works: the gateway receives the token, validates it, and forwards the
    request to the agent.
 
