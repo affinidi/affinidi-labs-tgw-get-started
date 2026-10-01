@@ -242,6 +242,25 @@ a2a_action := action if {
 } else := "unknown"
 ```
 
+## Test a Policy Before Enforcing It
+
+Once a policy definition is saved, a **Test** panel appears below the Rego editor.
+Paste a sample `input` JSON, click **Run**, and the dashboard shows an **ALLOW** or
+**DENY** badge with the reason, without touching live traffic.
+
+Minimal sample input:
+
+```json
+{
+  "jwt": { "sub": "user@example.com", "role": "admin" },
+  "http": { "method": "POST", "path": "/", "headers": {} },
+  "gateway": { "direction": "inbound" }
+}
+```
+
+For a larger catalogue of scenario-based policies with ready-to-paste dry-run
+inputs, see [OPA Policy Samples and Testing Guide](../sample-polices/README.md).
+
 ## Learn More
 
 For additional policy details, see:

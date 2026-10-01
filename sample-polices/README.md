@@ -1,0 +1,1212 @@
+# OPA Policy Samples and Testing Guide
+
+This guide explains what Agent Gateway policies are, how to create them, a set of
+copy-paste policy samples for common scenarios, and how to test each one using the
+built-in **dry run** feature in the Gateway dashboard.
+
+Every sample below comes with:
+
+- **What it does** - the scenario in one line.
+- **Policy** - the Rego to paste into the policy editor.
+- **Sample input** - a JSON `input` document to paste into the dry-run Test panel.
+- **Expected result** - ALLOW or DENY, and what to change to flip it.
+
+> For step-by-step dashboard screenshots of creating and attaching a policy, see the
+> [Policy Guide](../feature-guide/policy-guide.md).
+>
+> For the complete field reference, see the
+> [OPA policies reference](https://docs.affinidi.com/products/affinidi-trust-fabric/agent-gateway/reference/surfaces/opa-policies/).
+
+---
+
+## Table of Contents
+
+- [1. Policy Basics](#1-policy-basics)
+- [2. Create a Policy](#2-create-a-policy)
+- [3. Test a Policy with Dry Run](#3-test-a-policy-with-dry-run)
+- [4. Input Cheat Sheet](#4-input-cheat-sheet)
+- [5. Policy Samples](#5-policy-samples)
+  - [5.1 Require any authenticated caller](#51-require-any-authenticated-caller)
+  - [5.2 Deny when caller authentication failed](#52-deny-when-caller-authentication-failed)
+  - [5.3 Require a specific JWT scope](#53-require-a-specific-jwt-scope)
+  - [5.4 Role and tenant based access from JWT claims](#54-role-and-tenant-based-access-from-jwt-claims)
+  - [5.5 Allow only specific caller DIDs (DID auth)](#55-allow-only-specific-caller-dids-did-auth)
+  - [5.6 Allow API key callers only](#56-allow-api-key-callers-only)
+  - [5.7 Allow connections only from a specific gateway](#57-allow-connections-only-from-a-specific-gateway)
+  - [5.8 Trust Registry check on inbound requests (caller leg)](#58-trust-registry-check-on-inbound-requests-caller-leg)
+  - [5.9 Trust Registry check on outbound requests (target leg)](#59-trust-registry-check-on-outbound-requests-target-leg)
+  - [5.10 Allow only specific users by email, or by role](#510-allow-only-specific-users-by-email-or-by-role)
+    - [Variant: allow by email domain](#variant-allow-by-email-domain)
+    - [Variant: allow by group or role claim](#variant-allow-by-group-or-role-claim)
+  - [5.11 Restrict A2A actions](#511-restrict-a2a-actions)
+  - [5.12 Restrict MCP tools](#512-restrict-mcp-tools)
+  - [5.13 Method and path restrictions](#513-method-and-path-restrictions)
+  - [5.14 Combined gateway policy: authenticated admin only](#514-combined-gateway-policy-authenticated-admin-only)
+- [6. Common Mistakes](#6-common-mistakes)
+- [7. Learn More](#7-learn-more)
+
+---
+
+## 1. Policy Basics
+
+A policy is a [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/)
+document that the gateway evaluates against a structured `input` object for every
+request. If the policy does not produce `allow = true`, the request is denied.
+
+There are two scopes:
+
+| Scope | Package | Where it runs |
+| --- | --- | --- |
+| **Gateway** | `package gateway.policy` | Cluster-wide, on all matching traffic after authentication. |
+| **Agent surface** | `package surface.policy` | On a specific surface, via a Policy element. |
+
+Evaluation order for an inbound request:
+
+```
+Caller -> Authentication -> Gateway policy -> Surface policy -> Managed Agent / Target
+```
+
+A deny at the gateway stage is final. A surface policy cannot override it.
+
+### Minimum policy shape
+
+```rego
+package surface.policy
+
+# Deny by default, then explicitly allow what you need.
+default allow := false
+
+allow if {
+  # conditions
+}
+```
+
+### Optional reason rules
+
+The gateway surfaces `allow_reason` and `deny_reason` in the dry-run result, in
+audit logs, and in the error response. Always add a `deny_reason` - it turns an
+opaque 403 into something your team can debug.
+
+```rego
+allow_reason := "Request meets all requirements"
+
+deny_reason := "Caller is not an admin" if {
+  input.source_auth.claims.role != "admin"
+}
+```
+
+> **Best practice:** start with `default allow := false` and allow explicitly.
+> Never start with `default allow := true`.
+
+---
+
+## 2. Create a Policy
+
+> Full walkthrough with dashboard screenshots: [Policy Guide](../feature-guide/policy-guide.md).
+
+1. Open the Gateway dashboard and go to **Policies**.
+2. Pick the tab for the scope you want:
+   - **Gateway** -> **Define Gateway policy**
+   - **Agent surfaces** -> **Define Agent surface policy**
+3. Fill in:
+   - **Name** - short and descriptive, e.g. `require-agent-access-scope`.
+   - **Type** - Gateway or Agent surfaces.
+   - **Description** - what it enforces and why.
+   - **Policy content** - the Rego body.
+4. Click **Create**.
+
+Gateway policies apply immediately. For a surface policy you must also attach it:
+
+1. Open the surface.
+2. Select the **Policy** element on the edge you want to guard
+   (inbound request, target request, response, or transit point).
+3. Choose your policy definition.
+4. Click **Save surface**.
+
+Policies can be enabled or disabled without deleting them. Each save appends a new
+version with its own content hash (`sha256:...`), so any decision can be traced back
+to the exact Rego that produced it.
+
+---
+
+## 3. Test a Policy with Dry Run
+
+The **Test** panel appears under the Rego editor once the policy has been saved at
+least once. It lets you paste a sample `input` object, press **Run**, and see
+**ALLOW** or **DENY** plus the reason - without touching live traffic.
+
+Steps:
+
+1. Open the policy in **Policies**.
+2. Scroll to the **Test** panel.
+3. Paste a sample input JSON (examples in every section below).
+4. Click **Run against the draft above**.
+5. Read the badge: **ALLOW** or **DENY**, plus `deny_reason` when defined.
+
+Notes:
+
+- The dry run evaluates the Rego **currently in the editor**, including unsaved
+  changes. Nothing reaches the live policy engine.
+- **Auto-run** re-evaluates shortly after every edit to the policy or the input.
+- The button is disabled while the Rego does not compile or the JSON is invalid.
+- The sample input is saved with the policy, so your last test input is still there
+  next time.
+- Draft size, input size, and run time are capped.
+
+### Minimal starter input
+
+This is the default sample the dashboard ships with:
+
+```json
+{
+  "jwt": { "sub": "user@example.com", "role": "admin" },
+  "http": { "method": "POST", "path": "/", "headers": {} },
+  "gateway": { "direction": "inbound" }
+}
+```
+
+> **Important:** `input.jwt` is **only** populated for MCP per-tool policies. For
+> gateway and surface policies, JWT claims arrive under `input.source_auth.claims`.
+> The starter input above is handy for a first `input.jwt.sub` smoke test, but real
+> surface policies should be tested with the `source_auth` shape shown in
+> [section 5.3](#53-require-a-specific-jwt-scope).
+
+### Suggested test matrix
+
+For each policy, run at least three inputs:
+
+| Case | Purpose |
+| --- | --- |
+| Happy path | Confirms ALLOW when every condition is met. |
+| One condition wrong | Confirms DENY and the right `deny_reason`. |
+| Field missing entirely | Confirms the policy fails closed, not open. |
+
+---
+
+## 4. Input Cheat Sheet
+
+Fields the gateway populates in `input` for gateway and surface policies:
+
+| Field | Present when | Notes |
+| --- | --- | --- |
+| `input.http.method` / `.path` / `.headers` | Always | Sensitive headers are stripped. |
+| `input.gateway.direction` | Always | `"inbound"` or `"outbound"`. |
+| `input.gateway.source_id` | Inbound via connection point, or outbound | Caller DID (inbound GW2) or managed agent DID (outbound). |
+| `input.gateway.target_id` | Outbound / fabric send | Target URL or remote gateway DID. |
+| `input.channel.config_id` / `.name` | Always | Surface identity. |
+| `input.source_auth.*` | Surface has a Caller Context element | Shape depends on `method`. |
+| `input.a2a.method` / `.message` | A2A requests | Built from the original request body. |
+| `input.mcp.method` / `.tool_name` / `.params` | Inbound MCP requests | |
+| `input.agent.*` | "Extract Trust Registry Data" enabled | `did`, `trust_verification`, etc. |
+| `input.trust_check_results.caller` / `.target` | Trust Check elements configured | Arrays, never `null`. |
+| `input.extension_identity.*` | Verified VP in the request body | |
+| `input.identity_binding.*` | Verified VP from an upstream gateway | |
+| `input.metadata.*` | Metadata Injection rules ran | |
+
+### `input.source_auth` shapes
+
+```json
+{ "method": "jwt_bearer", "subject": "user@example.com", "claims": { "role": "admin" } }
+{ "method": "api_key",    "key_name": "my-client-id" }
+{ "method": "did_auth",   "did": "did:web:example.com:caller" }
+{ "method": "mtls",       "principal": "CN=my-service,O=Example Corp", "fingerprint": "sha256:..." }
+{ "method": "failed",     "attempted_method": "jwt_bearer", "reason": "Token has expired" }
+```
+
+> A failed authentication does **not** block the request on its own. The surface
+> forwards it with no asserted caller identity unless a policy denies it. See
+> [sample 5.2](#52-deny-when-caller-authentication-failed).
+
+### Stripped headers
+
+`input.http.headers` never contains `authorization`, `proxy-authorization`,
+`cookie`, `set-cookie`, or any header whose name contains `token`, `secret`,
+`credential`, `apikey`, or `api-key`. Use `input.source_auth` for identity, never
+headers.
+
+---
+
+## 5. Policy Samples
+
+### 5.1 Require any authenticated caller
+
+**Scenario:** the simplest useful rule - reject anonymous traffic.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+default allow := false
+
+authenticated_methods := {"jwt_bearer", "api_key", "did_auth", "mtls"}
+
+allow if {
+  input.source_auth.method in authenticated_methods
+}
+
+allow_reason := sprintf("Authenticated via %s", [input.source_auth.method])
+
+deny_reason := "Caller is not authenticated" if {
+  not authenticated
+}
+
+authenticated if {
+  input.source_auth.method in authenticated_methods
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/a2a/tasks/send", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "user@example.com",
+    "claims": { "scp": "agent.access" }
+  }
+}
+```
+
+**Sample input (DENY)** - remove the whole `source_auth` block, or set
+`"method": "failed"`.
+
+---
+
+### 5.2 Deny when caller authentication failed
+
+**Scenario:** a Caller Context element is configured but validation failed
+(expired token, bad signature). Block it explicitly.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+default allow := false
+
+allow if {
+  input.source_auth.method != "failed"
+}
+
+deny_reason := sprintf("Authentication failed (%s): %s", [
+  input.source_auth.attempted_method,
+  input.source_auth.reason,
+]) if {
+  input.source_auth.method == "failed"
+}
+```
+
+**Sample input (DENY):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "failed",
+    "attempted_method": "jwt_bearer",
+    "reason": "Token has expired"
+  }
+}
+```
+
+**Expected:** `DENY - Authentication failed (jwt_bearer): Token has expired`.
+
+---
+
+### 5.3 Require a specific JWT scope
+
+**Scenario:** only tokens carrying the `agent.access` scope may reach the agent.
+This is the most common enterprise rule (Entra ID / Auth0 / Okta all emit `scp`).
+
+```rego
+package surface.policy
+
+import rego.v1
+
+required_scope := "agent.access"
+
+default allow := false
+
+allow if {
+  scope_permitted
+}
+
+allow_reason := "Request meets all requirements"
+
+deny_reason := sprintf("Required scope '%s' not present in token", [required_scope]) if {
+  not scope_permitted
+}
+
+scope_permitted if {
+  scp := input.source_auth.claims.scp
+  required_scope in split(scp, " ")
+}
+```
+
+> Some IdPs emit scopes as an array (`scopes` / `scp` as a list) rather than a
+> space-delimited string. Handle both:
+>
+> ```rego
+> scope_permitted if {
+>   required_scope in split(input.source_auth.claims.scp, " ")
+> }
+>
+> scope_permitted if {
+>   required_scope in input.source_auth.claims.scp
+> }
+> ```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/a2a/tasks/send", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "10a0533d-b10b-4d02-a2fd-aaaaaaaad6e5", "name": "Thatcher" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "wqjcIS4o5pPC95GXTLgfIIke6Y1RoQpEX",
+    "claims": {
+      "aud": "api://37b4d273-613b-4eaf-a975-5db4361f5787",
+      "iss": "https://sts.windows.net/00000000-f06b-4a99-85d8-ca5481d17d2e/",
+      "name": "Jane Doe",
+      "upn": "jane.doe@example.com",
+      "scp": "agent.access",
+      "ver": "1.0"
+    }
+  }
+}
+```
+
+**Sample input (DENY)** - change `"scp"` to `"user.read"`.
+**Expected:** `DENY - Required scope 'agent.access' not present in token`.
+
+---
+
+### 5.4 Role and tenant based access from JWT claims
+
+**Scenario:** only admins or operators from one tenant, and only on write paths.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+allowed_roles := {"admin", "operator"}
+allowed_tenant := "00000000-f06b-4a99-85d8-ca5481d17d2e"
+
+default allow := false
+
+allow if {
+  role_permitted
+  tenant_permitted
+}
+
+role_permitted if {
+  object.get(input.source_auth, ["claims", "role"], "") in allowed_roles
+}
+
+tenant_permitted if {
+  input.source_auth.claims.tid == allowed_tenant
+}
+
+deny_reason := "Caller role is not permitted on this surface" if {
+  not role_permitted
+}
+
+deny_reason := "Caller belongs to an unrecognised tenant" if {
+  role_permitted
+  not tenant_permitted
+}
+```
+
+`object.get` with a default keeps the rule defined even when the claim is missing,
+so the `deny_reason` fires instead of the rule silently evaluating to `undefined`.
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "jane.doe@example.com",
+    "claims": {
+      "role": "admin",
+      "tid": "00000000-f06b-4a99-85d8-ca5481d17d2e",
+      "upn": "jane.doe@example.com"
+    }
+  }
+}
+```
+
+**Sample input (DENY)** - set `"role": "viewer"` or change `tid`.
+
+---
+
+### 5.5 Allow only specific caller DIDs (DID auth)
+
+**Scenario:** the surface uses DID auth in the Caller Context element and only a
+known allowlist of agent DIDs may call it.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+allowed_dids := {
+  "did:web:example.com:agents:finance",
+  "did:web:example.com:agents:support",
+}
+
+default allow := false
+
+allow if {
+  input.source_auth.method == "did_auth"
+  input.source_auth.did in allowed_dids
+}
+
+allow_reason := sprintf("Caller DID %s is allowlisted", [input.source_auth.did])
+
+deny_reason := "Caller did not present a DID credential" if {
+  input.source_auth.method != "did_auth"
+}
+
+deny_reason := sprintf("Caller DID %s is not allowlisted", [input.source_auth.did]) if {
+  input.source_auth.method == "did_auth"
+  not input.source_auth.did in allowed_dids
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/a2a/tasks/send", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "did_auth",
+    "did": "did:web:example.com:agents:finance"
+  }
+}
+```
+
+**Sample input (DENY)** - change the DID to
+`did:web:attacker.example.com:agents:rogue`.
+
+---
+
+### 5.6 Allow API key callers only
+
+**Scenario:** a machine-to-machine surface where only named API key clients are
+accepted.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+allowed_clients := {"billing-worker", "etl-pipeline"}
+
+default allow := false
+
+allow if {
+  input.source_auth.method == "api_key"
+  input.source_auth.key_name in allowed_clients
+}
+
+deny_reason := "Surface accepts API key callers only" if {
+  input.source_auth.method != "api_key"
+}
+
+deny_reason := sprintf("API key client '%s' is not permitted", [input.source_auth.key_name]) if {
+  input.source_auth.method == "api_key"
+  not input.source_auth.key_name in allowed_clients
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/mcp", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "MCP Surface" },
+  "source_auth": { "method": "api_key", "key_name": "billing-worker" }
+}
+```
+
+---
+
+### 5.7 Allow connections only from a specific gateway
+
+**Scenario:** this surface is a connection point. Accept inbound traffic only from
+one known remote gateway DID, and reject anything else.
+
+```rego
+package gateway.policy
+
+import rego.v1
+
+default allow := false
+
+remote_gateway := "did:webvh:QmWCYMpgqdLGssPdgZBxti81QsYxxHRGmD1L1miizGgSNz:dexter-gateway.proxy.apse1.octo.affinidi.io:connection-points:b3bfd64e-0fa0-40ff-857b-eadeb8997fb6"
+
+allow if {
+  input.gateway.direction == "inbound"
+  input.gateway.source_id == remote_gateway
+}
+
+allow_reason := "Inbound request from the expected peer gateway"
+
+deny_reason := "Invalid gateway direction - expected inbound" if {
+  input.gateway.direction != "inbound"
+}
+
+deny_reason := sprintf("Unexpected gateway source: %s", [input.gateway.source_id]) if {
+  input.gateway.direction == "inbound"
+  input.gateway.source_id != remote_gateway
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/a2a/tasks/send", "headers": {} },
+  "gateway": {
+    "direction": "inbound",
+    "source_id": "did:webvh:QmWCYMpgqdLGssPdgZBxti81QsYxxHRGmD1L1miizGgSNz:dexter-gateway.proxy.apse1.octo.affinidi.io:connection-points:b3bfd64e-0fa0-40ff-857b-eadeb8997fb6"
+  },
+  "channel": { "config_id": "96ab7082-5bb7-4a63-b881-cdc13abed1dd", "name": "Thatcher -> Dexter" }
+}
+```
+
+**Sample input (DENY)** - set `"direction": "outbound"`, or change `source_id`.
+
+> `input.gateway.source_id` is `null` on a plain inbound direct call from an
+> external client. It is only populated when the request arrives through a
+> connection point (caller DID) or on an outbound leg (managed agent DID).
+
+---
+
+### 5.8 Trust Registry check on inbound requests (caller leg)
+
+**Scenario:** a Trust Check element on the caller leg verifies the incoming agent
+against a trust registry. Allow only if every check passed.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+default allow := false
+
+allow if {
+  caller_trusted
+}
+
+allow_reason := "Caller passed all Trust Registry checks"
+
+deny_reason := "Caller failed Trust Registry verification" if {
+  not caller_trusted
+}
+
+caller_trusted if {
+  count(input.trust_check_results.caller) > 0
+  every r in input.trust_check_results.caller { r.ok }
+}
+```
+
+The `count(...) > 0` guard matters. `every` over an empty array is `true` in Rego,
+so without it a misconfigured surface with no Trust Check element would allow
+everything. Drop the guard only when you deliberately want "allow when no checks
+are configured".
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/a2a/tasks/send", "headers": {} },
+  "gateway": {
+    "direction": "inbound",
+    "source_id": "did:web:example.com:agents:thatcher"
+  },
+  "channel": { "config_id": "96ab7082-5bb7-4a63-b881-cdc13abed1dd", "name": "Thatcher -> Dexter" },
+  "trust_check_results": {
+    "caller": [
+      {
+        "id": "092f6a3e-5f48-4a4a-8d12-5ca2af58b7d2",
+        "trust_registry_id": "fba52ad0-8e41-43fa-b5a8-64b2f92c4e57",
+        "query_type": "recognition",
+        "ok": true,
+        "error": null,
+        "name": "TP Trust Check",
+        "authority_id": "did:web:authority.example.com",
+        "entity_id": "did:web:example.com:agents:thatcher",
+        "action": "is",
+        "resource": "ownedAgent",
+        "query_resolved": true
+      }
+    ],
+    "target": []
+  }
+}
+```
+
+**Sample input (DENY)** - set `"ok": false`, or make `caller` an empty array.
+
+---
+
+### 5.9 Trust Registry check on outbound requests (target leg)
+
+**Scenario:** your managed agent is calling an external agent through a Transit
+Point. Verify the target is recognised by the trust registry before the call leaves.
+
+Attach this policy to the **Managed Agent -> Target** edge (target policy slot).
+
+```rego
+package surface.policy
+
+import rego.v1
+
+default allow := false
+
+allow if {
+  input.gateway.direction == "outbound"
+  target_trusted
+}
+
+allow_reason := sprintf("Target %s passed Trust Registry checks", [input.gateway.target_id])
+
+deny_reason := "Expected an outbound request on this policy slot" if {
+  input.gateway.direction != "outbound"
+}
+
+deny_reason := "Target failed Trust Registry verification" if {
+  input.gateway.direction == "outbound"
+  not target_trusted
+}
+
+target_trusted if {
+  count(input.trust_check_results.target) > 0
+  every r in input.trust_check_results.target { r.ok }
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": {
+    "method": "POST",
+    "path": "/outbound/agents/org-a/dexter-agent/a2a/tasks/send",
+    "headers": { "content-type": "application/json", "user-agent": "python-httpx/0.28.1" }
+  },
+  "gateway": {
+    "direction": "outbound",
+    "source_id": "did:web:example.com:agents:thatcher",
+    "target_id": "fabric://b4ca99f8-0159-428b-bfff-aaaaf47fd0d5/96ab7082-5bb7-4a63-b881-cdc13abed1dd"
+  },
+  "channel": { "config_id": "10a0533d-b10b-4d02-a2fd-aaaaaaaad6e5", "name": "Thatcher" },
+  "a2a": {
+    "method": "message/send",
+    "message": {
+      "role": "user",
+      "kind": "message",
+      "messageId": "7c25f5264d7b4a00804a9b20a2fa83da",
+      "parts": [{ "kind": "data", "data": { "action": "send:message", "text": "Hello!" } }]
+    }
+  },
+  "trust_check_results": {
+    "caller": [],
+    "target": [
+      {
+        "id": "092f6a3e-5f48-4a4a-8d12-5ca2af58b7d2",
+        "trust_registry_id": "fba52ad0-8e41-43fa-b5a8-64b2f92c4e57",
+        "query_type": "recognition",
+        "ok": true,
+        "error": null,
+        "name": "TP Trust Check",
+        "authority_id": "did:web:authority.example.com",
+        "entity_id": "did:web:partner.example.com:agents:dexter",
+        "action": "is",
+        "resource": "ownedAgent",
+        "query_resolved": true
+      }
+    ]
+  }
+}
+```
+
+**Sample input (DENY)** - set `"ok": false` on the target result, or flip
+`direction` to `"inbound"`.
+
+---
+
+### 5.10 Allow only specific users by email, or by role
+
+**Scenario:** only a named list of people may call this surface. Everyone else is
+denied, even with a valid token.
+
+Different identity providers put the email in different claims, so normalise first:
+
+| Provider | Claim to read |
+| --- | --- |
+| Entra ID (Azure AD) v1 tokens | `upn`, falls back to `unique_name` |
+| Entra ID v2 / Auth0 / Okta / Google | `email` |
+| Any provider | `preferred_username` |
+
+```rego
+package surface.policy
+
+import rego.v1
+
+allowed_emails := {
+  "paramesh.k@affinidi.com",
+  "jane.doe@affinidi.com",
+}
+
+default allow := false
+
+allow if {
+  email_permitted
+}
+
+allow_reason := sprintf("%s is on the allowlist", [caller_email])
+
+deny_reason := "No email claim found on the token" if {
+  caller_email == ""
+}
+
+deny_reason := sprintf("User '%s' is not on the allowlist", [caller_email]) if {
+  caller_email != ""
+  not email_permitted
+}
+
+email_permitted if {
+  lower(caller_email) in allowed_emails
+}
+
+# Read the first email-bearing claim the IdP provided.
+caller_email := e if {
+  e := input.source_auth.claims.email
+  e != ""
+} else := e if {
+  e := input.source_auth.claims.upn
+  e != ""
+} else := e if {
+  e := input.source_auth.claims.unique_name
+  e != ""
+} else := e if {
+  e := input.source_auth.claims.preferred_username
+  e != ""
+} else := ""
+```
+
+The allowlist is lowercased, and `lower(caller_email)` normalises the incoming
+value, so `Paramesh.K@Affinidi.com` still matches.
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/a2a/tasks/send", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "wqjcIS4o5pPC95GXTLgfIIke6Y1RoQpEX",
+    "claims": {
+      "iss": "https://sts.windows.net/00000000-f06b-4a99-85d8-ca5481d17d2e/",
+      "name": "Paramesh Kamarthi",
+      "upn": "paramesh.k@affinidi.com",
+      "unique_name": "paramesh.k@affinidi.com",
+      "scp": "agent.access"
+    }
+  }
+}
+```
+
+**Expected:** `ALLOW - paramesh.k@affinidi.com is on the allowlist`.
+
+**Sample input (DENY)** - change `upn` and `unique_name` to
+`someone.else@example.com`.
+**Expected:** `DENY - User 'someone.else@example.com' is not on the allowlist`.
+
+**Sample input (DENY, no email claim)** - delete both `upn` and `unique_name`.
+**Expected:** `DENY - No email claim found on the token`.
+
+#### Variant: allow by email domain
+
+An allowlist of individuals does not scale. Gate on the domain instead, with an
+optional explicit deny list for offboarded accounts.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+allowed_domains := {"affinidi.com"}
+blocked_emails := {"contractor.temp@affinidi.com"}
+
+default allow := false
+
+allow if {
+  domain_permitted
+  not lower(caller_email) in blocked_emails
+}
+
+domain_permitted if {
+  parts := split(lower(caller_email), "@")
+  count(parts) == 2
+  parts[1] in allowed_domains
+}
+
+deny_reason := sprintf("'%s' is not from an allowed domain", [caller_email]) if {
+  not domain_permitted
+}
+
+deny_reason := sprintf("'%s' is explicitly blocked", [caller_email]) if {
+  domain_permitted
+  lower(caller_email) in blocked_emails
+}
+
+caller_email := e if {
+  e := input.source_auth.claims.email
+  e != ""
+} else := e if {
+  e := input.source_auth.claims.upn
+  e != ""
+} else := ""
+```
+
+#### Variant: allow by group or role claim
+
+Preferred over an email allowlist for anything beyond a small pilot - membership is
+managed in the IdP, so the policy never needs editing when someone joins or leaves.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+allowed_roles := {"agent-operators", "platform-admins"}
+
+default allow := false
+
+allow if {
+  count(caller_roles & allowed_roles) > 0
+}
+
+allow_reason := "Caller holds a permitted role"
+
+deny_reason := sprintf("None of the caller's roles %v are permitted", [caller_roles]) if {
+  count(caller_roles & allowed_roles) == 0
+}
+
+# `roles` and `groups` arrive as arrays; a single `role` claim arrives as a string.
+caller_roles := {r | some r in input.source_auth.claims.roles}
+
+caller_roles := {r | some r in input.source_auth.claims.groups} if {
+  not input.source_auth.claims.roles
+}
+
+caller_roles := {input.source_auth.claims.role} if {
+  not input.source_auth.claims.roles
+  not input.source_auth.claims.groups
+  is_string(input.source_auth.claims.role)
+}
+
+caller_roles := set() if {
+  not input.source_auth.claims.roles
+  not input.source_auth.claims.groups
+  not input.source_auth.claims.role
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/a2a/tasks/send", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "paramesh.k@affinidi.com",
+    "claims": {
+      "upn": "paramesh.k@affinidi.com",
+      "roles": ["agent-operators", "readers"]
+    }
+  }
+}
+```
+
+**Sample input (DENY)** - change `roles` to `["readers"]`, or remove the claim.
+
+---
+
+### 5.11 Restrict A2A actions
+
+**Scenario:** the surface speaks A2A. Only a defined set of actions may pass.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+# Actions permitted through this surface
+allowed_actions := {"send:message"}
+
+default allow := false
+
+allow if {
+  a2a_action in allowed_actions
+}
+
+allow_reason := sprintf("A2A action '%s' is allowed", [a2a_action])
+
+deny_reason := sprintf("A2A action '%s' is not allowed", [a2a_action]) if {
+  not a2a_action in allowed_actions
+}
+
+# Extract action from message parts (data kind) or fall back to the a2a method
+a2a_action := action if {
+  some part in input.a2a.message.parts
+  part.kind == "data"
+  action := part.data.action
+  is_string(action)
+  action != ""
+} else := action if {
+  action := input.a2a.method
+  is_string(action)
+  action != ""
+} else := "unknown"
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/a2a/tasks/send", "headers": {} },
+  "gateway": { "direction": "inbound", "source_id": "did:web:example.com:agents:thatcher" },
+  "channel": { "config_id": "96ab7082-5bb7-4a63-b881-cdc13abed1dd", "name": "Thatcher -> Dexter" },
+  "a2a": {
+    "method": "message/send",
+    "message": {
+      "role": "user",
+      "kind": "message",
+      "messageId": "09092ba9ed7f4db080ef821b00000000",
+      "parts": [{ "kind": "data", "data": { "action": "send:message", "text": "Hello!" } }]
+    }
+  }
+}
+```
+
+**Sample input (DENY)** - change the action to `"delete:account"`.
+**Expected:** `DENY - A2A action 'delete:account' is not allowed`.
+
+---
+
+### 5.12 Restrict MCP tools
+
+**Scenario:** an MCP surface should expose only read-only tools.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+read_only_tools := {"search", "fetch", "list_documents"}
+
+default allow := false
+
+# Non tools/call MCP traffic (initialize, tools/list) is allowed through.
+allow if {
+  input.mcp.method != "tools/call"
+}
+
+allow if {
+  input.mcp.method == "tools/call"
+  input.mcp.tool_name in read_only_tools
+}
+
+deny_reason := sprintf("MCP tool '%s' is not permitted on this surface", [input.mcp.tool_name]) if {
+  input.mcp.method == "tools/call"
+  not input.mcp.tool_name in read_only_tools
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/v1/surfaces/my-surface/mcp", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "my-surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "user@example.com",
+    "claims": { "role": "analyst" }
+  },
+  "mcp": {
+    "method": "tools/call",
+    "tool_name": "search",
+    "params": { "query": "hello" }
+  }
+}
+```
+
+**Sample input (DENY)** - change `tool_name` to `"delete_document"`.
+
+> **Per-tool policies use a different input struct.** If you are attaching a policy
+> to an individual tool binding (not the surface), use `input.mcp.method` for the
+> tool name, `input.jwt.*` for claims, and `input.request.path`. See the
+> [MCP tool policy input](https://docs.affinidi.com/products/affinidi-trust-fabric/agent-gateway/reference/surfaces/opa-policies/)
+> section of the reference.
+
+---
+
+### 5.13 Method and path restrictions
+
+**Scenario:** read-only surface - allow `GET`, and allow `POST` only on the A2A
+send path.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+default allow := false
+
+allow if {
+  input.http.method == "GET"
+}
+
+allow if {
+  input.http.method == "POST"
+  startswith(input.http.path, "/a2a/tasks/send")
+}
+
+deny_reason := sprintf("%s %s is not permitted on this surface", [
+  input.http.method,
+  input.http.path,
+]) if {
+  not method_path_permitted
+}
+
+method_path_permitted if {
+  input.http.method == "GET"
+}
+
+method_path_permitted if {
+  input.http.method == "POST"
+  startswith(input.http.path, "/a2a/tasks/send")
+}
+```
+
+**Sample input (DENY):**
+
+```json
+{
+  "http": { "method": "DELETE", "path": "/a2a/tasks/cancel", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" }
+}
+```
+
+---
+
+### 5.14 Combined gateway policy: authenticated admin only
+
+**Scenario:** cluster-wide baseline - every inbound request must be an
+authenticated admin. This is a good first gateway policy to start from.
+
+```rego
+package gateway.policy
+
+import rego.v1
+
+default allow := false
+
+allow if {
+  input.gateway.direction == "inbound"
+  input.source_auth.method == "jwt_bearer"
+  input.source_auth.claims.role == "admin"
+}
+
+allow_reason := "Authenticated admin on an inbound request"
+
+deny_reason := "Only inbound traffic is accepted" if {
+  input.gateway.direction != "inbound"
+}
+
+deny_reason := "JWT bearer authentication is required" if {
+  input.gateway.direction == "inbound"
+  object.get(input, ["source_auth", "method"], "none") != "jwt_bearer"
+}
+
+deny_reason := "Caller is not an admin" if {
+  input.source_auth.method == "jwt_bearer"
+  object.get(input.source_auth, ["claims", "role"], "") != "admin"
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "admin@example.com",
+    "claims": { "role": "admin" }
+  }
+}
+```
+
+---
+
+## 6. Common Mistakes
+
+| Mistake | What happens | Fix |
+| --- | --- | --- |
+| Using `input.jwt.*` in a surface policy | Always `undefined` -> silent deny | Use `input.source_auth.claims.*`. `input.jwt` exists only in MCP per-tool policies. |
+| Reading a bearer token from `input.http.headers.authorization` | Header is stripped -> `undefined` | Use `input.source_auth`. |
+| `every r in results { r.ok }` with no count guard | Empty array returns `true` -> allow-all | Add `count(results) > 0`. |
+| Checking `input.agent.trust_verification` without enabling trust extraction | `undefined` -> deny | Enable "Extract Trust Registry Data" on the surface. |
+| Using `package channel.policy` | Rejected on create/update | Use `package surface.policy`. |
+| `default allow := true` | Fails open | Always deny by default. |
+| Checking `input.gateway.source_id` on an inbound direct call | `null` on that path | Only use it on connection point or outbound legs. |
+| No `deny_reason` | Opaque 403s, hard to debug | Add a `deny_reason` for each failure branch. |
+| Deleting a policy still attached to a surface | That surface fails **closed** | Detach or replace before deleting. |
+
+### Rego version note
+
+Samples use `import rego.v1` (`if` / `in` / `every`). Omitting the import still
+works where the gateway defaults to v1 syntax, but including it is explicit and
+portable.
+
+---
+
+## 7. Learn More
+
+- [OPA policies reference](https://docs.affinidi.com/products/affinidi-trust-fabric/agent-gateway/reference/surfaces/opa-policies/) - full `input` schema, dry-run panel, versioning, global enforcement.
+- [OPA policies concepts](https://docs.affinidi.com/products/affinidi-trust-fabric/agent-gateway/concepts/opa-policies/) - evaluation order and policy scopes.
+- [Apply OPA policies to your gateway and surfaces](https://docs.affinidi.com/products/affinidi-trust-fabric/agent-gateway/how-to-guides/policies/apply-opa-policies/)
+- [Control MCP tool access with per-tool policies](https://docs.affinidi.com/products/affinidi-trust-fabric/agent-gateway/how-to-guides/policies/control-mcp-tool-access-with-per-tool-policies/)
+- [Trust elements reference](https://docs.affinidi.com/products/affinidi-trust-fabric/agent-gateway/reference/surfaces/trust-element/) - Trust Check result fields and error codes.
+- [Dashboard policy guide](../feature-guide/policy-guide.md) - step-by-step UI walkthrough.
+- [Rego policy language](https://www.openpolicyagent.org/docs/latest/policy-language/)
