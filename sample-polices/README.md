@@ -42,8 +42,18 @@ Every sample below comes with:
   - [5.12 Restrict MCP tools](#512-restrict-mcp-tools)
   - [5.13 Method and path restrictions](#513-method-and-path-restrictions)
   - [5.14 Combined gateway policy: authenticated admin only](#514-combined-gateway-policy-authenticated-admin-only)
-- [6. Common Mistakes](#6-common-mistakes)
-- [7. Learn More](#7-learn-more)
+- [6. Common Mistakes](#9-common-mistakes)
+- [7. Learn More](#10-learn-more)
+- [8. Enterprise Entra ID Scenarios](#8-enterprise-entra-id-scenarios)
+  - [8.1 Validate token identity on gateway calls](#81-validate-token-identity-on-gateway-calls)
+  - [8.2 Require approved application identity (agent-to-gateway)](#82-require-approved-application-identity-agent-to-gateway)
+  - [8.3 Block cross-tenant activity outside approved tenants](#83-block-cross-tenant-activity-outside-approved-tenants)
+  - [8.4 Enforce tenant-aware delegated access](#84-enforce-tenant-aware-delegated-access)
+  - [8.5 Require step-up authentication (MFA) for sensitive tools](#85-require-step-up-authentication-mfa-for-sensitive-tools)
+  - [8.6 Block external and guest users](#86-block-external-and-guest-users)
+  - [8.7 Restrict mutating actions by Entra directory role](#87-restrict-mutating-actions-by-entra-directory-role)
+  - [8.8 Restrict privileged tools to approved builder groups](#88-restrict-privileged-tools-to-approved-builder-groups)
+  - [8.9 Scenarios that need enrichment, not just the JWT](#89-scenarios-that-need-enrichment-not-just-the-jwt)
 
 ---
 
@@ -55,10 +65,10 @@ request. If the policy does not produce `allow = true`, the request is denied.
 
 There are two scopes:
 
-| Scope | Package | Where it runs |
-| --- | --- | --- |
-| **Gateway** | `package gateway.policy` | Cluster-wide, on all matching traffic after authentication. |
-| **Agent surface** | `package surface.policy` | On a specific surface, via a Policy element. |
+| Scope             | Package                  | Where it runs                                               |
+| ----------------- | ------------------------ | ----------------------------------------------------------- |
+| **Gateway**       | `package gateway.policy` | Cluster-wide, on all matching traffic after authentication. |
+| **Agent surface** | `package surface.policy` | On a specific surface, via a Policy element.                |
 
 Evaluation order for an inbound request:
 
@@ -175,10 +185,10 @@ This is the default sample the dashboard ships with:
 
 For each policy, run at least three inputs:
 
-| Case | Purpose |
-| --- | --- |
-| Happy path | Confirms ALLOW when every condition is met. |
-| One condition wrong | Confirms DENY and the right `deny_reason`. |
+| Case                   | Purpose                                     |
+| ---------------------- | ------------------------------------------- |
+| Happy path             | Confirms ALLOW when every condition is met. |
+| One condition wrong    | Confirms DENY and the right `deny_reason`.  |
 | Field missing entirely | Confirms the policy fails closed, not open. |
 
 ---
@@ -187,21 +197,21 @@ For each policy, run at least three inputs:
 
 Fields the gateway populates in `input` for gateway and surface policies:
 
-| Field | Present when | Notes |
-| --- | --- | --- |
-| `input.http.method` / `.path` / `.headers` | Always | Sensitive headers are stripped. |
-| `input.gateway.direction` | Always | `"inbound"` or `"outbound"`. |
-| `input.gateway.source_id` | Inbound via connection point, or outbound | Caller DID (inbound GW2) or managed agent DID (outbound). |
-| `input.gateway.target_id` | Outbound / fabric send | Target URL or remote gateway DID. |
-| `input.channel.config_id` / `.name` | Always | Surface identity. |
-| `input.source_auth.*` | Surface has a Caller Context element | Shape depends on `method`. |
-| `input.a2a.method` / `.message` | A2A requests | Built from the original request body. |
-| `input.mcp.method` / `.tool_name` / `.params` | Inbound MCP requests | |
-| `input.agent.*` | "Extract Trust Registry Data" enabled | `did`, `trust_verification`, etc. |
-| `input.trust_check_results.caller` / `.target` | Trust Check elements configured | Arrays, never `null`. |
-| `input.extension_identity.*` | Verified VP in the request body | |
-| `input.identity_binding.*` | Verified VP from an upstream gateway | |
-| `input.metadata.*` | Metadata Injection rules ran | |
+| Field                                          | Present when                              | Notes                                                     |
+| ---------------------------------------------- | ----------------------------------------- | --------------------------------------------------------- |
+| `input.http.method` / `.path` / `.headers`     | Always                                    | Sensitive headers are stripped.                           |
+| `input.gateway.direction`                      | Always                                    | `"inbound"` or `"outbound"`.                              |
+| `input.gateway.source_id`                      | Inbound via connection point, or outbound | Caller DID (inbound GW2) or managed agent DID (outbound). |
+| `input.gateway.target_id`                      | Outbound / fabric send                    | Target URL or remote gateway DID.                         |
+| `input.channel.config_id` / `.name`            | Always                                    | Surface identity.                                         |
+| `input.source_auth.*`                          | Surface has a Caller Context element      | Shape depends on `method`.                                |
+| `input.a2a.method` / `.message`                | A2A requests                              | Built from the original request body.                     |
+| `input.mcp.method` / `.tool_name` / `.params`  | Inbound MCP requests                      |                                                           |
+| `input.agent.*`                                | "Extract Trust Registry Data" enabled     | `did`, `trust_verification`, etc.                         |
+| `input.trust_check_results.caller` / `.target` | Trust Check elements configured           | Arrays, never `null`.                                     |
+| `input.extension_identity.*`                   | Verified VP in the request body           |                                                           |
+| `input.identity_binding.*`                     | Verified VP from an upstream gateway      |                                                           |
+| `input.metadata.*`                             | Metadata Injection rules ran              |                                                           |
 
 ### `input.source_auth` shapes
 
@@ -368,7 +378,10 @@ scope_permitted if {
 {
   "http": { "method": "POST", "path": "/a2a/tasks/send", "headers": {} },
   "gateway": { "direction": "inbound" },
-  "channel": { "config_id": "10a0533d-b10b-4d02-a2fd-aaaaaaaad6e5", "name": "Thatcher" },
+  "channel": {
+    "config_id": "10a0533d-b10b-4d02-a2fd-aaaaaaaad6e5",
+    "name": "Thatcher"
+  },
   "source_auth": {
     "method": "jwt_bearer",
     "subject": "wqjcIS4o5pPC95GXTLgfIIke6Y1RoQpEX",
@@ -587,7 +600,10 @@ deny_reason := sprintf("Unexpected gateway source: %s", [input.gateway.source_id
     "direction": "inbound",
     "source_id": "did:webvh:QmWCYMpgqdLGssPdgZBxti81QsYxxHRGmD1L1miizGgSNz:dexter-gateway.proxy.apse1.octo.affinidi.io:connection-points:b3bfd64e-0fa0-40ff-857b-eadeb8997fb6"
   },
-  "channel": { "config_id": "96ab7082-5bb7-4a63-b881-cdc13abed1dd", "name": "Thatcher -> Dexter" }
+  "channel": {
+    "config_id": "96ab7082-5bb7-4a63-b881-cdc13abed1dd",
+    "name": "Thatcher -> Dexter"
+  }
 }
 ```
 
@@ -641,7 +657,10 @@ are configured".
     "direction": "inbound",
     "source_id": "did:web:example.com:agents:thatcher"
   },
-  "channel": { "config_id": "96ab7082-5bb7-4a63-b881-cdc13abed1dd", "name": "Thatcher -> Dexter" },
+  "channel": {
+    "config_id": "96ab7082-5bb7-4a63-b881-cdc13abed1dd",
+    "name": "Thatcher -> Dexter"
+  },
   "trust_check_results": {
     "caller": [
       {
@@ -710,21 +729,32 @@ target_trusted if {
   "http": {
     "method": "POST",
     "path": "/outbound/agents/org-a/dexter-agent/a2a/tasks/send",
-    "headers": { "content-type": "application/json", "user-agent": "python-httpx/0.28.1" }
+    "headers": {
+      "content-type": "application/json",
+      "user-agent": "python-httpx/0.28.1"
+    }
   },
   "gateway": {
     "direction": "outbound",
     "source_id": "did:web:example.com:agents:thatcher",
     "target_id": "fabric://b4ca99f8-0159-428b-bfff-aaaaf47fd0d5/96ab7082-5bb7-4a63-b881-cdc13abed1dd"
   },
-  "channel": { "config_id": "10a0533d-b10b-4d02-a2fd-aaaaaaaad6e5", "name": "Thatcher" },
+  "channel": {
+    "config_id": "10a0533d-b10b-4d02-a2fd-aaaaaaaad6e5",
+    "name": "Thatcher"
+  },
   "a2a": {
     "method": "message/send",
     "message": {
       "role": "user",
       "kind": "message",
       "messageId": "7c25f5264d7b4a00804a9b20a2fa83da",
-      "parts": [{ "kind": "data", "data": { "action": "send:message", "text": "Hello!" } }]
+      "parts": [
+        {
+          "kind": "data",
+          "data": { "action": "send:message", "text": "Hello!" }
+        }
+      ]
     }
   },
   "trust_check_results": {
@@ -760,11 +790,11 @@ denied, even with a valid token.
 
 Different identity providers put the email in different claims, so normalise first:
 
-| Provider | Claim to read |
-| --- | --- |
-| Entra ID (Azure AD) v1 tokens | `upn`, falls back to `unique_name` |
-| Entra ID v2 / Auth0 / Okta / Google | `email` |
-| Any provider | `preferred_username` |
+| Provider                            | Claim to read                      |
+| ----------------------------------- | ---------------------------------- |
+| Entra ID (Azure AD) v1 tokens       | `upn`, falls back to `unique_name` |
+| Entra ID v2 / Auth0 / Okta / Google | `email`                            |
+| Any provider                        | `preferred_username`               |
 
 ```rego
 package surface.policy
@@ -999,15 +1029,26 @@ a2a_action := action if {
 ```json
 {
   "http": { "method": "POST", "path": "/a2a/tasks/send", "headers": {} },
-  "gateway": { "direction": "inbound", "source_id": "did:web:example.com:agents:thatcher" },
-  "channel": { "config_id": "96ab7082-5bb7-4a63-b881-cdc13abed1dd", "name": "Thatcher -> Dexter" },
+  "gateway": {
+    "direction": "inbound",
+    "source_id": "did:web:example.com:agents:thatcher"
+  },
+  "channel": {
+    "config_id": "96ab7082-5bb7-4a63-b881-cdc13abed1dd",
+    "name": "Thatcher -> Dexter"
+  },
   "a2a": {
     "method": "message/send",
     "message": {
       "role": "user",
       "kind": "message",
       "messageId": "09092ba9ed7f4db080ef821b00000000",
-      "parts": [{ "kind": "data", "data": { "action": "send:message", "text": "Hello!" } }]
+      "parts": [
+        {
+          "kind": "data",
+          "data": { "action": "send:message", "text": "Hello!" }
+        }
+      ]
     }
   }
 }
@@ -1051,7 +1092,11 @@ deny_reason := sprintf("MCP tool '%s' is not permitted on this surface", [input.
 
 ```json
 {
-  "http": { "method": "POST", "path": "/v1/surfaces/my-surface/mcp", "headers": {} },
+  "http": {
+    "method": "POST",
+    "path": "/v1/surfaces/my-surface/mcp",
+    "headers": {}
+  },
   "gateway": { "direction": "inbound" },
   "channel": { "config_id": "surface-abc123", "name": "my-surface" },
   "source_auth": {
@@ -1179,19 +1224,548 @@ deny_reason := "Caller is not an admin" if {
 
 ---
 
-## 6. Common Mistakes
+## 8. Enterprise Entra ID Scenarios
 
-| Mistake | What happens | Fix |
+These scenarios enforce Microsoft Entra ID (Azure AD) enterprise controls using the
+JWT the caller already presents under `input.source_auth.claims`. Some rely only on
+standard Entra claims; others need an **optional claim** turned on in the app
+registration's token configuration. Each sample says which claim to enable.
+
+> **Why no Graph API calls here:** the gateway evaluates policies against the token
+> it received - it does not call Microsoft Graph at request time. Checks that need
+> live account state (`accountEnabled`, last sign-in, custom security attributes) are
+> out of scope for a plain JWT policy. See
+> [8.9 Scenarios that need enrichment](#89-scenarios-that-need-enrichment-not-just-the-jwt).
+
+### 8.1 Validate token identity on gateway calls
+
+**Scenario:** baseline zero-trust check - the token must come from the expected
+tenant, audience, and client, and must not be close to expiry. Standard claims only,
+no Entra configuration needed.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+trusted_tenant := "00000000-f06b-4a99-85d8-ca5481d17d2e"
+expected_audience := "api://37b4d273-613b-4eaf-a975-5db4361f5787"
+approved_clients := {"37b4d273-613b-4eaf-a975-5db4361f5787"}
+
+default allow := false
+
+allow if {
+  input.source_auth.method == "jwt_bearer"
+  claims.tid == trusted_tenant
+  claims.aud == expected_audience
+  claims.appid in approved_clients
+}
+
+claims := input.source_auth.claims
+
+deny_reason := "Caller did not present a JWT" if {
+  input.source_auth.method != "jwt_bearer"
+}
+
+deny_reason := sprintf("Untrusted tenant '%s'", [claims.tid]) if {
+  input.source_auth.method == "jwt_bearer"
+  claims.tid != trusted_tenant
+}
+
+deny_reason := sprintf("Unexpected audience '%s'", [claims.aud]) if {
+  input.source_auth.method == "jwt_bearer"
+  claims.tid == trusted_tenant
+  claims.aud != expected_audience
+}
+
+deny_reason := sprintf("Client '%s' is not approved", [claims.appid]) if {
+  input.source_auth.method == "jwt_bearer"
+  claims.tid == trusted_tenant
+  claims.aud == expected_audience
+  not claims.appid in approved_clients
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/a2a/tasks/send", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "wqjcIS4o5pPC95GXTLgfIIke6Y1RoQpEX",
+    "claims": {
+      "tid": "00000000-f06b-4a99-85d8-ca5481d17d2e",
+      "aud": "api://37b4d273-613b-4eaf-a975-5db4361f5787",
+      "appid": "37b4d273-613b-4eaf-a975-5db4361f5787"
+    }
+  }
+}
+```
+
+**Sample input (DENY)** - change `tid` to a different GUID.
+
+---
+
+### 8.2 Require approved application identity (agent-to-gateway)
+
+**Scenario:** only a named set of agent service principals or managed identities may
+call this surface, regardless of which user they act on behalf of.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+approved_apps := {
+  "37b4d273-613b-4eaf-a975-5db4361f5787",
+  "a1b2c3d4-0000-1111-2222-333344445555",
+}
+
+default allow := false
+
+allow if {
+  input.source_auth.method == "jwt_bearer"
+  app_id in approved_apps
+}
+
+# azp (authorized party) is used on v2 tokens; fall back to appid on v1 tokens.
+app_id := id if {
+  id := input.source_auth.claims.azp
+  id != ""
+} else := id if {
+  id := input.source_auth.claims.appid
+  id != ""
+} else := ""
+
+deny_reason := "No application identity claim (azp/appid) on the token" if {
+  app_id == ""
+}
+
+deny_reason := sprintf("Application '%s' is not an approved agent identity", [app_id]) if {
+  app_id != ""
+  not app_id in approved_apps
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/a2a/tasks/send", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "agent-app-sp",
+    "claims": { "azp": "37b4d273-613b-4eaf-a975-5db4361f5787" }
+  }
+}
+```
+
+**Sample input (DENY)** - change `azp` to an unlisted app ID.
+
+---
+
+### 8.3 Block cross-tenant activity outside approved tenants
+
+**Scenario:** only callers from your own tenant, or a short allowlist of partner
+tenants, may use this surface.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+approved_tenants := {
+  "00000000-f06b-4a99-85d8-ca5481d17d2e", # home tenant
+  "11111111-aaaa-bbbb-cccc-222222222222", # approved partner
+}
+
+default allow := false
+
+allow if {
+  input.source_auth.claims.tid in approved_tenants
+}
+
+deny_reason := sprintf("Tenant '%s' is not approved for this surface", [input.source_auth.claims.tid]) if {
+  not input.source_auth.claims.tid in approved_tenants
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "user@example.com",
+    "claims": { "tid": "00000000-f06b-4a99-85d8-ca5481d17d2e" }
+  }
+}
+```
+
+**Sample input (DENY)** - change `tid` to `"99999999-0000-1111-2222-333344445555"`.
+
+---
+
+### 8.4 Enforce tenant-aware delegated access
+
+**Scenario:** a delegated token's scopes must match both the required scope **and**
+the tenant the request targets, so a token issued for tenant A cannot be replayed
+against a surface scoped to tenant B.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+required_scope := "agent.access"
+resource_tenant := "00000000-f06b-4a99-85d8-ca5481d17d2e"
+
+default allow := false
+
+allow if {
+  scope_permitted
+  input.source_auth.claims.tid == resource_tenant
+}
+
+scope_permitted if {
+  required_scope in split(input.source_auth.claims.scp, " ")
+}
+
+deny_reason := sprintf("Required scope '%s' missing from token", [required_scope]) if {
+  not scope_permitted
+}
+
+deny_reason := "Token tenant does not match this surface's resource tenant" if {
+  scope_permitted
+  input.source_auth.claims.tid != resource_tenant
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "user@example.com",
+    "claims": { "scp": "agent.access", "tid": "00000000-f06b-4a99-85d8-ca5481d17d2e" }
+  }
+}
+```
+
+**Sample input (DENY)** - change `tid` to a different tenant, keeping the scope.
+
+---
+
+### 8.5 Require step-up authentication (MFA) for sensitive tools
+
+**Scenario:** read-only paths need only a valid token; mutating/sensitive paths
+require the token to show MFA in the `amr` (authentication methods reference)
+claim.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+sensitive_paths := {"/a2a/tasks/delete", "/admin"}
+
+default allow := false
+
+allow if {
+  not sensitive_path
+}
+
+allow if {
+  sensitive_path
+  mfa_present
+}
+
+sensitive_path if {
+  some p in sensitive_paths
+  startswith(input.http.path, p)
+}
+
+mfa_present if {
+  "mfa" in input.source_auth.claims.amr
+}
+
+deny_reason := "MFA is required for this operation" if {
+  sensitive_path
+  not mfa_present
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/a2a/tasks/delete", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "user@example.com",
+    "claims": { "amr": ["pwd", "mfa"] }
+  }
+}
+```
+
+**Sample input (DENY)** - change `amr` to `["pwd"]`.
+**Expected:** `DENY - MFA is required for this operation`.
+
+---
+
+### 8.6 Block external and guest users
+
+**Scenario:** only member (internal) accounts may use this surface; B2B guests and
+external users are blocked.
+
+> Requires the **`acct`** optional claim enabled on the app registration's token
+> configuration (Entra ID emits `0` for member, `1` for guest).
+
+```rego
+package surface.policy
+
+import rego.v1
+
+default allow := false
+
+allow if {
+  input.source_auth.claims.acct == 0
+}
+
+deny_reason := "Guest and external accounts are not permitted on this surface" if {
+  input.source_auth.claims.acct == 1
+}
+
+deny_reason := "Token has no 'acct' claim - enable it under optional claims" if {
+  not input.source_auth.claims.acct
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "user@example.com",
+    "claims": { "acct": 0 }
+  }
+}
+```
+
+**Sample input (DENY)** - change `"acct": 0` to `"acct": 1`.
+
+---
+
+### 8.7 Restrict mutating actions by Entra directory role
+
+**Scenario:** `GET` requests are open to any authenticated caller; mutating verbs
+require an approved directory role.
+
+> Requires **`wids`** (directory role template IDs) as an optional claim, or an app
+> role mapped through **`roles`**. Common built-in role template IDs:
+>
+> | Role | Template ID |
+> | --- | --- |
+> | Global Administrator | `62e90394-69f5-4237-9190-012177145e10` |
+> | Privileged Role Administrator | `e8611ab8-c189-46e8-94e1-60213ab1f814` |
+> | User Administrator | `fe930be7-5e62-47db-91af-98c3a49a38b1` |
+> | Application Administrator | `9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3` |
+
+```rego
+package surface.policy
+
+import rego.v1
+
+approved_role_ids := {
+  "62e90394-69f5-4237-9190-012177145e10", # Global Administrator
+  "e8611ab8-c189-46e8-94e1-60213ab1f814", # Privileged Role Administrator
+  "fe930be7-5e62-47db-91af-98c3a49a38b1", # User Administrator
+}
+
+mutating_methods := {"POST", "PUT", "PATCH", "DELETE"}
+
+default allow := false
+
+allow if {
+  not input.http.method in mutating_methods
+}
+
+allow if {
+  input.http.method in mutating_methods
+  caller_has_approved_role
+}
+
+caller_has_approved_role if {
+  some id in input.source_auth.claims.wids
+  id in approved_role_ids
+}
+
+deny_reason := "Caller does not hold an approved administrative role for mutating actions" if {
+  input.http.method in mutating_methods
+  not caller_has_approved_role
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/a2a/tasks/send", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "admin@example.com",
+    "claims": { "wids": ["fe930be7-5e62-47db-91af-98c3a49a38b1"] }
+  }
+}
+```
+
+**Sample input (DENY)** - set `"wids": []`.
+
+---
+
+### 8.8 Restrict privileged tools to approved builder groups
+
+**Scenario:** only members of a platform-operations or builder group may call
+privileged MCP tools.
+
+> Requires the **`groups`** optional claim on the token. By default Entra emits at
+> most 200 group object IDs directly in the token; larger tenants get a "groups
+> overage" claim instead and need a Graph lookup, which puts this case into
+> [8.9](#89-scenarios-that-need-enrichment-not-just-the-jwt) for those tenants.
+
+```rego
+package surface.policy
+
+import rego.v1
+
+approved_groups := {"11111111-2222-3333-4444-555555555555"}
+privileged_tools := {"delete_resource", "rotate_secret", "export_data"}
+
+default allow := false
+
+allow if {
+  input.mcp.method != "tools/call"
+}
+
+allow if {
+  input.mcp.method == "tools/call"
+  not input.mcp.tool_name in privileged_tools
+}
+
+allow if {
+  input.mcp.method == "tools/call"
+  input.mcp.tool_name in privileged_tools
+  caller_in_approved_group
+}
+
+caller_in_approved_group if {
+  some g in input.source_auth.claims.groups
+  g in approved_groups
+}
+
+deny_reason := sprintf("Tool '%s' requires builder group membership", [input.mcp.tool_name]) if {
+  input.mcp.method == "tools/call"
+  input.mcp.tool_name in privileged_tools
+  not caller_in_approved_group
+}
+```
+
+**Sample input (ALLOW):**
+
+```json
+{
+  "http": { "method": "POST", "path": "/v1/surfaces/my-surface/mcp", "headers": {} },
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "my-surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "user@example.com",
+    "claims": { "groups": ["11111111-2222-3333-4444-555555555555"] }
+  },
+  "mcp": { "method": "tools/call", "tool_name": "rotate_secret", "params": {} }
+}
+```
+
+**Sample input (DENY)** - set `"groups": []`, or change the tool to a non-member
+group ID.
+
+---
+
+### 8.9 Scenarios that need enrichment, not just the JWT
+
+These are the scenarios from the same batch that cannot be written as a standalone
+Rego sample, because the data they depend on is never present in `input` on its own.
+To enforce them, fetch the signal out-of-band (Microsoft Graph, your agent
+registry, a PIM check) and inject it via the surface's Metadata Injection element so
+it lands in `input.metadata`, or populate `input.agent` via Trust Registry
+extraction. Once that field exists in the input, the Rego is a one-line check.
+
+| Scenario | Missing signal | Where it would need to come from |
 | --- | --- | --- |
-| Using `input.jwt.*` in a surface policy | Always `undefined` -> silent deny | Use `input.source_auth.claims.*`. `input.jwt` exists only in MCP per-tool policies. |
-| Reading a bearer token from `input.http.headers.authorization` | Header is stripped -> `undefined` | Use `input.source_auth`. |
-| `every r in results { r.ok }` with no count guard | Empty array returns `true` -> allow-all | Add `count(results) > 0`. |
-| Checking `input.agent.trust_verification` without enabling trust extraction | `undefined` -> deny | Enable "Extract Trust Registry Data" on the surface. |
-| Using `package channel.policy` | Rejected on create/update | Use `package surface.policy`. |
-| `default allow := true` | Fails open | Always deny by default. |
-| Checking `input.gateway.source_id` on an inbound direct call | `null` on that path | Only use it on connection point or outbound legs. |
-| No `deny_reason` | Opaque 403s, hard to debug | Add a `deny_reason` for each failure branch. |
-| Deleting a policy still attached to a surface | That surface fails **closed** | Detach or replace before deleting. |
+| Block disabled Entra ID users | `accountEnabled` | Graph API lookup -> `input.metadata.account_enabled` |
+| Block inactive Entra ID users | `signInActivity.lastSignInDateTime` | Graph API lookup -> `input.metadata.last_sign_in` |
+| Block orphaned agents | Agent owner mapping / validity | Agent registry or Trust Registry lookup -> `input.agent` |
+| Secrets egress for scoped admins | Administrative-unit-scoped role assignment | Graph API role assignment lookup -> `input.metadata.scoped_roles` |
+| User classification by custom security attributes | Custom security attributes | Graph API lookup -> `input.metadata.security_attributes` |
+| Step-up by device compliance / sign-in risk | Conditional Access signals, device compliance | Conditional Access authentication context claim (`acrs`), or a device/risk lookup -> `input.metadata` |
+
+Once the field is present, the pattern matches the rest of this guide, for example:
+
+```rego
+package surface.policy
+
+import rego.v1
+
+default allow := false
+
+allow if {
+  input.metadata.account_enabled == true
+}
+
+deny_reason := "Entra account is disabled" if {
+  input.metadata.account_enabled == false
+}
+
+deny_reason := "No account status available - check Metadata Injection config" if {
+  not input.metadata.account_enabled
+}
+```
+
+---
+
+## 9. Common Mistakes
+
+| Mistake                                                                     | What happens                            | Fix                                                                                 |
+| --------------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------- |
+| Using `input.jwt.*` in a surface policy                                     | Always `undefined` -> silent deny       | Use `input.source_auth.claims.*`. `input.jwt` exists only in MCP per-tool policies. |
+| Reading a bearer token from `input.http.headers.authorization`              | Header is stripped -> `undefined`       | Use `input.source_auth`.                                                            |
+| `every r in results { r.ok }` with no count guard                           | Empty array returns `true` -> allow-all | Add `count(results) > 0`.                                                           |
+| Checking `input.agent.trust_verification` without enabling trust extraction | `undefined` -> deny                     | Enable "Extract Trust Registry Data" on the surface.                                |
+| Using `package channel.policy`                                              | Rejected on create/update               | Use `package surface.policy`.                                                       |
+| `default allow := true`                                                     | Fails open                              | Always deny by default.                                                             |
+| Checking `input.gateway.source_id` on an inbound direct call                | `null` on that path                     | Only use it on connection point or outbound legs.                                   |
+| No `deny_reason`                                                            | Opaque 403s, hard to debug              | Add a `deny_reason` for each failure branch.                                        |
+| Deleting a policy still attached to a surface                               | That surface fails **closed**           | Detach or replace before deleting.                                                  |
 
 ### Rego version note
 
@@ -1201,7 +1775,7 @@ portable.
 
 ---
 
-## 7. Learn More
+## 10. Learn More
 
 - [OPA policies reference](https://docs.affinidi.com/products/affinidi-trust-fabric/agent-gateway/reference/surfaces/opa-policies/) - full `input` schema, dry-run panel, versioning, global enforcement.
 - [OPA policies concepts](https://docs.affinidi.com/products/affinidi-trust-fabric/agent-gateway/concepts/opa-policies/) - evaluation order and policy scopes.
