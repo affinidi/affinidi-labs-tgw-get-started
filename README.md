@@ -198,6 +198,7 @@ Everything else stays the same — the Codespace keeps the server running while 
 | Component                         | Description                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------------------- |
 | `a2a/`                            | Local A2A echo agent server + interactive client                                      |
+| `a2a-v1/`                         | A2A v1.0.1 echo agent + automated gateway compatibility smoke test                    |
 | `mcp/`                            | Local MCP server with calculator and weather tools                                    |
 | `a2a-vertex-agent/`               | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
 | `rest-api/`                       | REST API server with MCP proxy                                                        |
@@ -214,6 +215,15 @@ affinidi-labs-tgw-get-started/
 │   ├── requirements.txt
 │   ├── run.sh               # Start the server
 │   └── test.sh              # Test the server
+├── a2a-v1/
+│   ├── a2a_server.py        # A2A v1.0.1 agent server implementation
+│   ├── a2a_client.py        # Interactive A2A v1 client
+│   ├── smoke_test.py        # Agent-card and message round-trip verification
+│   ├── requirements.txt
+│   ├── run.sh               # Start the server
+│   ├── test.sh              # Start the interactive client
+│   ├── smoke_test.sh        # Run the automated smoke test
+│   └── README.md            # Full lab guide
 ├── mcp/
 │   ├── mcp_server.py        # MCP server implementation
 │   ├── mcp_client.py        # MCP test client
