@@ -24,7 +24,14 @@ Every sample below comes with:
 - [1. Policy Basics](#1-policy-basics)
 - [2. Create a Policy](#2-create-a-policy)
 - [3. Test a Policy with Dry Run](#3-test-a-policy-with-dry-run)
-- [4. Input Cheat Sheet](#4-input-cheat-sheet)
+- [4. Policy Input Schema](#4-policy-input-schema)
+  - [What `input` is](#what-input-is)
+  - [Full schema](#full-schema)
+  - [Namespace by namespace](#namespace-by-namespace)
+  - [Presence by namespace](#presence-by-namespace)
+  - [`input.source_auth` shapes](#inputsource_auth-shapes)
+  - [Gateway-defined vs user-defined fields](#gateway-defined-vs-user-defined-fields)
+  - [MCP per-tool policies use a different input](#mcp-per-tool-policies-use-a-different-input)
 - [5. Policy Samples](#5-policy-samples)
   - [5.1 Require any authenticated caller](#51-require-any-authenticated-caller)
   - [5.2 Deny when caller authentication failed](#52-deny-when-caller-authentication-failed)
@@ -91,19 +98,22 @@ allow if {
 }
 ```
 
-### Optional reason rules
+### The `deny_reason` rule
 
-The gateway surfaces `allow_reason` and `deny_reason` in the dry-run result, in
-audit logs, and in the error response. Always add a `deny_reason` - it turns an
-opaque 403 into something your team can debug.
+When a policy denies, the gateway evaluates a rule named exactly `deny_reason` and
+surfaces its string in the dry-run result, the audit log, and the error response.
+Always define one - it turns an opaque 403 into something your team can debug.
 
 ```rego
-allow_reason := "Request meets all requirements"
-
 deny_reason := "Caller is not an admin" if {
   input.source_auth.claims.role != "admin"
 }
 ```
+
+> **`deny_reason` is only read on a deny.** The gateway evaluates it solely when
+> `allow` is `false`; on an allow the reason is always empty. There is no
+> `allow_reason` rule - the gateway never evaluates that name, so defining one has
+> no effect.
 
 > **Best practice:** start with `default allow := false` and allow explicitly.
 > Never start with `default allow := true`.
@@ -143,7 +153,8 @@ to the exact Rego that produced it.
 
 The **Test** panel appears under the Rego editor once the policy has been saved at
 least once. It lets you paste a sample `input` object, press **Run**, and see
-**ALLOW** or **DENY** plus the reason - without touching live traffic.
+**ALLOW** or **DENY** - without touching live traffic. On a **DENY** it also shows
+your `deny_reason`; on an **ALLOW** no reason is shown.
 
 Steps:
 
@@ -151,7 +162,12 @@ Steps:
 2. Scroll to the **Test** panel.
 3. Paste a sample input JSON (examples in every section below).
 4. Click **Run against the draft above**.
-5. Read the badge: **ALLOW** or **DENY**, plus `deny_reason` when defined.
+5. Read the badge: **ALLOW** or **DENY**, plus `deny_reason` when the result is a
+   deny and your policy defines one.
+
+If the badge says _"Policy produced no `allow` decision"_, the Rego compiled but
+the engine found no value at `data.<scope>.policy.allow` - the package declaration
+is wrong for the scope, or there is no `default allow`.
 
 Notes:
 
@@ -165,21 +181,37 @@ Notes:
 
 ### Minimal starter input
 
-This is the default sample the dashboard ships with:
+Use this as the starting point for a surface policy. It carries the three
+always-present namespaces plus a JWT caller:
 
 ```json
 {
-  "jwt": { "sub": "user@example.com", "role": "admin" },
   "http": { "method": "POST", "path": "/", "headers": {} },
-  "gateway": { "direction": "inbound" }
+  "gateway": { "direction": "inbound" },
+  "channel": { "config_id": "surface-abc123", "name": "My Surface" },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "user@example.com",
+    "claims": { "sub": "user@example.com", "role": "admin" }
+  }
 }
 ```
 
-> **Important:** `input.jwt` is **only** populated for MCP per-tool policies. For
-> gateway and surface policies, JWT claims arrive under `input.source_auth.claims`.
-> The starter input above is handy for a first `input.jwt.sub` smoke test, but real
-> surface policies should be tested with the `source_auth` shape shown in
-> [section 5.3](#53-require-a-specific-jwt-scope).
+For a gateway policy, drop `channel` and `source_auth` and keep `http` plus
+`gateway`.
+
+> **If the Test panel shows an input with a top-level `jwt` object, replace it.**
+> Some policy editors start you off with a short placeholder like
+> `{"jwt": {"sub": "...", "role": "admin"}, "http": {...}, "gateway": {...}}`. That
+> is sample text, not a real request: the gateway never produces a top-level
+> `input.jwt` for a gateway or surface policy. Claims arrive at
+> `input.source_auth.claims`; `input.jwt` exists only in MCP per-tool policies.
+>
+> **The dry run does not validate your input against the schema.** It evaluates
+> against whatever JSON you paste. A policy written around `input.jwt.role` will
+> therefore return **ALLOW** in a dry run and then deny every real request, because
+> that field is absent at runtime. A dry-run ALLOW only means something if the
+> input you pasted matches the [schema above](#4-policy-input-schema).
 
 ### Suggested test matrix
 
@@ -193,39 +225,281 @@ For each policy, run at least three inputs:
 
 ---
 
-## 4. Input Cheat Sheet
+## 4. Policy Input Schema
 
-Fields the gateway populates in `input` for gateway and surface policies:
+### What `input` is
 
-| Field                                          | Present when                              | Notes                                                     |
-| ---------------------------------------------- | ----------------------------------------- | --------------------------------------------------------- |
-| `input.http.method` / `.path` / `.headers`     | Always                                    | Sensitive headers are stripped.                           |
-| `input.gateway.direction`                      | Always                                    | `"inbound"` or `"outbound"`.                              |
-| `input.gateway.source_id`                      | Inbound via connection point, or outbound | Caller DID (inbound GW2) or managed agent DID (outbound). |
-| `input.gateway.target_id`                      | Outbound / fabric send                    | Target URL or remote gateway DID.                         |
-| `input.channel.config_id` / `.name`            | Always                                    | Surface identity.                                         |
-| `input.source_auth.*`                          | Surface has a Caller Context element      | Shape depends on `method`.                                |
-| `input.a2a.method` / `.message`                | A2A requests                              | Built from the original request body.                     |
-| `input.mcp.method` / `.tool_name` / `.params`  | Inbound MCP requests                      |                                                           |
-| `input.agent.*`                                | "Extract Trust Registry Data" enabled     | `did`, `trust_verification`, etc.                         |
-| `input.trust_check_results.caller` / `.target` | Trust Check elements configured           | Arrays, never `null`.                                     |
-| `input.extension_identity.*`                   | Verified VP in the request body           |                                                           |
-| `input.identity_binding.*`                     | Verified VP from an upstream gateway      |                                                           |
-| `input.metadata.*`                             | Metadata Injection rules ran              |                                                           |
+Before evaluating any Rego, the gateway serialises the request context into a
+single JSON document and hands it to the policy engine as `input`. Your rules do
+nothing but read fields off that document and return a boolean.
+
+Two things follow from how it is built:
+
+- **The schema is fixed.** `input` is a serialised Rust struct (`PolicyInput`), not
+  an arbitrary bag. Top-level field names are exactly the thirteen listed below;
+  anything else you reference does not exist.
+- **Empty fields are omitted, not null.** Every optional field is skipped during
+  serialisation when it has no value. In Rego a missing field is `undefined`, and
+  any rule body containing an `undefined` expression simply does not fire - which,
+  under `default allow := false`, is a silent deny.
+
+### Full schema
+
+A fully-populated `input` for an inbound A2A request. In practice you will never
+see all of these at once - each namespace appears only under the conditions in the
+[presence table](#presence-by-namespace).
+
+```json
+{
+  "http": {
+    "method": "POST",
+    "path": "/a2a/tasks/send",
+    "headers": { "content-type": "application/json" }
+  },
+  "gateway": {
+    "direction": "inbound",
+    "source_id": "did:web:example.com:agents:caller",
+    "target_id": "fabric://.../96ab7082-5bb7-4a63-b881-cdc13abed1dd"
+  },
+  "channel": {
+    "config_id": "10a0533d-b10b-4d02-a2fd-aaaaaaaad6e5",
+    "name": "My Surface",
+    "variant_alias": "staging"
+  },
+  "source_auth": {
+    "method": "jwt_bearer",
+    "subject": "user@example.com",
+    "claims": { "scp": "agent.access", "tid": "0000...", "role": "admin" }
+  },
+  "a2a": {
+    "method": "message/send",
+    "message": { "role": "user", "kind": "message", "parts": [] }
+  },
+  "mcp": {
+    "method": "tools/call",
+    "tool_name": "search",
+    "resource_uri": null,
+    "prompt_name": null,
+    "params": { "query": "hello" }
+  },
+  "agent": {
+    "did": "did:web:example.com:agents:caller",
+    "trust_verification": true,
+    "source_trust_verification": true,
+    "target_trust_verification": true,
+    "agent_dna": { "uai": "urn:uai:..." },
+    "trust_registry_did": "did:web:registry.example.com",
+    "provider_did": "did:web:provider.example.com",
+    "authority_did": "did:web:authority.example.com",
+    "identity_issuer_did": "did:web:issuer.example.com",
+    "tr_identity_mismatch": false
+  },
+  "trust_check_results": {
+    "caller": [
+      {
+        "id": "tc-caller-1",
+        "trust_registry_id": "fba52ad0-8e41-43fa-b5a8-64b2f92c4e57",
+        "query_type": "recognition",
+        "ok": true,
+        "error": null,
+        "name": "Verify caller",
+        "authority_id": "did:web:authority.example.com",
+        "entity_id": "did:web:example.com:agents:caller",
+        "action": "is",
+        "resource": "ownedAgent",
+        "query_resolved": true
+      }
+    ],
+    "target": []
+  },
+  "extension_identity": {
+    "did": "did:web:example.com:agents:caller",
+    "identity_hash": "sha256:..."
+  },
+  "identity_binding": {
+    "verified": true,
+    "agent": { "did": "did:web:gw1.example:agent", "identity_fields": {} },
+    "caller": {
+      "fields": { "sub": "user@example.com" },
+      "user_hash": "adbff4cd...",
+      "assurance": "gateway_attested",
+      "identity_source": "transit_token"
+    },
+    "delegated": true,
+    "issuer_gateway": "did:web:gw1.example",
+    "target": "fabric://gw2/...",
+    "intent": {}
+  },
+  "payment": { "verified": true, "response_header": "..." },
+  "metadata": { "any_key": "any value" }
+}
+```
+
+### Namespace by namespace
+
+**`input.http`** - the raw HTTP envelope. `method` and `path` are strings;
+`headers` is a flat string-to-string map with credential-bearing headers already
+stripped (see [Stripped headers](#stripped-headers)). Use this for coarse
+method/path gating.
+
+**`input.gateway`** - which way the traffic is flowing and between whom.
+`direction` is `"inbound"` (arriving at this gateway) or `"outbound"` (your
+managed agent calling out through a transit point). `source_id` and `target_id`
+carry DIDs or endpoint URLs and are populated only on the legs where they make
+sense - both are omitted on a plain inbound call from an external client.
+
+**`input.channel`** - which surface is handling the request. `config_id` is the
+stable internal ID (survives renames, so prefer it in policies); `name` is the
+display name; `variant_alias` appears only when the request URL selected a
+non-default variant.
+
+**`input.source_auth`** - who the caller is, as established by the Caller Context
+element. A tagged union: `method` is the discriminant and decides which sibling
+fields exist. This is the field most policies key on. Full shapes
+[below](#inputsource_auth-shapes).
+
+**`input.a2a`** - the agent message for A2A/AP2 traffic, captured from the
+original request body _before_ the gateway injects identity. `method` is the
+JSON-RPC method (e.g. `"message/send"`); `message` is the raw message object with
+`role`, `parts`, `metadata`, `messageId`.
+
+**`input.mcp`** - the MCP call on an inbound MCP request. `method` is the JSON-RPC
+method (`"tools/call"`, `"tools/list"`, ...), with `tool_name`, `resource_uri`, or
+`prompt_name` populated depending on which method it is, and `params` carrying the
+full parsed params.
+
+**`input.agent`** - resolved agent and trust-registry context, populated when
+Trust Registry data extraction is enabled. `trust_verification` is `true` when all
+recognition queries passed, `false` when any failed, and **absent when none ran** -
+so `input.agent.trust_verification == true` denies on a surface where extraction is
+off. `source_trust_verification` / `target_trust_verification` split the result per
+leg in Both mode. `tr_identity_mismatch` is `true` when the trust-registry
+extension's DID contradicts the identity extension's DID.
+
+**`input.trust_check_results`** - per-leg outcomes of the Trust Check elements.
+Present as soon as at least one element ran; when it exists, **both** `caller` and
+`target` keys are present, and the leg that did not run on this seam is `[]` (so
+rules never need null checks). Each entry carries `ok` (the field to gate on), the
+element `id` and `name`, the resolved TRQP query (`authority_id`, `entity_id`,
+`action`, `resource`), `query_type` (`"recognition"` or `"authorization"`),
+`query_resolved` (false when template placeholders could not be substituted), and
+`error` (`null` on success, otherwise `{ "code": ..., "message": ... }`).
+
+**`input.extension_identity`** - the agent DID and a correlation hash taken from a
+verified Verifiable Presentation in the request body.
+
+**`input.identity_binding`** - a verified VP issued by an _upstream_ gateway,
+proving who it was acting for. `caller.assurance` is `"gateway_attested"` or
+`"caller_credential_chained"`; `delegated` says whether the sending gateway acted
+on behalf of a user; `issuer_gateway` is the signing gateway's DID.
+
+**`input.payment`** - set when an x402 payment was cryptographically verified.
+
+**`input.metadata`** - a free-form key/value map populated by Metadata Injection
+rules. The one place you can get external data into a policy.
+
+### Presence by namespace
+
+| Field                                                                            | Present when                                    | Notes                                                                                                                                                                                                     |
+| -------------------------------------------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `input.http.method` / `.path` / `.headers`                                       | Always                                          | Sensitive headers are stripped.                                                                                                                                                                           |
+| `input.gateway.direction`                                                        | Always                                          | `"inbound"` or `"outbound"`.                                                                                                                                                                              |
+| `input.gateway.source_id`                                                        | Inbound via connection point, or outbound       | Caller DID, or managed agent DID on outbound. Omitted otherwise.                                                                                                                                          |
+| `input.gateway.target_id`                                                        | Outbound / fabric send                          | Target URL or remote gateway DID.                                                                                                                                                                         |
+| `input.channel.config_id` / `.name`                                              | Always                                          | Surface identity.                                                                                                                                                                                         |
+| `input.channel.variant_alias`                                                    | Request used `/route$alias/...`                 | Omitted on the default variant.                                                                                                                                                                           |
+| `input.source_auth.*`                                                            | Surface has a Caller Context element            | Shape depends on `method`. See below.                                                                                                                                                                     |
+| `input.a2a.method` / `.message`                                                  | A2A / AP2 requests                              | Taken from the original body, before identity injection.                                                                                                                                                  |
+| `input.mcp.method` / `.tool_name` / `.resource_uri` / `.prompt_name` / `.params` | Inbound MCP requests                            |                                                                                                                                                                                                           |
+| `input.agent.*`                                                                  | Trust Registry data extraction enabled          | `did`, `trust_verification`, `source_trust_verification`, `target_trust_verification`, `agent_dna`, `trust_registry_did`, `provider_did`, `authority_did`, `identity_issuer_did`, `tr_identity_mismatch`. |
+| `input.trust_check_results.caller` / `.target`                                   | At least one Trust Check element ran on the leg | Both keys always present when the object exists; the leg that did not run is `[]`.                                                                                                                        |
+| `input.extension_identity.did` / `.identity_hash`                                | Verified VP in the request body                 |                                                                                                                                                                                                           |
+| `input.payment.verified` / `.response_header`                                    | x402 payment verified                           |                                                                                                                                                                                                           |
+| `input.identity_binding.*`                                                       | Verified VP from an upstream gateway            | `verified`, `agent.did`, `agent.identity_fields`, `caller.fields`, `caller.user_hash`, `caller.assurance`, `caller.identity_source`, `delegated`, `issuer_gateway`, `target`, `intent`.                   |
+| `input.metadata.*`                                                               | Metadata Injection rules ran                    | Free-form key/value map.                                                                                                                                                                                  |
+
+> **There is no `input.jwt` on a gateway or surface policy.** JWT claims arrive at
+> `input.source_auth.claims`. `input.jwt` exists only in the separate MCP per-tool
+> policy input - see [below](#gateway-defined-vs-user-defined-fields).
 
 ### `input.source_auth` shapes
+
+The `method` field is the discriminant and determines which other fields exist:
 
 ```json
 { "method": "jwt_bearer", "subject": "user@example.com", "claims": { "role": "admin" } }
 { "method": "api_key",    "key_name": "my-client-id" }
 { "method": "did_auth",   "did": "did:web:example.com:caller" }
-{ "method": "mtls",       "principal": "CN=my-service,O=Example Corp", "fingerprint": "sha256:..." }
+{ "method": "mtls",       "principal": "CN=svc,O=Example", "fingerprint": "sha256:...", "subject_dn": "CN=svc,O=Example", "issuer_dn": "CN=Example CA", "sans": {} }
 { "method": "failed",     "attempted_method": "jwt_bearer", "reason": "Token has expired" }
 ```
 
-> A failed authentication does **not** block the request on its own. The surface
-> forwards it with no asserted caller identity unless a policy denies it. See
-> [sample 5.2](#52-deny-when-caller-authentication-failed).
+Notes:
+
+- `input.source_auth` is **absent entirely** when the surface has no Caller Context
+  element. A policy that reads `input.source_auth.anything` on such a surface is
+  `undefined` and denies every request.
+- It is also absent on the outbound leg - there is no caller to authenticate there.
+- A failed authentication does **not** block the request on its own; the gateway
+  hands `method: "failed"` to the policy layer and lets the policy decide. See
+  [sample 5.2](#52-deny-when-caller-authentication-failed).
+- On `mtls`, `principal`, `fingerprint`, `subject_dn`, and `issuer_dn` are always
+  present; the `sans` sub-keys (`dns`, `uri`, `email`, `ip`) appear only when the
+  certificate carries them.
+
+### Gateway-defined vs user-defined fields
+
+This distinction decides whether a field name is guaranteed or whether you have to
+verify it yourself before writing a rule against it.
+
+| Category                           | Fields                                                                                                                                                                   | Who controls the key names                                       |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| **Gateway-defined** (fixed schema) | `http`, `gateway`, `channel`, `source_auth.method`, `source_auth.subject`, `agent.*`, `trust_check_results.*`, `extension_identity.*`, `payment.*`, `identity_binding.*` | The gateway. Stable, exactly as listed above.                    |
+| **User-defined** (free-form)       | **`source_auth.claims.*`**, `metadata.*`, `mcp.params.*`, `a2a.message.*`                                                                                                | Your IdP, your Metadata Injection config, or the calling client. |
+
+The important one is **`input.source_auth.claims`**: the gateway copies the
+validated token payload in verbatim and never normalises it. `role`, `scp`, `tid`,
+`groups`, `wids`, `email`, `upn` and friends exist only if _your_ identity provider
+emits them. Several are Entra ID optional claims that must be switched on in the
+app registration first. Before shipping a claims-based policy:
+
+1. Decode a real token from your IdP (or capture one in a dry run) and confirm the
+   claim name and type - a scope can be a space-delimited string _or_ an array.
+2. Use `object.get(input.source_auth, ["claims", "role"], "")` rather than a bare
+   lookup so a missing claim produces your `deny_reason` instead of an
+   `undefined` silent deny.
+
+Similarly, `input.metadata` keys are whatever your Metadata Injection rules set,
+and `input.a2a.message` / `input.mcp.params` are attacker-controllable request
+body content - validate shape before trusting values.
+
+### MCP per-tool policies use a different input
+
+A policy bound to an individual MCP tool is evaluated against a separate struct,
+not `PolicyInput`. Same package (`package surface.policy`), different fields:
+
+| Surface / gateway policy           | MCP per-tool policy                              |
+| ---------------------------------- | ------------------------------------------------ |
+| `input.source_auth.claims.<claim>` | `input.jwt.<claim>` (flat claims map)            |
+| `input.mcp.tool_name`              | `input.mcp.method` (tool name lives in `method`) |
+| `input.http.method` / `.path`      | `input.request.method` / `.path`                 |
+| `input.channel.config_id`          | `input.channel.id`                               |
+| not available                      | `input.request.source_ip`                        |
+
+How `input.jwt` is built:
+
+- It is the **decoded payload of the `Bearer` token**, copied in as a flat map. So
+  `input.jwt.sub`, `input.jwt.scp`, `input.jwt.role` are just the claims your token
+  happens to carry - `role` is not a gateway-defined field, and it only exists if
+  your IdP emits it. The same "verify against a real token" advice as
+  [`source_auth.claims`](#gateway-defined-vs-user-defined-fields) applies.
+- It is **omitted entirely** when there is no readable `Bearer` token on the
+  request, so `input.jwt.anything` is `undefined` and denies.
+- The claims are decoded, **not signature-verified, at this point**. Authenticity
+  is established earlier by source authentication; `input.jwt` only surfaces the
+  claims for the policy to read. Do not treat a per-tool policy as the thing
+  proving the token is genuine - keep a Caller Context element doing that.
+- `input.mcp.protocol` is always `"json-rpc-2.0"`.
 
 ### Stripped headers
 
@@ -254,8 +528,6 @@ authenticated_methods := {"jwt_bearer", "api_key", "did_auth", "mtls"}
 allow if {
   input.source_auth.method in authenticated_methods
 }
-
-allow_reason := sprintf("Authenticated via %s", [input.source_auth.method])
 
 deny_reason := "Caller is not authenticated" if {
   not authenticated
@@ -346,8 +618,6 @@ default allow := false
 allow if {
   scope_permitted
 }
-
-allow_reason := "Request meets all requirements"
 
 deny_reason := sprintf("Required scope '%s' not present in token", [required_scope]) if {
   not scope_permitted
@@ -487,8 +757,6 @@ allow if {
   input.source_auth.did in allowed_dids
 }
 
-allow_reason := sprintf("Caller DID %s is allowlisted", [input.source_auth.did])
-
 deny_reason := "Caller did not present a DID credential" if {
   input.source_auth.method != "did_auth"
 }
@@ -579,8 +847,6 @@ allow if {
   input.gateway.source_id == remote_gateway
 }
 
-allow_reason := "Inbound request from the expected peer gateway"
-
 deny_reason := "Invalid gateway direction - expected inbound" if {
   input.gateway.direction != "inbound"
 }
@@ -630,8 +896,6 @@ default allow := false
 allow if {
   caller_trusted
 }
-
-allow_reason := "Caller passed all Trust Registry checks"
 
 deny_reason := "Caller failed Trust Registry verification" if {
   not caller_trusted
@@ -704,8 +968,6 @@ allow if {
   input.gateway.direction == "outbound"
   target_trusted
 }
-
-allow_reason := sprintf("Target %s passed Trust Registry checks", [input.gateway.target_id])
 
 deny_reason := "Expected an outbound request on this policy slot" if {
   input.gateway.direction != "outbound"
@@ -812,8 +1074,6 @@ allow if {
   email_permitted
 }
 
-allow_reason := sprintf("%s is on the allowlist", [caller_email])
-
 deny_reason := "No email claim found on the token" if {
   caller_email == ""
 }
@@ -867,7 +1127,7 @@ value, so `Paramesh.K@Affinidi.com` still matches.
 }
 ```
 
-**Expected:** `ALLOW - paramesh.k@affinidi.com is on the allowlist`.
+**Expected:** `ALLOW` (no reason is shown on an allow).
 
 **Sample input (DENY)** - change `upn` and `unique_name` to
 `someone.else@example.com`.
@@ -938,8 +1198,6 @@ allow if {
   count(caller_roles & allowed_roles) > 0
 }
 
-allow_reason := "Caller holds a permitted role"
-
 deny_reason := sprintf("None of the caller's roles %v are permitted", [caller_roles]) if {
   count(caller_roles & allowed_roles) == 0
 }
@@ -1003,8 +1261,6 @@ default allow := false
 allow if {
   a2a_action in allowed_actions
 }
-
-allow_reason := sprintf("A2A action '%s' is allowed", [a2a_action])
 
 deny_reason := sprintf("A2A action '%s' is not allowed", [a2a_action]) if {
   not a2a_action in allowed_actions
@@ -1115,10 +1371,10 @@ deny_reason := sprintf("MCP tool '%s' is not permitted on this surface", [input.
 **Sample input (DENY)** - change `tool_name` to `"delete_document"`.
 
 > **Per-tool policies use a different input struct.** If you are attaching a policy
-> to an individual tool binding (not the surface), use `input.mcp.method` for the
-> tool name, `input.jwt.*` for claims, and `input.request.path`. See the
-> [MCP tool policy input](https://docs.affinidi.com/products/affinidi-trust-fabric/agent-gateway/reference/surfaces/opa-policies/)
-> section of the reference.
+> to an individual tool binding rather than the surface, the tool name is at
+> `input.mcp.method`, claims are at `input.jwt.*`, and the path is at
+> `input.request.path`. See
+> [MCP per-tool policies use a different input](#mcp-per-tool-policies-use-a-different-input).
 
 ---
 
@@ -1189,8 +1445,6 @@ allow if {
   input.source_auth.method == "jwt_bearer"
   input.source_auth.claims.role == "admin"
 }
-
-allow_reason := "Authenticated admin on an inbound request"
 
 deny_reason := "Only inbound traffic is accepted" if {
   input.gateway.direction != "inbound"
@@ -1459,7 +1713,10 @@ deny_reason := "Token tenant does not match this surface's resource tenant" if {
   "source_auth": {
     "method": "jwt_bearer",
     "subject": "user@example.com",
-    "claims": { "scp": "agent.access", "tid": "00000000-f06b-4a99-85d8-ca5481d17d2e" }
+    "claims": {
+      "scp": "agent.access",
+      "tid": "00000000-f06b-4a99-85d8-ca5481d17d2e"
+    }
   }
 }
 ```
@@ -1582,12 +1839,12 @@ require an approved directory role.
 > Requires **`wids`** (directory role template IDs) as an optional claim, or an app
 > role mapped through **`roles`**. Common built-in role template IDs:
 >
-> | Role | Template ID |
-> | --- | --- |
-> | Global Administrator | `62e90394-69f5-4237-9190-012177145e10` |
+> | Role                          | Template ID                            |
+> | ----------------------------- | -------------------------------------- |
+> | Global Administrator          | `62e90394-69f5-4237-9190-012177145e10` |
 > | Privileged Role Administrator | `e8611ab8-c189-46e8-94e1-60213ab1f814` |
-> | User Administrator | `fe930be7-5e62-47db-91af-98c3a49a38b1` |
-> | Application Administrator | `9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3` |
+> | User Administrator            | `fe930be7-5e62-47db-91af-98c3a49a38b1` |
+> | Application Administrator     | `9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3` |
 
 ```rego
 package surface.policy
@@ -1694,7 +1951,11 @@ deny_reason := sprintf("Tool '%s' requires builder group membership", [input.mcp
 
 ```json
 {
-  "http": { "method": "POST", "path": "/v1/surfaces/my-surface/mcp", "headers": {} },
+  "http": {
+    "method": "POST",
+    "path": "/v1/surfaces/my-surface/mcp",
+    "headers": {}
+  },
   "gateway": { "direction": "inbound" },
   "channel": { "config_id": "surface-abc123", "name": "my-surface" },
   "source_auth": {
@@ -1720,14 +1981,14 @@ registry, a PIM check) and inject it via the surface's Metadata Injection elemen
 it lands in `input.metadata`, or populate `input.agent` via Trust Registry
 extraction. Once that field exists in the input, the Rego is a one-line check.
 
-| Scenario | Missing signal | Where it would need to come from |
-| --- | --- | --- |
-| Block disabled Entra ID users | `accountEnabled` | Graph API lookup -> `input.metadata.account_enabled` |
-| Block inactive Entra ID users | `signInActivity.lastSignInDateTime` | Graph API lookup -> `input.metadata.last_sign_in` |
-| Block orphaned agents | Agent owner mapping / validity | Agent registry or Trust Registry lookup -> `input.agent` |
-| Secrets egress for scoped admins | Administrative-unit-scoped role assignment | Graph API role assignment lookup -> `input.metadata.scoped_roles` |
-| User classification by custom security attributes | Custom security attributes | Graph API lookup -> `input.metadata.security_attributes` |
-| Step-up by device compliance / sign-in risk | Conditional Access signals, device compliance | Conditional Access authentication context claim (`acrs`), or a device/risk lookup -> `input.metadata` |
+| Scenario                                          | Missing signal                                | Where it would need to come from                                                                      |
+| ------------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Block disabled Entra ID users                     | `accountEnabled`                              | Graph API lookup -> `input.metadata.account_enabled`                                                  |
+| Block inactive Entra ID users                     | `signInActivity.lastSignInDateTime`           | Graph API lookup -> `input.metadata.last_sign_in`                                                     |
+| Block orphaned agents                             | Agent owner mapping / validity                | Agent registry or Trust Registry lookup -> `input.agent`                                              |
+| Secrets egress for scoped admins                  | Administrative-unit-scoped role assignment    | Graph API role assignment lookup -> `input.metadata.scoped_roles`                                     |
+| User classification by custom security attributes | Custom security attributes                    | Graph API lookup -> `input.metadata.security_attributes`                                              |
+| Step-up by device compliance / sign-in risk       | Conditional Access signals, device compliance | Conditional Access authentication context claim (`acrs`), or a device/risk lookup -> `input.metadata` |
 
 Once the field is present, the pattern matches the rest of this guide, for example:
 
@@ -1755,17 +2016,22 @@ deny_reason := "No account status available - check Metadata Injection config" i
 
 ## 9. Common Mistakes
 
-| Mistake                                                                     | What happens                            | Fix                                                                                 |
-| --------------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------- |
-| Using `input.jwt.*` in a surface policy                                     | Always `undefined` -> silent deny       | Use `input.source_auth.claims.*`. `input.jwt` exists only in MCP per-tool policies. |
-| Reading a bearer token from `input.http.headers.authorization`              | Header is stripped -> `undefined`       | Use `input.source_auth`.                                                            |
-| `every r in results { r.ok }` with no count guard                           | Empty array returns `true` -> allow-all | Add `count(results) > 0`.                                                           |
-| Checking `input.agent.trust_verification` without enabling trust extraction | `undefined` -> deny                     | Enable "Extract Trust Registry Data" on the surface.                                |
-| Using `package channel.policy`                                              | Rejected on create/update               | Use `package surface.policy`.                                                       |
-| `default allow := true`                                                     | Fails open                              | Always deny by default.                                                             |
-| Checking `input.gateway.source_id` on an inbound direct call                | `null` on that path                     | Only use it on connection point or outbound legs.                                   |
-| No `deny_reason`                                                            | Opaque 403s, hard to debug              | Add a `deny_reason` for each failure branch.                                        |
-| Deleting a policy still attached to a surface                               | That surface fails **closed**           | Detach or replace before deleting.                                                  |
+| Mistake                                                                     | What happens                                                                          | Fix                                                                                 |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Using `input.jwt.*` in a surface policy                                     | Always `undefined` -> silent deny                                                     | Use `input.source_auth.claims.*`. `input.jwt` exists only in MCP per-tool policies. |
+| Defining `allow_reason`                                                     | Nothing - the gateway never evaluates that rule                                       | Only `deny_reason` is read, and only when the decision is a deny.                   |
+| Reading `input.source_auth` on a surface with no Caller Context element     | Field is absent -> `undefined` -> deny-all                                            | Add a Caller Context element, or do not branch on `source_auth`.                    |
+| Reading `input.source_auth` on an outbound/target policy slot               | Never populated outbound                                                              | Use `input.gateway.target_id` or `input.trust_check_results.target`.                |
+| Reading a bearer token from `input.http.headers.authorization`              | Header is stripped -> `undefined`                                                     | Use `input.source_auth`.                                                            |
+| `every r in results { r.ok }` with no count guard                           | Empty array returns `true` -> allow-all                                               | Add `count(results) > 0`.                                                           |
+| Assuming a claim like `role` or `groups` always exists                      | IdP-specific, often needs an Entra optional claim -> `undefined` -> deny              | Verify against a real token; wrap in `object.get(..., default)`.                    |
+| Checking `input.agent.trust_verification` without enabling trust extraction | `undefined` -> deny                                                                   | Enable Trust Registry data extraction on the surface.                               |
+| Using `package channel.policy`                                              | Rejected on create/update (legacy definitions were auto-migrated)                     | Use `package surface.policy`.                                                       |
+| Omitting `default allow`                                                    | No value at `data.<scope>.policy.allow` -> fail closed with a misconfiguration reason | Always declare `default allow := false`.                                            |
+| `default allow := true`                                                     | Fails open                                                                            | Always deny by default.                                                             |
+| Checking `input.gateway.source_id` on an inbound direct call                | Field is omitted on that path                                                         | Only use it on connection point or outbound legs.                                   |
+| No `deny_reason`                                                            | Opaque 403s, hard to debug                                                            | Add a `deny_reason` for each failure branch.                                        |
+| Deleting a policy still attached to a surface                               | That surface fails **closed**                                                         | Detach or replace before deleting.                                                  |
 
 ### Rego version note
 
