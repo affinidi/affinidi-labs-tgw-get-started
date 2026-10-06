@@ -28,11 +28,12 @@ _alt: Full gateway architecture diagram showing Thatcher Gateway and Dexter Gate
 
 #### Thatcher Gateway — Inbound (Portal → Agent)
 
-| Checkpoint        | What happens                                                                             |
-| ----------------- | ---------------------------------------------------------------------------------------- |
-| **Access Point**  | Validates Entra JWT, creates user identity context from claims                           |
-| **Managed Agent** | Dispatch policy check (scp, action), creates agent identity VP with user + agent binding |
-| → Thatcher Agent  | Request forwarded with injected VP in metadata                                           |
+| Checkpoint         | What happens                                                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| **Access Point**   | Validates Entra JWT, creates user identity context from claims                                                 |
+| **Trust Recorder** | Registers the gateway-created identities in Trust Registry (only runs if this element is added to the surface) |
+| **Managed Agent**  | Dispatch policy check (scp, action), creates agent identity VP with user + agent binding                       |
+| → Thatcher Agent   | Request forwarded with injected VP in metadata                                                                 |
 
 #### Thatcher Gateway — Outbound (Agent → Dexter)
 
@@ -254,6 +255,8 @@ Create these two surfaces on Dexter Gateway:
 - **Trust Check**: Select Trust Registry, set Authority ID as other department ID, and Entity ID as caller agent DID
   ![Configure trust check](images/surface-create-8.png)
 
+- **Trust Recorder**: Select the Trust Registry and the Issuer this surface registers under, and keep **Include owned agent** enabled.
+
 - **Static Agent DID**: Open the agent card from the main surface Access Point URL (for `Thatcher` or `Dexter`),
   for example: https://{GATEWAY_URL}/agents/org-a/thatcher-agent/.well-known/agent-card.json
   Copy the `holder` DID, then set it in the opposite surface's **Static Agent Identity** element:
@@ -347,11 +350,13 @@ Also verify the agent identities created by the gateways:
 
 ![Gateway identity details verification](images/with-gw-verify-6.png)
 
-Finally, verify Trust Registry records added by the gateway:
+Finally, verify Trust Registry records added by the **Trust Recorder** element on the surface:
 
 - The issuer is a recognized department in the gateway
 - That issuer is authorized as an authority to register agents
 - Thatcher agent is recognized under that issuer authority
+
+> If these records are missing, check that the surface has a **Trust Recorder** element configured (see Step 5). The gateway no longer creates Trust Registry entries implicitly.
 
 ![Trust Registry verification for issuer authority and Thatcher agent](images/with-gw-verify-7.png)
 

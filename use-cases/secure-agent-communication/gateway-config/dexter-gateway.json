@@ -14,7 +14,19 @@
                     "jwt_verification_strategy_id": "",
                     "audiences": [],
                     "token_header": "Authorization",
-                    "token_scheme": "Bearer"
+                    "token_scheme": "Bearer",
+                    "forward_header": false
+                }
+            ]
+        },
+        "trust_recorder": {
+            "entries": [
+                {
+                    "trust_registry_id": "",
+                    "issuer_did": "",
+                    "authority_did": "{{ surface.issuer_did }}",
+                    "include_owned_agent": true,
+                    "custom_resources": []
                 }
             ]
         }
@@ -236,11 +248,23 @@
                                 "jwt_verification_strategy_id": "",
                                 "audiences": [],
                                 "token_header": "Authorization",
-                                "token_scheme": "Bearer"
+                                "token_scheme": "Bearer",
+                                "forward_header": false
                             }
                         ]
                     },
-                    "terminate_trace_id": false
+                    "terminate_trace_id": false,
+                    "trust_recorder": {
+                        "entries": [
+                            {
+                                "trust_registry_id": "",
+                                "issuer_did": "",
+                                "authority_did": "{{ surface.issuer_did }}",
+                                "include_owned_agent": true,
+                                "custom_resources": []
+                            }
+                        ]
+                    }
                 }
             },
             {
@@ -287,7 +311,8 @@
                     "jwt_token_scheme": "Bearer",
                     "jwt_strategy_id": "",
                     "audiences": [],
-                    "name": "User Context"
+                    "name": "User Context",
+                    "jwt_forward_header": false
                 },
                 "slotId": "request:caller-auth"
             },
@@ -413,6 +438,28 @@
                     "name": "Agent Identity"
                 },
                 "slotId": "response:identity-protected"
+            },
+            {
+                "id": "trust-recorder-target-response",
+                "type": "trust-recorder",
+                "label": "",
+                "parentId": "target",
+                "position": {
+                    "x": -293.3720930232558,
+                    "y": -32
+                },
+                "config": {
+                    "entries": [
+                        {
+                            "trust_registry_id": "",
+                            "issuer_did": "",
+                            "authority_did": "{{ surface.issuer_did }}",
+                            "include_owned_agent": true,
+                            "custom_resources": []
+                        }
+                    ]
+                },
+                "slotId": "response:trust-recorder"
             },
             {
                 "id": "trust-check-target",
