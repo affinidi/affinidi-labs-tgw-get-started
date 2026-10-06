@@ -25,7 +25,7 @@ kill_port() {
 
 kill_port "$PORT"
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")" || exit
 
 if [ ! -d "venv" ]; then
     echo "Creating virtual environment..."

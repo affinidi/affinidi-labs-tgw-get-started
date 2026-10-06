@@ -5,7 +5,7 @@
 # The agent has no auth code at all - the gateway will add DID Auth in front
 # of it later without any agent changes.
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")" || exit
 
 if [ ! -f .env ] && [ -f .env.example ]; then
     echo "No .env found - creating one from .env.example"
