@@ -93,9 +93,8 @@ package surface.policy
 # Deny by default, then explicitly allow what you need.
 default allow := false
 
-allow if {
-  # conditions
-}
+# Add explicit allow rules below. Do not leave an empty `allow` rule here:
+# an empty rule body evaluates to true and would allow every request.
 ```
 
 ### The `deny_reason` rule
@@ -625,20 +624,31 @@ deny_reason := sprintf("Required scope '%s' not present in token", [required_sco
 
 scope_permitted if {
   scp := input.source_auth.claims.scp
+  is_string(scp)
   required_scope in split(scp, " ")
+}
+
+scope_permitted if {
+  scp := input.source_auth.claims.scp
+  is_array(scp)
+  required_scope in scp
 }
 ```
 
-> Some IdPs emit scopes as an array (`scopes` / `scp` as a list) rather than a
+> Some IdPs emit `scp` as an array rather than a
 > space-delimited string. Handle both:
 >
 > ```rego
 > scope_permitted if {
->   required_scope in split(input.source_auth.claims.scp, " ")
+>   scp := input.source_auth.claims.scp
+>   is_string(scp)
+>   required_scope in split(scp, " ")
 > }
 >
 > scope_permitted if {
->   required_scope in input.source_auth.claims.scp
+>   scp := input.source_auth.claims.scp
+>   is_array(scp)
+>   required_scope in scp
 > }
 > ```
 
@@ -1740,11 +1750,17 @@ sensitive_paths := {"/a2a/tasks/delete", "/admin"}
 
 default allow := false
 
-allow if {
-  not sensitive_path
+authenticated if {
+  input.source_auth.method == "jwt_bearer"
 }
 
 allow if {
+  not sensitive_path
+  authenticated
+}
+
+allow if {
+  authenticated
   sensitive_path
   mfa_present
 }
@@ -1756,6 +1772,10 @@ sensitive_path if {
 
 mfa_present if {
   "mfa" in input.source_auth.claims.amr
+}
+
+deny_reason := "JWT bearer authentication is required" if {
+  not authenticated
 }
 
 deny_reason := "MFA is required for this operation" if {
@@ -1861,11 +1881,17 @@ mutating_methods := {"POST", "PUT", "PATCH", "DELETE"}
 
 default allow := false
 
-allow if {
-  not input.http.method in mutating_methods
+authenticated if {
+  input.source_auth.method == "jwt_bearer"
 }
 
 allow if {
+  not input.http.method in mutating_methods
+  authenticated
+}
+
+allow if {
+  authenticated
   input.http.method in mutating_methods
   caller_has_approved_role
 }
@@ -1873,6 +1899,10 @@ allow if {
 caller_has_approved_role if {
   some id in input.source_auth.claims.wids
   id in approved_role_ids
+}
+
+deny_reason := "JWT bearer authentication is required" if {
+  not authenticated
 }
 
 deny_reason := "Caller does not hold an approved administrative role for mutating actions" if {
