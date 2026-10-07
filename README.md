@@ -2,7 +2,7 @@
 
 The Agent Gateway is an enterprise-grade gateway designed specifically for the emerging Agent-to-Agent AI ecosystem. Written in Rust for maximum performance and security, it provides comprehensive trust infrastructure, observability, and governance for AI agent communications across organizational boundaries, in ways that set it apart in the emerging AI observability space.
 
-At its core, the Agent Gateway is a protocol-aware intercepting proxy for the Internet of AI Agents. The Gateway provides three fundamental capabilities:
+At its core, the Agent Gateway is a protocol-aware intercepting proxy for the Internet of AI Agents. This repository demonstrates gateway support for both A2A generations (`0.3` and `1.0`, using SDK `1.0.1`) and both legacy and modern MCP (`2024-11-05` and `2026-07-28`). The Gateway provides three fundamental capabilities:
 
 - **Protocol inspection** (understanding A2A, AP2, UCP, MCP, OpenAI protocols)
 - **Identity management** (issuing and validating durable and portable decentralized identities for agents to bridge the decentralized world to AI agents), and
@@ -52,12 +52,14 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
 ## 📋 Table of Contents
 
 - [Try it in GitHub Codespaces](#try-it-in-github-codespaces-no-local-setup-required)
+- [Protocol Support](#protocol-support)
 - [Overview](#overview)
 - [Project Structure](#project-structure)
 - [Part 1: Run Agents Without Agent Gateway](#part-1-run-agents-without-agent-gateway)
   - [Prerequisites](#prerequisites)
   - [A2A Server (Local)](#a2a-server-local)
   - [MCP Server (Local)](#mcp-server-local)
+  - [MCP Latest Protocol Lab](#mcp-latest-protocol-lab)
   - [A2A Vertex AI Agent](#a2a-vertex-ai-agent)
 - [Part 2: Run Agents With Agent Gateway](#part-2-run-agents-with-agent-gateway)
   - [What is the Agent Gateway?](#what-is-the-agent-gateway)
@@ -76,6 +78,22 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
 - [Use Cases](#use-cases)
   - [Cross-Org Secure Agent Communication](#cross-org-secure-agent-communication)
   - [Cross-Org Secure Agent Communication (Copilot Studio)](#cross-org-secure-agent-communication-copilot-studio)
+
+---
+
+## Protocol Support
+
+The labs exercise the following Agent Gateway protocol versions:
+
+| Protocol | Wire-protocol version | Lab | Notes |
+| -------- | --------------------- | --- | ----- |
+| A2A | [`0.3`](https://a2a-protocol.org/v0.3.0/specification/) | [`a2a/`](a2a/) | Legacy A2A profile using `a2a-sdk==0.3.25` |
+| A2A | [`1.0`](https://a2a-protocol.org/v1.0.0/specification/) | [`a2a-v1/`](a2a-v1/) | Current A2A profile using `a2a-sdk==1.0.1`; requests must forward `A2A-Version: 1.0` |
+| MCP | [`2024-11-05`](https://modelcontextprotocol.io/specification/2024-11-05) | [`mcp/`](mcp/) | Initialization-based MCP flow |
+| MCP | [`2026-07-28`](https://modelcontextprotocol.io/specification/2026-07-28) | [`mcp-latest/`](mcp-latest/) | Stateless modern MCP flow with per-request metadata and `server/discover` |
+
+> `1.0.1` is the A2A Python SDK release used by the v1 lab; the A2A wire
+> protocol advertised in the agent card and request header is `1.0`.
 
 ---
 
@@ -183,6 +201,7 @@ You can now type messages to the agent and see responses in real time.
 Once you have your Codespaces forwarded URLs, you can use them exactly like ngrok URLs in all the Agent Gateway steps in Part 2:
 
 - When configuring an MCP Surface, set the **Target Endpoint URL** to your Codespaces forwarded address for port `11000`.
+- For the latest MCP lab, forward port `11100` and set the **Target Endpoint URL** to `<forwarded-address>/mcp`.
 - When configuring an A2A Surface, set the **Target Endpoint URL** to your Codespaces forwarded address for port `10000`.
 
 ![alt text](docs/images/a2a/a2a-surface-2.png)
@@ -200,6 +219,7 @@ Everything else stays the same — the Codespace keeps the server running while 
 | `a2a/`                            | Local A2A echo agent server + interactive client                                      |
 | `a2a-v1/`                         | A2A v1.0.1 echo agent + automated gateway compatibility smoke test                    |
 | `mcp/`                            | Local MCP server with calculator and weather tools                                    |
+| `mcp-latest/`                     | Stateless MCP `2026-07-28` lab with modern request metadata and gateway validation    |
 | `a2a-vertex-agent/`               | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
 | `rest-api/`                       | REST API server with MCP proxy                                                        |
 | `a2a-agent-identity/`             | Multi-agent server (Personal + Finance) with decentralized identity via Agent Gateway |
@@ -230,6 +250,13 @@ affinidi-labs-tgw-get-started/
 │   ├── requirements.txt
 │   ├── run.sh               # Start the server
 │   └── test.sh              # Test the server
+├── mcp-latest/
+│   ├── mcp_server.py        # Stateless MCP 2026-07-28 server
+│   ├── mcp_client.py        # Modern MCP test client
+│   ├── requirements.txt
+│   ├── run.sh               # Start the server on port 11100
+│   ├── test.sh              # Test local or gateway endpoints
+│   └── README.md            # Protocol comparison and wire examples
 ├── a2a-vertex-agent/
 │   ├── agent.py             # Vertex AI A2A agent definition
 │   ├── a2a_client.py        # A2A client for the deployed agent
@@ -292,6 +319,7 @@ Run the agents locally or on Vertex AI and test them directly — no gateway inv
 - pip and virtual environment support
 - macOS/Linux (scripts use bash)
 - ngrok (optional, for exposing local servers publicly)
+- Ports 11000 and 11100 available for the MCP labs
 - Google Cloud account with billing enabled (for Vertex AI agent only)
 
 ---
@@ -373,6 +401,43 @@ cd mcp
 ```
 
 The test client initializes the connection, lists tools, calls the calculator and weather tools.
+
+---
+
+## MCP Latest Protocol Lab
+
+The `mcp-latest/` lab implements the stateless MCP `2026-07-28` protocol used
+by the latest Agent Gateway integration. It replaces the `initialize` handshake
+with `server/discover`, carries protocol metadata on every request, mirrors MCP
+method and name fields into HTTP headers, and returns the required
+`resultType`, `ttlMs`, and `cacheScope` response fields.
+
+> For the protocol comparison, supported methods, and complete request/response
+> examples, see **[mcp-latest/README.md](mcp-latest/README.md)**.
+
+### Start the latest server
+
+```bash
+cd mcp-latest
+./run.sh
+```
+
+Default MCP endpoint: `http://localhost:11100/mcp`
+
+### Test the latest server
+
+```bash
+cd mcp-latest
+
+# Test locally
+./test.sh http://localhost:11100
+
+# Test through an Agent Gateway route
+./test.sh https://<GATEWAY_HOST>/routes/<CHANNEL_PATH>
+```
+
+When configuring the MCP surface, set its managed-agent target to the public
+server URL ending in `/mcp`.
 
 ---
 
