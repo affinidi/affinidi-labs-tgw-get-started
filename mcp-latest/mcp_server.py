@@ -135,6 +135,8 @@ app = FastAPI(title=SERVER_INFO["name"], lifespan=lifespan)
 
 # ── JSON-RPC helpers ─────────────────────────────────────────────────────────
 def rpc_result(id: Any, result: Any) -> Dict:
+    if isinstance(result, dict):
+        result.setdefault("resultType", "complete")
     return {"jsonrpc": "2.0", "id": id, "result": result}
 
 
@@ -305,7 +307,11 @@ def handle_discover(request_id: Any, params: Dict) -> Dict:
 
 def handle_tools_list(request_id: Any) -> Dict:
     print("📋 Listing tools")
-    return rpc_result(request_id, {"tools": TOOLS})
+    return rpc_result(request_id, {
+        "tools": TOOLS,
+        "ttlMs": 300000,
+        "cacheScope": "public"
+    })
 
 
 def handle_tools_call(request_id: Any, params: Dict) -> Dict:

@@ -112,12 +112,16 @@ def run_test_suite(client: MCPClient):
     print("\n\n[TEST 1] server/discover")
     result = client.discover()
     assert result.get("result"), "discover failed"
+    assert result["result"].get("resultType") == "complete"
     assert PROTOCOL_VERSION in result["result"].get("supportedVersions", [])
     print("✅ server/discover: PASSED")
 
     print("\n\n[TEST 2] List Tools")
     result = client.list_tools()
     assert result.get("result"), "List tools failed"
+    assert result["result"].get("resultType") == "complete"
+    assert result["result"].get("ttlMs") == 300000
+    assert result["result"].get("cacheScope") == "public"
     tools = result["result"].get("tools", [])
     assert len(tools) == 2, f"Expected 2 tools, got {len(tools)}"
     print(f"✅ List Tools: PASSED ({len(tools)} tools)")
@@ -126,6 +130,7 @@ def run_test_suite(client: MCPClient):
     result = client.call_tool(
         "calculator", {"operation": "add", "a": 15, "b": 27})
     assert result.get("result"), "Call tool failed"
+    assert result["result"].get("resultType") == "complete"
     assert result["result"]["structuredContent"]["result"] == 42
     print("✅ Calculator Addition: PASSED")
 
@@ -133,6 +138,7 @@ def run_test_suite(client: MCPClient):
     result = client.call_tool(
         "calculator", {"operation": "divide", "a": 144, "b": 12})
     assert result.get("result"), "Call tool failed"
+    assert result["result"].get("resultType") == "complete"
     assert result["result"]["structuredContent"]["result"] == 12
     print("✅ Calculator Division: PASSED")
 
@@ -140,6 +146,7 @@ def run_test_suite(client: MCPClient):
     result = client.call_tool(
         "weather_forecast", {"city": "New York", "days": 3})
     assert result.get("result"), "Call tool failed"
+    assert result["result"].get("resultType") == "complete"
     structured = result["result"]["structuredContent"]
     assert structured["city"] == "New York" and len(
         structured["forecast"]) == 3
