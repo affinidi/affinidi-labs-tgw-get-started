@@ -114,19 +114,20 @@ The gateway creates and checks the transit token. Your agent only **carries it f
 
 2. Configure it:
 
-   | Setting                      | Value                                                     |
-   | ---------------------------- | --------------------------------------------------------- |
-   | **Enable**                   | On                                                        |
-   | **User identity comes from** | **Transit token**                                         |
-   | **User fields**              | The fields to pass on, for example `sub`, `email`, `name` |
+   | Setting                                            | Value                                                                                  |
+   | -------------------------------------------------- | -------------------------------------------------------------------------------------- |
+   | **Enable workload binding for this transit point** | On                                                                                     |
+   | **Caller context source**                          | **Transit token**                                                                      |
+   | **Caller field allowlist**                         | The user claims to pass on, for example `sub`, `email`, `name`. Top-level claims only. |
+   | **Chain caller-supplied credentials**              | Leave on, as in the sample                                                             |
 
-   > The fields you choose must be present in the token issued by your identity provider.
+   > The claims you list must be present in the token issued by your identity provider. Nested paths are not allowed. If you leave the list empty, only the agent identity is bound and no user claims are included.
 
 3. Save the surface.
 
 ![alt text](images/workload-binding.png)
 
-**Copilot Studio agents** cannot forward a custom header. For those, set **Transit token required** to **off** and **User identity comes from** to **Authorization bearer JWT**. See [Copilot Studio Agent Communication](../use-cases/copilot-studio-agent-communication/).
+**Copilot Studio agents** cannot forward a custom header. For those, set **Transit token required** to **off** and **Caller context source** to the option that reads the user's bearer token from the `Authorization` header. See [Copilot Studio Agent Communication](../use-cases/copilot-studio-agent-communication/).
 
 ---
 
