@@ -1,0 +1,1455 @@
+<!doctype html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>A2A Credential Delegation Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="h-full bg-slate-100 text-slate-800">
+    <div class="mx-auto flex h-full max-w-5xl flex-col p-4 sm:p-6">
+
+        <header class="mb-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+                <div class="min-w-0">
+                    <h1 class="text-xl font-semibold leading-tight text-slate-900">
+                        A2A Credential Delegation
+                    </h1>
+                    <p class="mt-0.5 text-xs text-slate-500">
+                        One Entra-protected agent, four ways in
+                    </p>
+                </div>
+                <div class="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                    <button id="logsBtn"
+                        class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                        Agent logs
+                        <span id="logsCount"
+                            class="ml-1 hidden rounded-full bg-indigo-600 px-1.5 text-[10px] font-semibold text-white"></span>
+                    </button>
+                    <button id="signOutBtn"
+                        class="hidden rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                        Switch flow
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
+                <div class="relative">
+                    <button id="flowBadge"
+                        class="hidden items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ring-1"></button>
+                    <div id="flowMenu"
+                        class="absolute left-0 z-30 mt-1 hidden w-60 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
+                        <nav id="flowMenuNav" class="space-y-1"></nav>
+                    </div>
+                </div>
+                <span id="sessionBadge" class="rounded-full bg-slate-200 px-3 py-1 text-xs font-medium text-slate-600">
+                    Not signed in
+                </span>
+            </div>
+
+            <div class="mt-2 space-y-1">
+                <p class="truncate text-xs text-slate-500">
+                    <span id="cardLabel" class="text-slate-400">Agent card:</span>
+                    <a id="cardLink" class="font-mono text-indigo-600 underline" href="#" target="_blank"
+                        rel="noopener noreferrer">loading…</a>
+                </p>
+                <p class="truncate text-xs text-slate-500">
+                    <span id="endpointLabel" class="text-slate-400">Sending to:</span>
+                    <span id="endpointValue" class="font-mono text-slate-600">—</span>
+                </p>
+            </div>
+        </header>
+
+        <!-- Landing -->
+        <section id="landing" class="flex-1 overflow-y-auto rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div class="mx-auto w-full max-w-4xl">
+                <h2 class="text-lg font-semibold text-slate-900">Choose a flow</h2>
+                <p class="mt-1 text-sm text-slate-500">
+                    The agent only ever accepts a Microsoft Entra ID bearer token. Each flow differs
+                    in <em>who obtains that token</em> — or whether one is sent at all.
+                </p>
+
+                <nav id="landingTabs" class="mt-5 flex flex-wrap items-end gap-x-2 border-b border-slate-200"
+                    role="tablist"></nav>
+
+                <div id="landingPanels" class="mt-5 grid gap-6 sm:grid-cols-2"></div>
+
+                <!-- Action controls live here and are moved into the active panel. -->
+                <div id="landingActions" class="hidden">
+                    <button id="guestBtn" data-action="guest"
+                        class="w-full rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-700 disabled:bg-slate-300">
+                        Continue as guest
+                    </button>
+                    <a id="loginBtn" data-action="entra" href="/api/auth/microsoft"
+                        class="block w-full rounded-lg bg-slate-900 px-3 py-2 text-center text-xs font-semibold text-white hover:bg-slate-700">
+                        Sign in with Entra ID
+                    </a>
+                    <button id="gatewayUserBtn" data-action="gatewayUser"
+                        class="w-full rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-700 disabled:bg-slate-300">
+                        Connect with consent
+                    </button>
+                    <button id="gatewayBtn" data-action="gateway"
+                        class="w-full rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-700 disabled:bg-slate-300">
+                        Connect via gateway
+                    </button>
+                </div>
+
+                <p id="landingNote" class="mt-6 text-xs text-slate-400"></p>
+                <p id="landingError" class="mt-3 hidden rounded-lg bg-rose-50 p-3 text-xs text-rose-700">
+                </p>
+            </div>
+        </section>
+
+        <!-- Chat -->
+        <section id="chat"
+            class="hidden flex-1 flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+            <div id="modeBanner" class="px-5 py-2 text-xs font-medium"></div>
+            <div id="flowStrip"
+                class="border-b border-slate-200 bg-slate-50 px-5 py-2 text-xs leading-relaxed text-slate-600">
+                <span id="flowStripText"></span>
+                <button id="flowStripMore" class="ml-1 underline hover:text-slate-900">See this flow</button>
+            </div>
+            <div id="messages" class="flex-1 space-y-3 overflow-y-auto px-5 py-4"></div>
+            <div id="promptChips" class="flex flex-wrap gap-2 px-5 pb-1 pt-2"></div>
+            <form id="chatForm" class="flex gap-2 border-t border-slate-200 p-4">
+                <input id="chatInput" type="text" autocomplete="off" placeholder="Send a message to the agent…"
+                    class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
+                <button type="submit"
+                    class="rounded-lg bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:bg-slate-300">
+                    Send
+                </button>
+            </form>
+        </section>
+    </div>
+
+    <!-- Flow diagrams -->
+    <div id="flowsPanel" class="fixed inset-0 z-40 hidden">
+        <div id="flowsBackdrop" class="absolute inset-0 bg-slate-900/40"></div>
+        <div class="absolute inset-0 flex items-start justify-center overflow-y-auto p-6">
+            <div class="w-full max-w-4xl rounded-xl bg-white p-6 shadow-xl">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 class="text-base font-semibold text-slate-900">The four flows</h2>
+                        <p class="mt-1 text-xs text-slate-500">
+                            The agent's rule never changes: a valid Entra ID JWT, or 401. What
+                            changes is who obtains that JWT, and from which OAuth flow.
+                        </p>
+                    </div>
+                    <button id="flowsClose"
+                        class="shrink-0 rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50">
+                        Close
+                    </button>
+                </div>
+                <div class="mt-5 grid gap-6 sm:grid-cols-[13rem_1fr]">
+                    <nav id="flowsNav" class="space-y-1"></nav>
+                    <div id="flowsDetail"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent log drawer: every call the agent saw, from any client -->
+    <div id="logsPanel" class="fixed inset-0 z-40 hidden">
+        <div id="logsBackdrop" class="absolute inset-0 bg-slate-900/30"></div>
+        <aside
+            class="absolute right-0 top-0 flex h-full w-full max-w-2xl flex-col bg-white shadow-xl ring-1 ring-slate-200">
+            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-3">
+                <div>
+                    <h2 class="text-sm font-semibold text-slate-900">Agent logs</h2>
+                    <p id="logsSource" class="font-mono text-[11px] text-slate-400"></p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-1 text-xs text-slate-600">
+                        <input id="logsAuto" type="checkbox" checked class="rounded border-slate-300" />
+                        Live
+                    </label>
+                    <button id="logsClear"
+                        class="rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50">
+                        Clear
+                    </button>
+                    <button id="logsClose"
+                        class="rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50">
+                        Close
+                    </button>
+                </div>
+            </div>
+            <div id="logsList" class="flex-1 space-y-2 overflow-y-auto bg-slate-50 px-4 py-3"></div>
+        </aside>
+    </div>
+
+    <script>
+        "use strict";
+
+        const el = (id) => document.getElementById(id);
+        const state = {
+            config: null,
+            user: null,
+            mode: null, // "entra" | "guest" | "gateway" | "gatewayUser"
+            // Kept in memory only, never in localStorage/sessionStorage.
+            accessToken: null,
+            tokenExpiresAt: 0,
+            gatewayKey: null,
+            gatewayDirect: true, // flipped off if the gateway blocks CORS
+            lastMessage: null,   // replayed after the user grants consent
+            landingPhase: 1,
+        };
+
+        // ---------------------------------------------------------------
+        // Flow diagrams. Hand-built SVG, no external renderer. All text is
+        // authored here, never user input.
+        // ---------------------------------------------------------------
+        const FLOWS = {
+            guest: {
+                title: "Flow 1 · Guest — direct to agent, no gateway",
+                nav: "Flow 1 · Guest",
+                phase: 1,
+                stroke: "#d97706", fill: "#fffbeb", text: "#92400e",
+                nodes: [
+                    { label: "Browser (portal)" },
+                    { label: "Agent", note: "requires Entra JWT" },
+                ],
+                edges: ["POST /  ·  no Authorization header"],
+                result: { ok: false, text: "HTTP 401 — missing_token" },
+                short: "No credential at all. Watch the agent reject the call.",
+                detail:
+                    "Nothing is sent to authenticate. The agent's middleware rejects the call " +
+                    "before any A2A handling happens, and returns WWW-Authenticate telling the " +
+                    "caller which credential it expects.",
+            },
+            entra: {
+                title: "Flow 2 · Entra sign-in — direct to agent, 3-legged OAuth",
+                nav: "Flow 2 · Entra sign-in",
+                phase: 1,
+                stroke: "#4f46e5", fill: "#eef2ff", text: "#3730a3",
+                nodes: [
+                    { label: "You → Entra ID", note: "authorization code + PKCE-less web flow" },
+                    { label: "Portal backend", note: "exchanges code with client secret" },
+                    { label: "Browser", note: "holds the user access token" },
+                    { label: "Agent", note: "verifies signature, iss, aud, exp, scp" },
+                ],
+                edges: [
+                    "code",
+                    "access_token (user)",
+                    "POST /  ·  Bearer <user JWT>",
+                ],
+                result: { ok: true, text: "HTTP 200 — caller type: user" },
+                short: "You sign in; the portal holds the token and your browser calls the agent.",
+                detail:
+                    "A human consents, so the token carries their identity: upn, name, amr, and " +
+                    "the delegated scope agent.access in scp. The agent checks scp for this flow.",
+            },
+            gatewayUser: {
+                title: "Flow 3 · Gateway, user consent — 3-legged, run by the gateway",
+                nav: "Flow 3 · User consent",
+                phase: 2,
+                stroke: "#0284c7", fill: "#f0f9ff", text: "#075985",
+                nodes: [
+                    { label: "Browser or other app", note: "holds only the gateway API key" },
+                    {
+                        label: "Agent Gateway",
+                        note: "no user token yet → consent_required + auth URL",
+                    },
+                    { label: "You approve consent", note: "gateway does the code exchange" },
+                    { label: "Agent", note: "verifies signature, iss, aud, exp, scp" },
+                ],
+                edges: [
+                    "POST  ·  Authorization: api key",
+                    "open the auth URL once",
+                    "POST /  ·  Bearer <user JWT>",
+                ],
+                result: { ok: true, text: "HTTP 200 — caller type: user" },
+                short: "You hold an API key; the gateway runs the consent flow and keeps your token.",
+                detail:
+                    "Same 3-legged grant as flow 2, but the gateway owns the authorization code " +
+                    "exchange and stores the resulting token. The first call fails with " +
+                    "consent_required and an auth URL; after you approve it, later calls go " +
+                    "straight through carrying your user identity.",
+            },
+            gateway: {
+                title: "Flow 4 · Gateway, machine to machine — 2-legged OAuth",
+                nav: "Flow 4 · Machine to machine",
+                phase: 2,
+                stroke: "#059669", fill: "#ecfdf5", text: "#065f46",
+                nodes: [
+                    { label: "Browser or other app", note: "holds only the gateway API key" },
+                    {
+                        label: "Agent Gateway",
+                        note: "client_credentials with Entra → machine JWT",
+                    },
+                    { label: "Agent", note: "verifies signature, iss, aud, exp, roles" },
+                ],
+                edges: [
+                    "POST  ·  Authorization: atgs_…",
+                    "POST /  ·  Bearer <app JWT>",
+                ],
+                result: { ok: true, text: "HTTP 200 — caller type: application" },
+                short: "No user anywhere. The gateway mints a machine token from its own credentials.",
+                detail:
+                    "No human is involved. The gateway swaps its own client credentials for a " +
+                    "token, so the JWT has appid and no scp or upn — which is why the agent " +
+                    "checks app roles instead of a delegated scope for this flow.",
+            },
+        };
+
+        function flowSvg(flow, { compact } = {}) {
+            const W = compact ? 230 : 300;
+            const NH = compact ? 26 : 36;
+            const GAP = compact ? 30 : 56;
+            const n = flow.nodes.length;
+            const H = n * NH + (n - 1) * GAP + (compact ? 30 : 34);
+            const cx = W / 2;
+            const fs = compact ? 9 : 11;
+
+            let svg =
+                `<svg viewBox="0 0 ${W} ${H}" class="w-full" role="img" aria-label="${flow.title}">` +
+                `<defs><marker id="ah-${flow.stroke.slice(1)}" markerWidth="7" markerHeight="7" ` +
+                `refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="${flow.stroke}"/>` +
+                `</marker></defs>`;
+
+            flow.nodes.forEach((node, i) => {
+                const y = i * (NH + GAP);
+                svg +=
+                    `<rect x="4" y="${y}" width="${W - 8}" height="${NH}" rx="7" ` +
+                    `fill="${flow.fill}" stroke="${flow.stroke}" stroke-width="1.2"/>` +
+                    `<text x="${cx}" y="${y + (node.note ? NH / 2 - 1 : NH / 2 + 3.5)}" ` +
+                    `text-anchor="middle" font-size="${fs}" font-weight="600" fill="${flow.text}">` +
+                    `${node.label}</text>`;
+                if (node.note) {
+                    svg +=
+                        `<text x="${cx}" y="${y + NH / 2 + 9}" text-anchor="middle" ` +
+                        `font-size="${fs - 1.5}" fill="${flow.text}" opacity="0.7">${node.note}</text>`;
+                }
+                if (i < n - 1) {
+                    const y1 = y + NH + 4;
+                    const y2 = y + NH + GAP - 4;
+                    svg +=
+                        `<line x1="${cx}" y1="${y1}" x2="${cx}" y2="${y2}" stroke="${flow.stroke}" ` +
+                        `stroke-width="1.4" marker-end="url(#ah-${flow.stroke.slice(1)})"/>` +
+                        `<text x="${cx}" y="${(y1 + y2) / 2 - 2}" text-anchor="middle" ` +
+                        `font-size="${fs - 1}" fill="#475569">` +
+                        `<tspan dy="0">${flow.edges[i]}</tspan></text>`;
+                }
+            });
+
+            const ry = n * NH + (n - 1) * GAP + 8;
+            const ok = flow.result.ok;
+            svg +=
+                `<rect x="4" y="${ry}" width="${W - 8}" height="22" rx="11" ` +
+                `fill="${ok ? "#dcfce7" : "#ffe4e6"}" />` +
+                `<text x="${cx}" y="${ry + 15}" text-anchor="middle" font-size="${fs}" ` +
+                `font-weight="600" fill="${ok ? "#166534" : "#9f1239"}">${flow.result.text}</text>` +
+                `</svg>`;
+            return svg;
+        }
+
+        const PHASES = [
+            { phase: 1, label: "Phase 1 — without the gateway" },
+            { phase: 2, label: "Phase 2 — via Agent Gateway" },
+        ];
+
+        // Shared by the modal sidebar and the header dropdown.
+        function buildFlowNav(nav, onSelect) {
+            nav.textContent = "";
+            for (const { phase, label } of PHASES) {
+                const heading = document.createElement("p");
+                heading.className =
+                    "px-3 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-wide text-slate-400";
+                heading.textContent = label;
+                nav.appendChild(heading);
+
+                for (const [key, flow] of Object.entries(FLOWS)) {
+                    if (flow.phase !== phase) continue;
+                    const button = document.createElement("button");
+                    button.dataset.flowKey = key;
+                    button.textContent = flow.nav;
+                    button.addEventListener("click", () => onSelect(key));
+                    nav.appendChild(button);
+                }
+            }
+        }
+
+        function highlightFlowNav(nav, key) {
+            for (const button of nav.querySelectorAll("button")) {
+                const active = button.dataset.flowKey === key;
+                button.className =
+                    "w-full rounded-lg px-3 py-2 text-left text-xs font-medium " +
+                    (active ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100");
+                button.setAttribute("aria-selected", String(active));
+            }
+        }
+
+        function showFlowDetail(key) {
+            const flow = FLOWS[key];
+            if (!flow) return;
+            highlightFlowNav(el("flowsNav"), key);
+
+            const detail = el("flowsDetail");
+            detail.textContent = "";
+
+            const heading = document.createElement("h3");
+            heading.className = "text-sm font-semibold text-slate-900";
+            heading.textContent = flow.title;
+
+            const figure = document.createElement("div");
+            figure.className = "mt-3 max-w-xs";
+            figure.innerHTML = flowSvg(flow);
+
+            const text = document.createElement("p");
+            text.className = "mt-3 text-xs leading-relaxed text-slate-500";
+            text.textContent = flow.detail;
+
+            detail.append(heading, figure, text);
+        }
+
+        // Landing page: one tab per phase, both of its flows shown side by side.
+        function selectLandingPhase(phase) {
+            state.landingPhase = phase;
+
+            for (const tab of el("landingTabs").querySelectorAll("button")) {
+                const active = Number(tab.dataset.phase) === phase;
+                tab.className =
+                    "-mb-px whitespace-nowrap border-b-2 px-4 py-2 text-xs font-medium " +
+                    (active
+                        ? "border-slate-900 text-slate-900"
+                        : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800");
+                tab.setAttribute("aria-selected", String(active));
+            }
+
+            const panels = el("landingPanels");
+            // The action controls are live nodes with listeners bound by id, so
+            // they are parked back in their holder before the panels are wiped.
+            const holder = el("landingActions");
+            for (const action of document.querySelectorAll("[data-action]")) {
+                holder.appendChild(action);
+            }
+            panels.textContent = "";
+
+            for (const [key, flow] of Object.entries(FLOWS)) {
+                if (flow.phase !== phase) continue;
+
+                const panel = document.createElement("div");
+                panel.className = "flex flex-col rounded-xl border border-slate-200 p-4";
+
+                const heading = document.createElement("h3");
+                heading.className = "text-sm font-semibold text-slate-900";
+                heading.textContent = flow.nav;
+
+                const figure = document.createElement("div");
+                figure.className = "mx-auto my-3 w-48";
+                figure.innerHTML = flowSvg(flow, { compact: true });
+
+                const text = document.createElement("p");
+                text.className = "flex-1 text-xs leading-relaxed text-slate-500";
+                text.textContent = flow.short || flow.detail;
+
+                const action = document.querySelector(`[data-action="${key}"]`);
+                panel.append(heading, figure, text);
+                if (action) {
+                    const slot = document.createElement("div");
+                    slot.className = "mt-4";
+                    slot.appendChild(action);
+                    panel.appendChild(slot);
+                }
+                panels.appendChild(panel);
+            }
+        }
+
+        function renderFlows() {
+            const tabs = el("landingTabs");
+            tabs.textContent = "";
+            for (const { phase, label } of PHASES) {
+                const tab = document.createElement("button");
+                tab.dataset.phase = String(phase);
+                tab.setAttribute("role", "tab");
+                tab.textContent = label;
+                tab.addEventListener("click", () => selectLandingPhase(phase));
+                tabs.appendChild(tab);
+            }
+
+            buildFlowNav(el("flowsNav"), showFlowDetail);
+            buildFlowNav(el("flowMenuNav"), switchFlow);
+            selectLandingPhase(1);
+            showFlowDetail("guest");
+        }
+
+        // ---------------------------------------------------------------
+        // Rendering helpers. All agent- and user-supplied text is inserted
+        // with textContent so a response can never become live markup.
+        // ---------------------------------------------------------------
+        function addMessage(role, text, variant) {
+            const row = document.createElement("div");
+            row.className = "flex " + (role === "user" ? "justify-end" : "justify-start");
+
+            const bubble = document.createElement("div");
+            const palette = {
+                user: "bg-indigo-600 text-white",
+                agent: "bg-slate-100 text-slate-800",
+                error: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
+                system: "bg-amber-50 text-amber-800 ring-1 ring-amber-200",
+            };
+            bubble.className =
+                "max-w-[80%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2 text-sm " +
+                (palette[variant || role] || palette.agent);
+            bubble.textContent = text;
+
+            row.appendChild(bubble);
+            el("messages").appendChild(row);
+            el("messages").scrollTop = el("messages").scrollHeight;
+            return bubble;
+        }
+
+        // Collapsible JSON panel used to show the exact wire traffic.
+        function addTrace(title, detail, tone) {
+            const wrap = document.createElement("details");
+            wrap.className =
+                "rounded-lg border px-3 py-2 text-xs " +
+                (tone === "request"
+                    ? "border-indigo-200 bg-indigo-50"
+                    : tone === "token"
+                        ? "border-violet-200 bg-violet-50"
+                        : tone === "error"
+                            ? "border-rose-200 bg-rose-50"
+                            : "border-slate-200 bg-slate-50");
+
+            const summary = document.createElement("summary");
+            summary.className = "cursor-pointer font-semibold text-slate-700";
+            summary.textContent = title;
+
+            const pre = document.createElement("pre");
+            pre.className =
+                "mt-2 max-h-72 overflow-auto whitespace-pre-wrap break-words font-mono text-[11px] text-slate-700";
+            pre.textContent = detail;
+
+            wrap.appendChild(summary);
+            wrap.appendChild(pre);
+            el("messages").appendChild(wrap);
+            el("messages").scrollTop = el("messages").scrollHeight;
+            return wrap;
+        }
+
+        // Credentials are never printed in the headers panel; the token panel
+        // shows the decoded JWT, and the gateway API key is never shown at all.
+        function redactHeaders(headers) {
+            const safe = {};
+            for (const [key, value] of Object.entries(headers)) {
+                if (key.toLowerCase() !== "authorization") {
+                    safe[key] = value;
+                } else if (isGatewayMode(state.mode)) {
+                    safe[key] = "<gateway API key redacted>";
+                } else {
+                    safe[key] = "Bearer <entra-access-token redacted — see the token panel>";
+                }
+            }
+            return safe;
+        }
+
+        // Decodes without verifying — display only. The agent is the only
+        // party that checks the signature.
+        function decodeJwt(token) {
+            const segments = token.split(".");
+            if (segments.length < 2) return { error: "Not a JWT (expected 3 segments)" };
+            const part = (segment) => {
+                const padded = segment.replace(/-/g, "+").replace(/_/g, "/");
+                const json = atob(padded + "=".repeat((4 - (padded.length % 4)) % 4));
+                return JSON.parse(
+                    decodeURIComponent(
+                        Array.from(json, (c) =>
+                            "%" + c.charCodeAt(0).toString(16).padStart(2, "0"),
+                        ).join(""),
+                    ),
+                );
+            };
+            try {
+                return { header: part(segments[0]), claims: part(segments[1]) };
+            } catch (error) {
+                return { error: "Could not decode: " + error.message };
+            }
+        }
+
+        function addTokenTrace(token) {
+            const decoded = decodeJwt(token);
+            const expiry = decoded.claims && decoded.claims.exp
+                ? new Date(decoded.claims.exp * 1000).toISOString()
+                : "unknown";
+            addTrace(
+                "Bearer token sent (exp " + expiry + ")",
+                JSON.stringify(decoded, null, 2) + "\n\nraw jwt:\n" + token,
+                "token",
+            );
+        }
+
+        function showLandingError(message) {
+            const node = el("landingError");
+            node.textContent = message;
+            node.classList.remove("hidden");
+        }
+
+        const OAUTH_ERRORS = {
+            auth_cancelled: "Sign-in was cancelled at Microsoft Entra ID.",
+            state_mismatch: "Sign-in could not be verified. Please try again.",
+            oauth_not_configured:
+                "Entra sign-in is not configured. Set MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET and MICROSOFT_TENANT_ID in .env.",
+            token_exchange_failed:
+                "Microsoft Entra ID rejected the token exchange. Check the portal log for details.",
+        };
+
+        // ---------------------------------------------------------------
+        // Config + agent card
+        // ---------------------------------------------------------------
+        async function loadConfig() {
+            const res = await fetch("/config");
+            state.config = await res.json();
+
+            applyFlowChrome();
+
+            el("landingNote").textContent = state.config.configured
+                ? "Agent: " + state.config.agentUrl +
+                (state.config.gatewayConfigured
+                    ? "  ·  Gateway: " + state.config.gatewayUrl
+                    : "  ·  Gateway route disabled (set GATEWAY_URL and GATEWAY_API_KEY in .env)")
+                : "Entra sign-in is disabled because the portal has no client credentials in .env.";
+        }
+
+        // In gateway mode the browser never talks to the agent, so the card it
+        // should be reading is the one the gateway publishes for that agent.
+        function activeBase() {
+            const endpoint = isGatewayMode(state.mode) ? gatewayEndpoint() : "";
+            return endpoint || state.config.agentUrl;
+        }
+
+        function cardUrlFor(base) {
+            const path = isGatewayMode(state.mode)
+                ? state.config.gatewayCardPath || "/.well-known/agent-card.json"
+                : state.config.agentCardPath;
+            return base.replace(/\/+$/, "") + path;
+        }
+
+        const FLOW_META = {
+            guest: {
+                badge: "Phase 1 · Flow 1 · Guest",
+                badgeClass: "bg-amber-50 text-amber-800 ring-amber-200",
+                strip:
+                    "No gateway in this path. Your browser posts straight to the agent with no " +
+                    "Authorization header, so the agent's middleware rejects it before any A2A " +
+                    "handling and you get 401 missing_token every time.",
+            },
+            entra: {
+                badge: "Phase 1 · Flow 2 · Entra sign-in",
+                badgeClass: "bg-indigo-50 text-indigo-800 ring-indigo-200",
+                strip:
+                    "No gateway in this path either. You signed in, the portal exchanged the code " +
+                    "server-side, and your browser now calls the agent directly with the user " +
+                    "access token. The agent logs caller type 'user' and checks the scp claim.",
+            },
+            gateway: {
+                badge: "Phase 2 · Flow 4 · Gateway, machine to machine",
+                badgeClass: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+                strip:
+                    "Through the gateway, with no user anywhere. You hold just an API key; the " +
+                    "gateway authenticates it, runs its own client-credentials exchange with " +
+                    "Entra, and forwards a machine JWT. The agent logs caller type 'application' " +
+                    "and checks app roles, not scp.",
+            },
+            gatewayUser: {
+                badge: "Phase 2 · Flow 3 · Gateway, user consent",
+                badgeClass: "bg-sky-50 text-sky-800 ring-sky-200",
+                strip:
+                    "Through the gateway, but on your behalf. The gateway runs the 3-legged " +
+                    "grant itself: the first call answers consent_required with an auth URL, and " +
+                    "once you approve it the gateway holds your user token. The agent logs " +
+                    "caller type 'user' and checks scp.",
+            },
+        };
+
+        function isGatewayMode(mode) {
+            return mode === "gateway" || mode === "gatewayUser";
+        }
+
+        function gatewayEndpoint() {
+            return state.mode === "gatewayUser"
+                ? state.config.gatewayUserUrl
+                : state.config.gatewayUrl;
+        }
+
+        function applyFlowChrome() {
+            const base = activeBase();
+            const gateway = isGatewayMode(state.mode);
+
+            const cardUrl = cardUrlFor(base);
+            const link = el("cardLink");
+            link.textContent = cardUrl;
+            link.href = cardUrl;
+            el("cardLabel").textContent = gateway
+                ? "Agent card (via gateway):"
+                : "Agent card:";
+
+            el("endpointLabel").textContent = gateway
+                ? "Sending to gateway:"
+                : "Sending to agent:";
+            el("endpointValue").textContent = state.mode
+                ? (gateway ? gatewayEndpoint() : state.config.agentUrl + "/")
+                : "— choose a flow below";
+
+            const meta = FLOW_META[state.mode];
+            const badge = el("flowBadge");
+            if (meta) {
+                badge.textContent = meta.badge + "  ▾";
+                badge.className =
+                    "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ring-1 hover:brightness-95 " +
+                    meta.badgeClass;
+                badge.classList.remove("hidden");
+                el("flowStripText").textContent = meta.strip;
+            } else {
+                badge.classList.add("hidden");
+            }
+        }
+
+        // ---------------------------------------------------------------
+        // Session. The portal owns the Entra authorization-code exchange; the
+        // page asks it for the access token only when it needs to call the
+        // agent, and keeps it in memory for the lifetime of the tab.
+        // ---------------------------------------------------------------
+        async function loadSession() {
+            try {
+                const res = await fetch("/api/auth/me", { credentials: "same-origin" });
+                const data = await res.json();
+                state.user = data.signedIn ? data : null;
+            } catch {
+                state.user = null;
+            }
+        }
+
+        async function signOut() {
+            state.accessToken = null;
+            state.tokenExpiresAt = 0;
+            try {
+                await fetch("/api/auth/logout", {
+                    method: "POST",
+                    credentials: "same-origin",
+                });
+            } catch {
+                // The local session is cleared regardless.
+            }
+            window.location.replace("/");
+        }
+
+        // The portal holds the Entra session; the page pulls the access token
+        // from it so it can call the agent directly, and re-pulls on expiry.
+        async function getAccessToken() {
+            if (state.accessToken && Date.now() < state.tokenExpiresAt - 30000) {
+                return state.accessToken;
+            }
+            const res = await fetch("/api/auth/token", { credentials: "same-origin" });
+            if (res.status === 401) {
+                throw new Error("Your portal session has expired. Please sign in again.");
+            }
+            if (!res.ok) throw new Error("Could not obtain an access token.");
+            const data = await res.json();
+            state.accessToken = data.accessToken;
+            state.tokenExpiresAt = Date.now() + (data.expiresIn || 0) * 1000;
+            return state.accessToken;
+        }
+
+        // ---------------------------------------------------------------
+        // Chat
+        // ---------------------------------------------------------------
+        function enterChat() {
+            el("landing").classList.add("hidden");
+            el("chat").classList.remove("hidden");
+            el("chat").classList.add("flex");
+            el("signOutBtn").classList.remove("hidden");
+
+            announceMode();
+        }
+
+        function announceMode() {
+            applyFlowChrome();
+            renderPrompts();
+
+            const badge = el("sessionBadge");
+            const banner = el("modeBanner");
+
+            if (state.mode === "entra") {
+                badge.textContent =
+                    (state.user && (state.user.name || state.user.email)) || "signed in";
+                badge.className =
+                    "rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700";
+                banner.textContent =
+                    "Entra session — this page calls " + state.config.agentUrl +
+                    " directly with your access token";
+                banner.className = "bg-emerald-50 px-5 py-2 text-xs font-medium text-emerald-700";
+                addMessage(
+                    "agent",
+                    "Signed in with Microsoft Entra ID. Each message is sent straight from your browser to " +
+                    state.config.agentUrl + " with your bearer token attached. The agent will log " +
+                    "you as caller type 'user'.",
+                    "system",
+                );
+            } else if (state.mode === "gatewayUser") {
+                badge.textContent = "Gateway (user consent)";
+                badge.className =
+                    "rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-700";
+                banner.textContent =
+                    "Gateway user-consent session — messages go to " +
+                    state.config.gatewayUserUrl + "; the gateway holds your user token";
+                banner.className = "bg-sky-50 px-5 py-2 text-xs font-medium text-sky-700";
+                addMessage(
+                    "agent",
+                    "Connected through the Agent Gateway on your behalf. You send only an API " +
+                    "key — the gateway runs the 3-legged authorization-code flow itself. If it " +
+                    "has no token for you yet, the first message comes back as consent_required " +
+                    "with a link; approve it and send again. The agent will log caller type 'user'.",
+                    "system",
+                );
+            } else if (state.mode === "gateway") {
+                badge.textContent = "Gateway (API key)";
+                badge.className =
+                    "rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700";
+                banner.textContent =
+                    "Gateway session — messages go to " + state.config.gatewayUrl +
+                    " with an API key; the gateway mints the agent's JWT";
+                banner.className = "bg-emerald-50 px-5 py-2 text-xs font-medium text-emerald-700";
+                addMessage(
+                    "agent",
+                    "Connected through the Agent Gateway. You hold only an API key — the gateway " +
+                    "runs the 2-legged client-credentials flow with Entra and presents the " +
+                    "resulting machine token to the agent. Open 'Agent logs' to see the agent " +
+                    "record this call as caller type 'application'.",
+                    "system",
+                );
+            } else {
+                badge.textContent = "Guest";
+                badge.className =
+                    "rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700";
+                banner.textContent =
+                    "Guest session — this page calls " + state.config.agentUrl +
+                    " directly with no Authorization header";
+                banner.className = "bg-amber-50 px-5 py-2 text-xs font-medium text-amber-800";
+                addMessage(
+                    "agent",
+                    "You are browsing as a guest. Messages go straight from your browser to " +
+                    state.config.agentUrl + " without a token, so the agent rejects them with HTTP 401.",
+                    "system",
+                );
+            }
+        }
+
+        function flowUnavailable(key) {
+            if (key === "gateway" && !state.config.gatewayConfigured) {
+                return "Flow 4 needs GATEWAY_URL and GATEWAY_API_KEY in .env.";
+            }
+            if (key === "gatewayUser" && !state.config.gatewayUserConfigured) {
+                return "Flow 3 needs GATEWAY_USER_CONSENT_URL and GATEWAY_API_KEY in .env.";
+            }
+            if (key === "entra" && !state.config.configured) {
+                return "Flow 2 needs the Entra client credentials in .env.";
+            }
+            return null;
+        }
+
+        // Switches flow in place, keeping the transcript so flows can be compared.
+        function switchFlow(key) {
+            closeFlowMenu();
+            if (key === state.mode) return;
+
+            const blocked = flowUnavailable(key);
+            if (blocked) {
+                addMessage("agent", blocked, "error");
+                return;
+            }
+            // Flow 2 is the only one needing a browser session of its own.
+            if (key === "entra" && !state.user) {
+                window.location.href = "/api/auth/microsoft";
+                return;
+            }
+
+            state.mode = key;
+            const rule = document.createElement("div");
+            rule.className =
+                "flex items-center gap-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400";
+            const line = () => {
+                const span = document.createElement("span");
+                span.className = "h-px flex-1 bg-slate-200";
+                return span;
+            };
+            const label = document.createElement("span");
+            label.textContent = "switched to " + FLOWS[key].nav;
+            rule.append(line(), label, line());
+            el("messages").appendChild(rule);
+
+            announceMode();
+        }
+
+        function openFlowMenu() {
+            highlightFlowNav(el("flowMenuNav"), state.mode);
+            el("flowMenu").classList.remove("hidden");
+        }
+
+        function closeFlowMenu() {
+            el("flowMenu").classList.add("hidden");
+        }
+
+        // Starter prompts. The agent only echoes, so these exist to give the
+        // user something to send and compare across flows.
+        const PROMPTS = {
+            guest: ["Can you hear me?", "Who am I to this agent?"],
+            entra: ["Who am I?", "Echo this back to me", "Hello from the browser"],
+            gatewayUser: [
+                "Who am I?",
+                "Hello from the gateway, on my behalf",
+                "Echo this back to me",
+            ],
+            gateway: [
+                "Who is calling you?",
+                "Hello from a machine caller",
+                "Echo this back to me",
+            ],
+        };
+
+        function renderPrompts() {
+            const bar = el("promptChips");
+            bar.textContent = "";
+            for (const prompt of PROMPTS[state.mode] || []) {
+                const chip = document.createElement("button");
+                chip.type = "button";
+                chip.className =
+                    "rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600 hover:border-slate-300 hover:bg-slate-100";
+                chip.textContent = prompt;
+                chip.addEventListener("click", () => {
+                    state.lastMessage = prompt;
+                    addMessage("user", prompt);
+                    deliver(prompt);
+                });
+                bar.appendChild(chip);
+            }
+        }
+
+        function extractAgentText(result) {
+            const message =
+                (result && result.task && result.task.status && result.task.status.message) ||
+                (result && result.message);
+            const parts = (message && message.parts) || [];
+            const text = parts.map((part) => part.text).filter(Boolean).join("\n");
+            return text || JSON.stringify(result);
+        }
+
+        function describeFailure(status, payload) {
+            const error = payload && payload.error;
+            if (error && typeof error === "object") {
+                const code = error.code ? " [" + error.code + "]" : "";
+                return "HTTP " + status + code + " — " + (error.message || "request rejected");
+            }
+            if (error) return "HTTP " + status + " — " + String(error);
+            return "HTTP " + status + " — request rejected by the agent";
+        }
+
+        function randomHex(bytes) {
+            const buffer = new Uint8Array(bytes);
+            crypto.getRandomValues(buffer);
+            return Array.from(buffer, (b) => b.toString(16).padStart(2, "0")).join("");
+        }
+
+        function buildRpcRequest(text) {
+            return {
+                jsonrpc: "2.0",
+                id: randomHex(8),
+                method: "SendMessage",
+                params: {
+                    message: {
+                        messageId: randomHex(16),
+                        role: "ROLE_USER",
+                        parts: [{ text }],
+                    },
+                },
+            };
+        }
+
+        // The gateway API key is a long-lived shared secret. It is handed to
+        // the page only because this lab shows the direct browser->gateway
+        // call; a production portal would relay and never publish it.
+        async function getGatewayKey() {
+            if (state.gatewayKey) return state.gatewayKey;
+            const res = await fetch("/api/gateway/key", { credentials: "same-origin" });
+            if (!res.ok) throw new Error("The gateway is not configured in .env.");
+            const data = await res.json();
+            state.gatewayKey = data.apiKey;
+            return state.gatewayKey;
+        }
+
+        // Falls back to a server-side hop when the gateway sends no CORS
+        // headers for this origin, which the browser cannot work around.
+        async function sendViaGatewayRelay(rpcRequest) {
+            addTrace(
+                "Direct call blocked — retrying through the portal relay",
+                "The gateway did not allow a cross-origin call from " + window.location.origin +
+                ".\nThe same request is now sent server-side via POST /api/gateway/chat.",
+                "request",
+            );
+            const target = state.mode === "gatewayUser" ? "?target=user" : "";
+            const res = await fetch("/api/gateway/chat" + target, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(rpcRequest),
+            });
+            const payload = await res.json().catch(() => null);
+            if (!res.ok) {
+                throw new Error((payload && payload.error) || "The relay call failed.");
+            }
+            addTrace(
+                "Response ← HTTP " + payload.gatewayStatus + " (via relay)",
+                JSON.stringify(
+                    { headers: payload.gatewayHeaders, body: payload.gateway },
+                    null,
+                    2,
+                ),
+                payload.gatewayStatus === 200 ? "response" : "error",
+            );
+            if (needsConsent(payload.gateway)) {
+                throw new ConsentRequired(extractConsentRequests(payload.gateway));
+            }
+            if (payload.gatewayStatus !== 200) {
+                throw new Error(describeFailure(payload.gatewayStatus, payload.gateway));
+            }
+            if (payload.gateway && payload.gateway.error) {
+                throw new Error(
+                    "A2A error: " +
+                    (payload.gateway.error.message || JSON.stringify(payload.gateway.error)),
+                );
+            }
+            return extractAgentText(payload.gateway && payload.gateway.result);
+        }
+
+        // The gateway answers RFC 7807 problem+json with a consent_required
+        // array: [{ provider_name, authorization_url, scopes }].
+        function extractConsentRequests(payload) {
+            const list = payload && payload.consent_required;
+            if (!Array.isArray(list)) return [];
+            return list
+                .filter((entry) => entry && typeof entry.authorization_url === "string")
+                // Only an https URL is ever turned into a link.
+                .filter((entry) => /^https:\/\//i.test(entry.authorization_url))
+                .map((entry) => ({
+                    provider: String(entry.provider_name || "Identity provider"),
+                    url: entry.authorization_url,
+                    scopes: Array.isArray(entry.scopes) ? entry.scopes.join(" ") : "",
+                }));
+        }
+
+        function needsConsent(payload) {
+            if (!payload || typeof payload !== "object") return false;
+            return (
+                Array.isArray(payload.consent_required) ||
+                /consent-required|consent_required/i.test(String(payload.type || ""))
+            );
+        }
+
+        function showConsentPrompt(requests) {
+            const row = document.createElement("div");
+            row.className =
+                "rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900";
+
+            const title = document.createElement("p");
+            title.className = "font-semibold";
+            title.textContent = "The gateway needs your consent";
+
+            const body = document.createElement("p");
+            body.className = "mt-1 text-xs text-sky-900/80";
+            body.textContent =
+                "The gateway holds no delegated token for you yet, so it answered 401 " +
+                "consent_required. Approve the request in Microsoft Entra ID — the gateway " +
+                "receives the authorization code on its own callback and exchanges it. Then " +
+                "retry: the next call carries your user token.";
+
+            row.append(title, body);
+
+            if (!requests.length) {
+                const missing = document.createElement("p");
+                missing.className = "mt-2 text-xs text-sky-900/60";
+                missing.textContent =
+                    "No usable https authorization_url was found — check the response panel above.";
+                row.appendChild(missing);
+            }
+
+            for (const request of requests) {
+                const block = document.createElement("div");
+                block.className = "mt-3 rounded-lg bg-white/70 p-3";
+
+                const provider = document.createElement("p");
+                provider.className = "text-xs font-semibold text-sky-900";
+                provider.textContent = request.provider;
+                block.appendChild(provider);
+
+                if (request.scopes) {
+                    const scopes = document.createElement("p");
+                    scopes.className = "mt-0.5 break-all font-mono text-[11px] text-sky-900/60";
+                    scopes.textContent = "scopes: " + request.scopes;
+                    block.appendChild(scopes);
+                }
+
+                const link = document.createElement("a");
+                link.href = request.url;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.className =
+                    "mt-2 inline-block rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700";
+                link.textContent = "Approve in Entra ID";
+                block.appendChild(link);
+
+                const details = document.createElement("details");
+                details.className = "mt-2 text-[11px] text-sky-900/60";
+                const summary = document.createElement("summary");
+                summary.className = "cursor-pointer";
+                summary.textContent = "Show the authorization URL";
+                const raw = document.createElement("p");
+                raw.className = "mt-1 break-all font-mono";
+                raw.textContent = request.url;
+                details.append(summary, raw);
+                block.appendChild(details);
+
+                row.appendChild(block);
+            }
+
+            if (state.lastMessage) {
+                const retry = document.createElement("button");
+                retry.className =
+                    "mt-3 rounded-lg border border-sky-300 bg-white px-3 py-2 text-xs font-semibold text-sky-800 hover:bg-sky-50";
+                retry.textContent = "I have approved — retry";
+                retry.addEventListener("click", () => {
+                    retry.disabled = true;
+                    resend(state.lastMessage);
+                });
+                row.appendChild(retry);
+            }
+
+            el("messages").appendChild(row);
+            el("messages").scrollTop = el("messages").scrollHeight;
+        }
+
+        class ConsentRequired extends Error {
+            constructor(requests) {
+                super("consent_required");
+                this.requests = requests;
+            }
+        }
+
+        // Sends the A2A JSON-RPC call straight from the browser — to the agent
+        // in guest/entra mode, or to the gateway in either gateway mode.
+        async function sendMessage(text) {
+            const gateway = isGatewayMode(state.mode);
+            const url = gateway ? gatewayEndpoint() : state.config.agentUrl + "/";
+            const headers = { "Content-Type": "application/json", "A2A-Version": "1.0" };
+
+            if (gateway) {
+                headers["Authorization"] = await getGatewayKey();
+            } else if (state.mode !== "guest") {
+                const token = await getAccessToken();
+                headers["Authorization"] = "Bearer " + token;
+                addTokenTrace(token);
+            }
+
+            const rpcRequest = buildRpcRequest(text);
+            addTrace(
+                "Request → POST " + url,
+                JSON.stringify(
+                    { headers: redactHeaders(headers), body: rpcRequest },
+                    null,
+                    2,
+                ),
+                "request",
+            );
+
+            if (gateway && !state.gatewayDirect) {
+                return sendViaGatewayRelay(rpcRequest);
+            }
+
+            let res;
+            try {
+                res = await fetch(url, {
+                    method: "POST",
+                    mode: "cors",
+                    headers,
+                    body: JSON.stringify(rpcRequest),
+                });
+            } catch {
+                if (gateway) {
+                    // Remember, so later messages skip the doomed direct attempt.
+                    state.gatewayDirect = false;
+                    return sendViaGatewayRelay(rpcRequest);
+                }
+                addTrace("Response ← network error", "The agent at " + url +
+                    " could not be reached. Check that it is running and that this origin is listed in PORTAL_ORIGINS.", "error");
+                throw new Error("Could not reach the agent at " + url + ".");
+            }
+
+            const raw = await res.text();
+            let payload = null;
+            try {
+                payload = JSON.parse(raw);
+            } catch {
+                payload = null;
+            }
+
+            addTrace(
+                "Response ← HTTP " + res.status + " " + res.statusText,
+                payload ? JSON.stringify(payload, null, 2) : raw.slice(0, 4000),
+                res.ok ? "response" : "error",
+            );
+
+            if (gateway && needsConsent(payload)) {
+                throw new ConsentRequired(extractConsentRequests(payload));
+            }
+
+            if (!res.ok) {
+                throw new Error(describeFailure(res.status, payload));
+            }
+            if (payload && payload.error) {
+                throw new Error(
+                    "A2A error: " +
+                    (payload.error.message || JSON.stringify(payload.error)),
+                );
+            }
+            return extractAgentText(payload && payload.result);
+        }
+
+        async function deliver(text) {
+            const button = el("chatForm").querySelector("button[type=submit]");
+            button.disabled = true;
+            try {
+                addMessage("agent", await sendMessage(text));
+            } catch (error) {
+                if (error instanceof ConsentRequired) {
+                    showConsentPrompt(error.requests);
+                } else {
+                    addMessage("agent", error.message || String(error), "error");
+                }
+            } finally {
+                button.disabled = false;
+                el("chatInput").focus();
+            }
+        }
+
+        function resend(text) {
+            if (!text) return;
+            addMessage("user", text);
+            deliver(text);
+        }
+
+        async function onSubmit(event) {
+            event.preventDefault();
+            const input = el("chatInput");
+            const text = input.value.trim();
+            if (!text) return;
+            if (text.length > 4000) {
+                addMessage("agent", "Message is too long (max 4000 characters).", "error");
+                return;
+            }
+
+            input.value = "";
+            state.lastMessage = text;
+            addMessage("user", text);
+            await deliver(text);
+        }
+
+        // ---------------------------------------------------------------
+        // Agent log drawer. Polls the agent's own event log, so calls made by
+        // other clients (curl, another app) show up here too.
+        // ---------------------------------------------------------------
+        const logs = { open: false, cursor: 0, timer: null, unseen: 0 };
+
+        function logsUrl() {
+            return state.config.agentUrl + "/debug/events?since=" + logs.cursor;
+        }
+
+        function section(parent, title, value) {
+            const heading = document.createElement("div");
+            heading.className = "mt-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400";
+            heading.textContent = title;
+            const pre = document.createElement("pre");
+            pre.className =
+                "mt-1 max-h-60 overflow-auto whitespace-pre-wrap break-words rounded bg-slate-900/90 p-2 font-mono text-[11px] text-slate-100";
+            pre.textContent = value;
+            parent.appendChild(heading);
+            parent.appendChild(pre);
+        }
+
+        function prettyJson(value) {
+            if (value === undefined || value === null || value === "") return "(empty)";
+            if (typeof value !== "string") return JSON.stringify(value, null, 2);
+            try {
+                return JSON.stringify(JSON.parse(value), null, 2);
+            } catch {
+                return value;
+            }
+        }
+
+        function renderEvent(event) {
+            const req = event.request || {};
+            const res = event.response || {};
+            const rejected = event.kind === "rejected" || (res.status && res.status >= 400);
+
+            const card = document.createElement("details");
+            card.className =
+                "rounded-lg border bg-white px-3 py-2 " +
+                (rejected ? "border-rose-200" : "border-emerald-200");
+
+            const summary = document.createElement("summary");
+            summary.className = "cursor-pointer text-xs font-medium text-slate-800";
+            summary.textContent =
+                "#" + event.seq + "  " + event.ts + "  " +
+                (req.method || "?") + " " + (req.path || "?") +
+                "  →  HTTP " + (res.status || "?") +
+                (event.reason ? "  (" + event.reason + ")" : "") +
+                (event.caller && event.caller.username ? "  · " + event.caller.username : "") +
+                "  · from " + (req.client || "?");
+            card.appendChild(summary);
+
+            section(card, "Request headers", prettyJson(req.headers));
+            section(card, "Request body", prettyJson(req.body));
+            if (event.token) {
+                section(card, "Bearer token (decoded)", prettyJson(event.token));
+            }
+            section(card, "Response headers", prettyJson(res.headers));
+            section(card, "Response body", prettyJson(res.body));
+
+            el("logsList").prepend(card);
+        }
+
+        async function pollLogs() {
+            try {
+                const res = await fetch(logsUrl(), { mode: "cors" });
+                if (!res.ok) return;
+                const data = await res.json();
+                logs.cursor = data.cursor || logs.cursor;
+                for (const event of data.events || []) renderEvent(event);
+                if (!logs.open && (data.events || []).length) {
+                    logs.unseen += data.events.length;
+                    const badge = el("logsCount");
+                    badge.textContent = String(logs.unseen);
+                    badge.classList.remove("hidden");
+                }
+            } catch {
+                // The agent may simply be down; the next tick retries.
+            }
+        }
+
+        function openLogs() {
+            logs.open = true;
+            logs.unseen = 0;
+            el("logsCount").classList.add("hidden");
+            el("logsPanel").classList.remove("hidden");
+            el("logsSource").textContent = state.config.agentUrl + "/debug/events";
+            pollLogs();
+        }
+
+        function closeLogs() {
+            logs.open = false;
+            el("logsPanel").classList.add("hidden");
+        }
+
+        // Empties the agent's own buffer too, so reopening does not replay it.
+        async function clearLogs() {
+            el("logsList").textContent = "";
+            try {
+                await fetch(state.config.agentUrl + "/debug/events", {
+                    method: "DELETE",
+                    mode: "cors",
+                });
+            } catch {
+                // The view is cleared regardless.
+            }
+        }
+
+        function startLogPolling() {
+            if (logs.timer) clearInterval(logs.timer);
+            logs.timer = setInterval(() => {
+                if (el("logsAuto").checked) pollLogs();
+            }, 2000);
+        }
+
+        // ---------------------------------------------------------------
+        // Boot
+        // ---------------------------------------------------------------
+        async function main() {
+            el("guestBtn").addEventListener("click", () => {
+                state.mode = "guest";
+                enterChat();
+            });
+            el("gatewayBtn").addEventListener("click", () => {
+                state.mode = "gateway";
+                enterChat();
+            });
+            el("gatewayUserBtn").addEventListener("click", () => {
+                state.mode = "gatewayUser";
+                enterChat();
+            });
+            el("signOutBtn").addEventListener("click", signOut);
+            el("chatForm").addEventListener("submit", onSubmit);
+            el("logsBtn").addEventListener("click", () =>
+                logs.open ? closeLogs() : openLogs(),
+            );
+            el("logsClose").addEventListener("click", closeLogs);
+            el("logsBackdrop").addEventListener("click", closeLogs);
+            el("logsClear").addEventListener("click", clearLogs);
+            // Opens on the flow you are actually in, when there is one.
+            const openFlows = () => {
+                if (state.mode && FLOWS[state.mode]) showFlowDetail(state.mode);
+                el("flowsPanel").classList.remove("hidden");
+            };
+            el("flowStripMore").addEventListener("click", openFlows);
+            el("flowsClose").addEventListener("click", () =>
+                el("flowsPanel").classList.add("hidden"),
+            );
+            el("flowsBackdrop").addEventListener("click", () =>
+                el("flowsPanel").classList.add("hidden"),
+            );
+            el("flowBadge").addEventListener("click", (event) => {
+                event.stopPropagation();
+                el("flowMenu").classList.contains("hidden")
+                    ? openFlowMenu()
+                    : closeFlowMenu();
+            });
+            document.addEventListener("click", (event) => {
+                if (!el("flowMenu").contains(event.target)) closeFlowMenu();
+            });
+
+            renderFlows();
+            await loadConfig();
+            startLogPolling();
+            pollLogs();
+
+            const params = new URLSearchParams(window.location.search);
+            const oauthError = params.get("error");
+            if (oauthError) {
+                showLandingError(OAUTH_ERRORS[oauthError] || "Sign-in failed: " + oauthError);
+            }
+            if (oauthError || params.has("signedIn")) {
+                window.history.replaceState({}, "", "/");
+            }
+
+            if (!state.config.configured) {
+                el("loginBtn").classList.add("pointer-events-none", "bg-slate-300");
+            }
+            if (!state.config.gatewayConfigured) {
+                el("gatewayBtn").disabled = true;
+                el("gatewayBtn").textContent = "Set GATEWAY_URL in .env";
+            }
+            if (!state.config.gatewayUserConfigured) {
+                el("gatewayUserBtn").disabled = true;
+                el("gatewayUserBtn").textContent = "Set GATEWAY_USER_CONSENT_URL in .env";
+            }
+
+            await loadSession();
+            if (state.user) {
+                state.mode = "entra";
+                enterChat();
+            }
+        }
+
+        main();
+    </script>
+</body>
+
+</html>

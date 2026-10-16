@@ -75,6 +75,7 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
 - [Part 3: A2A Agent Identity — Decentralized Identity](#part-3-a2a-agent-identity--decentralized-identity)
 - [Part 4: Observability — Visualise Agent Gateway Metrics](#part-4-observability--visualise-agent-gateway-metrics)
 - [Part 5: Identity and Credential Delegation](#part-5-identity-and-credential-delegation)
+- [Part 6: Credential Delegation for A2A Agents (Microsoft Entra ID)](#part-6-credential-delegation-for-a2a-agents-microsoft-entra-id)
 - [Use Cases](#use-cases)
   - [Cross-Org Secure Agent Communication](#cross-org-secure-agent-communication)
   - [Cross-Org Secure Agent Communication (Copilot Studio)](#cross-org-secure-agent-communication-copilot-studio)
@@ -85,12 +86,12 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
 
 The labs exercise the following Agent Gateway protocol versions:
 
-| Protocol | Wire-protocol version | Lab | Notes |
-| -------- | --------------------- | --- | ----- |
-| A2A | [`0.3`](https://a2a-protocol.org/v0.3.0/specification/) | [`a2a/`](a2a/) | Legacy A2A profile using `a2a-sdk==0.3.25` |
-| A2A | [`1.0`](https://a2a-protocol.org/v1.0.0/specification/) | [`a2a-v1/`](a2a-v1/) | Current A2A profile using `a2a-sdk==1.0.1`; requests must forward `A2A-Version: 1.0` |
-| MCP | [`2024-11-05`](https://modelcontextprotocol.io/specification/2024-11-05) | [`mcp/`](mcp/) | Initialization-based MCP flow |
-| MCP | [`2026-07-28`](https://modelcontextprotocol.io/specification/2026-07-28) | [`mcp-latest/`](mcp-latest/) | Stateless modern MCP flow with per-request metadata and `server/discover` |
+| Protocol | Wire-protocol version                                                    | Lab                          | Notes                                                                                |
+| -------- | ------------------------------------------------------------------------ | ---------------------------- | ------------------------------------------------------------------------------------ |
+| A2A      | [`0.3`](https://a2a-protocol.org/v0.3.0/specification/)                  | [`a2a/`](a2a/)               | Legacy A2A profile using `a2a-sdk==0.3.25`                                           |
+| A2A      | [`1.0`](https://a2a-protocol.org/v1.0.0/specification/)                  | [`a2a-v1/`](a2a-v1/)         | Current A2A profile using `a2a-sdk==1.0.1`; requests must forward `A2A-Version: 1.0` |
+| MCP      | [`2024-11-05`](https://modelcontextprotocol.io/specification/2024-11-05) | [`mcp/`](mcp/)               | Initialization-based MCP flow                                                        |
+| MCP      | [`2026-07-28`](https://modelcontextprotocol.io/specification/2026-07-28) | [`mcp-latest/`](mcp-latest/) | Stateless modern MCP flow with per-request metadata and `server/discover`            |
 
 > `1.0.1` is the A2A Python SDK release used by the v1 lab; the A2A wire
 > protocol advertised in the agent card and request header is `1.0`.
@@ -293,6 +294,12 @@ affinidi-labs-tgw-get-started/
 │   ├── docker-compose.yml
 │   ├── dev.sh               # two-server hot-reload (make dev)
 │   └── README.md            # Full setup guide
+├── a2a-credential-delegation/  # A2A agent behind Microsoft Entra ID, four ways in
+│   ├── agent.py             # A2A v1.0 echo agent; JWT validation + live event log
+│   ├── entra_auth.py        # Entra token validation, 2-legged vs 3-legged detection
+│   ├── portal/              # Four-flow portal: wire traces, consent prompt, agent logs
+│   ├── run.sh               # Starts agent + portal, fails closed on missing config
+│   └── README.md            # Full lab guide
 └── docs/
     └── images/              # Documentation images
 ```
@@ -908,6 +915,40 @@ This lab walks you through building a browser-based chat surface that routes MCP
 > This demo uses **Google OAuth** for caller context and **Auth0 OAuth** for credential delegation — but the pattern works with any OAuth 2.0 provider (Okta, Azure AD, etc.).
 
 ➡️ **[View the complete setup guide](auth0-mcp-surface/README.md)**
+
+---
+
+## Part 6: Credential Delegation for A2A Agents (Microsoft Entra ID)
+
+Where Part 5 delegates credentials to an upstream **MCP server**, this lab does the same for an **A2A agent** — and makes the difference between the OAuth flows visible by letting you walk all four of them against one agent.
+
+The agent accepts nothing but a valid Microsoft Entra ID JWT. What changes between flows is **who obtains that token and who stores it**:
+
+| Flow | Route                       | Caller holds      | Who runs the OAuth flow          | Agent logs caller as |
+| ---- | --------------------------- | ----------------- | -------------------------------- | -------------------- |
+| 1    | Guest, no gateway           | nothing           | nobody                           | **401 rejected**     |
+| 2    | Entra sign-in, no gateway   | user access token | the portal (confidential client) | `user`               |
+| 3    | Gateway, user consent       | gateway API key   | **the gateway** (3-legged)       | `user`               |
+| 4    | Gateway, machine to machine | gateway API key   | **the gateway** (2-legged)       | `application`        |
+
+The lab is split into two phases, so you prove the agent and your Entra app registration work **before** any gateway configuration enters the picture:
+
+| Phase       | What you run                          | Goal                                               |
+| ----------- | ------------------------------------- | -------------------------------------------------- |
+| **Phase 1** | Agent + portal only (flows 1 and 2)   | See the 401, then a working user token             |
+| **Phase 2** | Add two gateway surfaces (flows 3, 4) | Let the gateway own the OAuth handshake and tokens |
+
+**What you will learn:**
+
+- How Agent Gateway's credential delegation performs the OAuth 2.0 handshake on a caller's behalf and maintains the resulting tokens per caller
+- The practical difference between **2-legged** (`/.default`, app roles, `idtyp: app`) and **3-legged** (`agent.access` in `scp`, `upn`) tokens — and why requesting the wrong scope yields a valid token your agent must still reject
+- How to configure two credential providers, an API-key caller context, and a Rego source-auth policy on an A2A surface
+- How the `consent_required` handshake works: the gateway returns an authorization URL, receives the code on its own callback, and injects the token from then on
+- How to read the agent's own log to compare the claims each flow produces, side by side
+
+> The portal shows the full A2A JSON-RPC request and response for every call, decodes the bearer token it sends, and includes a live drawer of everything the agent receives — including calls made by `curl` or another app.
+
+➡️ **[View the complete lab guide](a2a-credential-delegation/README.md)**
 
 ---
 
