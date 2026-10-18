@@ -1,0 +1,88 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+requiredVersions:
+  azd: ">=1.27.1"
+  extensions:
+    azure.ai.agents: ">=1.0.0-beta.9"
+name: agent-framework-agent-basic-responses
+services:
+  dexter:
+    project: src/agent-framework-agent-basic-responses
+    host: azure.ai.agent
+    language: python
+    uses:
+      - ai-project
+    env:
+      AZURE_AI_MODEL_DEPLOYMENT_NAME: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+    codeConfiguration:
+      entryPoint: main.py
+      runtime: python_3_13
+    container:
+      resources:
+        cpu: "0.5"
+        memory: 1Gi
+    description: A basic Agent Framework agent hosted by Foundry.
+    kind: hosted
+    metadata:
+      tags:
+        - Agent Framework
+        - AI Agent Hosting
+        - Azure AI AgentServer
+        - Responses Protocol
+        - Streaming
+        - A2A
+        - Incoming A2A
+    name: dexter
+    protocols:
+      - protocol: responses
+        version: 2.0.0
+      - protocol: invocations
+        version: 2.0.0
+    agentEndpoint:
+      protocols:
+        - responses
+        - invocations
+        - a2a
+    agentCard:
+      description: A friendly, general-purpose assistant that answers questions concisely and helpfully across a wide range of everyday topics.
+      version: 1.0.0
+      capabilities:
+        streaming: false
+        extensions:
+          - uri: https://fabric.affinidi.io/extensions/agent-identity/v1
+            description: Agent identity exchange
+            required: false
+            params:
+              agentIdentity:
+                name: Example Agent
+                model: example-model
+                role: Example Agent Server
+                version: 1.0.0
+      skills:
+        - id: general-assistant
+          name: General assistant
+          description: Answers general knowledge, factual, and conversational questions briefly and helpfully, covering topics such as geography, science, history, and everyday advice.
+          tags:
+            - general
+            - qa
+            - conversation
+            - assistant
+          examples:
+            - What's the capital of France?
+            - Explain photosynthesis in one sentence.
+            - What's a good substitute for buttermilk in a recipe?
+            - Summarize the plot of Romeo and Juliet in two lines.
+  ai-project:
+    host: azure.ai.project
+    deployments:
+      - model:
+          format: OpenAI
+          name: gpt-5-mini
+          version: "2026-03-17"
+        name: gpt-5-mini
+        sku:
+          capacity: 10
+          name: GlobalStandard
+    endpoint: ${FOUNDRY_PROJECT_ENDPOINT}
+infra:
+  provider: microsoft.foundry

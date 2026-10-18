@@ -222,6 +222,7 @@ Everything else stays the same — the Codespace keeps the server running while 
 | `mcp/`                            | Local MCP server with calculator and weather tools                                    |
 | `mcp-latest/`                     | Stateless MCP `2026-07-28` lab with modern request metadata and gateway validation    |
 | `a2a-vertex-agent/`               | A2A agent deployed on Google Cloud Vertex AI Agent Engine                             |
+| [`a2a-azure-foundry-hosted-agent/`](a2a-azure-foundry-hosted-agent/README.md) | Microsoft Foundry hosted agent with an A2A bridge, Entra M2M auth, and Agent Gateway credential delegation |
 | `rest-api/`                       | REST API server with MCP proxy                                                        |
 | `a2a-agent-identity/`             | Multi-agent server (Personal + Finance) with decentralized identity via Agent Gateway |
 | `gateway-prometheus-integration/` | Scrape the Agent Gateway's native Prometheus endpoint and visualise it in Grafana     |
@@ -268,6 +269,12 @@ affinidi-labs-tgw-get-started/
 │   ├── deploy.sh            # Deploy to Vertex AI
 │   ├── test.sh              # Test the deployed agent
 │   └── README.md            # Full Vertex AI setup guide
+├── a2a-azure-foundry-hosted-agent/
+│   ├── azure.yaml            # Microsoft Foundry hosted-agent and A2A endpoint definition
+│   ├── src/agent-framework-agent-basic-responses/
+│   │   ├── a2a_bridge.py     # A2A SendMessage bridge and agent identity extension
+│   │   └── main.py           # Microsoft Agent Framework entry point with the bridge wired in
+│   └── README.md             # Foundry, Entra M2M, and Agent Gateway setup guide
 ├── rest-api/
 │   ├── api_server.py        # REST API server
 │   ├── mcp_client.py        # MCP proxy client
