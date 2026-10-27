@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A2A OBO Lab</title>
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; margin: 0; background: #f5f6f8; color: #1d2330; }
+  header { background: #1d2330; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+  main { max-width: 980px; margin: 24px auto; padding: 0 16px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  section { min-width: 0; background: #fff; border: 1px solid #dfe3ea; border-radius: 8px; padding: 16px; }
+  h2 { margin: 0 0 8px; font-size: 15px; }
+  button { background: #2f5bea; color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; cursor: pointer; }
+  button.secondary { background: #e7eaf1; color: #1d2330; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  input[type=text] { width: 100%; padding: 8px; border: 1px solid #c8cedb; border-radius: 6px; box-sizing: border-box; }
+  pre { background: #0f1420; color: #d7e0f5; padding: 10px; border-radius: 6px; overflow: auto; max-width: 100%; max-height: 260px; margin: 6px 0 0; font-size: 12px; white-space: pre-wrap; word-break: break-all; }
+  .row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .step { border-left: 4px solid #2f5bea; padding: 4px 10px; margin: 8px 0; background: #f0f3fb; border-radius: 0 6px 6px 0; }
+  .step.bad { border-color: #d33; background: #fdeeee; }
+  .step.ok { border-color: #1a9a55; background: #eaf7f0; }
+  .answer { white-space: pre-wrap; word-break: break-word; background: #eaf7f0; border: 1px solid #1a9a55; border-radius: 6px; padding: 10px 12px; }
+  .step .info { font-size: 12px; color: #334; margin-top: 4px; }
+  .step code { background: #e3e8f5; padding: 0 4px; border-radius: 3px; }
+  #agentbar { max-width: 980px; margin: 12px auto 0; padding: 0 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  #agentbar .agent { background: #fff; border: 1px solid #dfe3ea; border-radius: 8px; padding: 8px 12px; min-width: 0; }
+  #agentbar .agent.gw { border-color: #1a9a55; }
+  #agentbar .agent .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  #agentbar code { display: block; word-break: break-all; font-size: 12px; margin-top: 2px; }
+  @media (max-width: 760px) { #agentbar { grid-template-columns: 1fr; } }
+  .muted { color: #667; font-size: 12px; }
+  .banner { padding: 8px 12px; background: #fdeeee; border: 1px solid #e3b4b4; border-radius: 6px; display: none; }
+  .target { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 8px 12px; border-radius: 6px; border: 1px solid #dfe3ea; background: #f7f8fb; }
+  .target { flex-wrap: wrap; }
+  .target code { word-break: break-all; flex: 1; min-width: 220px; }
+  .target.gw { border-color: #1a9a55; background: #eaf7f0; }
+  .flow { display: flex; align-items: stretch; justify-content: center; gap: 6px; flex-wrap: wrap; }
+  .node { border: 2px solid #2f5bea; background: #f0f3fb; border-radius: 8px; padding: 8px 12px; text-align: center; min-width: 120px; }
+  .node small { display: block; color: #556; font-size: 11px; }
+  .node.gw { border-color: #1a9a55; background: #eaf7f0; }
+  .node.gw { text-align: left; min-width: 190px; max-width: 230px; }
+  .node.gw ul { margin: 4px 0 4px 16px; padding: 0; font-size: 11px; color: #334; }
+  .node.gw .tag { display: inline-block; margin-top: 2px; background: #1a9a55; color: #fff; white-space: normal; }
+  .node.gw .tag.warn { background: #f0b429; color: #3a2a00; }
+  .tag.warn { background: #f0b429; color: #3a2a00; }
+  .flowrow { display: flex; align-items: center; justify-content: flex-start; gap: 6px; flex-wrap: wrap; margin: 0 0 18px; padding: 12px; border: 1px solid #dfe3ea; border-radius: 8px; background: #fafbfd; }
+  .flowrow .label { flex-basis: 100%; text-align: left; font-size: 12px; font-weight: 600; color: #445; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+  #flowModal { display: none; position: fixed; inset: 0; background: rgba(15,20,32,.55); z-index: 10; overflow: auto; padding: 24px 12px; }
+  #flowModal .box { max-width: 760px; margin: 0 auto; background: #fff; border-radius: 10px; padding: 18px 20px; }
+  #flowModal .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  #flowModal .head h2 { margin: 0; font-size: 16px; }
+  header button { background: #3a4660; }
+  .node.entra { border-color: #8a5cd6; background: #f3edfb; }
+  .arrow { align-self: center; color: #667; font-size: 12px; text-align: center; max-width: 110px; }
+  .tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; white-space: nowrap; background: #dfe3ea; color: #445; }
+  .target.gw .tag { background: #1a9a55; color: #fff; }
+</style>
+</head>
+<body>
+<header>
+  <strong>A2A OBO Lab - Orchestrator Agent &rarr; Advisory Agent</strong>
+  <span style="position:relative"><span id="who"></span> <button id="flowBtn" type="button" title="Show the flow diagram">&#9432; How it works</button></span>
+</header>
+<div id="agentbar"></div>
+<main>
+  <div class="banner" id="banner"></div>
+
+  <div id="flowModal">
+   <div class="box">
+    <div class="head"><h2>Flow</h2><button class="secondary" id="flowClose" type="button">Close</button></div>
+    <div class="flowrow">
+      <div class="label">1 &middot; User token (Portal &rarr; Orchestrator Agent)</div>
+      <div class="node"><b>Portal</b><small>user signs in with Entra</small></div>
+      <div class="arrow">&rarr;<br>user token</div>
+      <div class="node gw" id="gwOrch"><b>Agent Gateway</b><small>Orchestrator access point</small><ul><li>Validates the <b>user token</b> (signature, issuer, audience)</li><li>Applies policy and audit logging</li><li>Forwards the request and token to the agent</li></ul></div>
+      <div class="arrow">&rarr;<br>forwards token</div>
+      <div class="node"><b>Orchestrator Agent</b><small>reads user token</small></div>
+    </div>
+    <div class="flowrow">
+      <div class="label">2 &middot; OBO exchange</div>
+      <div class="node"><b>Orchestrator Agent</b><small>sends user token</small></div>
+      <div class="arrow">&harr;<br>OBO exchange</div>
+      <div class="node entra"><b>Microsoft Entra</b><small>returns OBO token</small></div>
+    </div>
+    <div class="flowrow">
+      <div class="label">3 &middot; OBO token (Orchestrator Agent &rarr; Advisory Agent)</div>
+      <div class="node"><b>Orchestrator Agent</b><small>calls with OBO token</small></div>
+      <div class="arrow">&rarr;<br>OBO token</div>
+      <div class="node gw" id="gwAdv"><b>Agent Gateway</b><small>Advisory access point</small><ul><li>Validates the <b>OBO token</b> (signature, issuer, audience)</li><li>Applies policy: only the right agent and scope get through</li><li>Forwards the request and token to the agent</li></ul></div>
+      <div class="arrow">&rarr;<br>forwards token</div>
+      <div class="node"><b>Advisory Agent</b><small>checks OBO scope</small></div>
+    </div>
+   </div>
+  </div>
+
+  <section id="signin">
+    <h2>1 &middot; Sign in with Entra ID</h2>
+    <p class="muted">You get a <b>user token</b> whose audience is the Orchestrator API.</p>
+    <div class="row"><button id="loginBtn">Sign in with Entra ID</button><button class="secondary" id="logoutBtn" style="display:none">Sign out</button></div>
+    <pre id="userToken" style="display:none"></pre>
+  </section>
+
+  <section>
+    <h2>2 &middot; Ask the Orchestrator Agent</h2>
+    <div class="row" style="flex-wrap:nowrap">
+      <input type="text" id="text" value="How do I spot phishing?" style="width:320px;max-width:100%;flex:0 1 320px;padding:6px 8px">
+      <button id="sendBtn">Send</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>3 &middot; What happened</h2>
+    <div id="steps" class="muted">Send a message to see the OBO exchange step by step.</div>
+    <h2 style="margin-top:14px">Agent reply</h2>
+    <p class="muted">The text the Orchestrator Agent returned (it includes the Advisory Agent's answer).</p>
+    <div id="answer" class="answer">-</div>
+    <h2 style="margin-top:14px">Raw A2A response</h2>
+    <pre id="response">-</pre>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+let cfg = {};
+
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+const json = (o) => esc(JSON.stringify(o, null, 2));
+
+async function init() {
+  cfg = await (await fetch("/config")).json();
+  const me = await (await fetch("/api/auth/me")).json();
+  const err = new URLSearchParams(location.search).get("error");
+  if (err) { $("banner").style.display = "block"; $("banner").textContent = "Sign-in problem: " + err; }
+  if (!cfg.configured) { $("banner").style.display = "block"; $("banner").textContent = "Set PORTAL_CLIENT_ID / PORTAL_CLIENT_SECRET in .env"; }
+  const cardUrl = (t) => (t.url || "").replace(/\/+$/, "") + "/.well-known/agent-card.json";
+  const agentCard = (name, t) =>
+    `<div class="agent ${t.viaGateway ? "gw" : ""}"><div class="top"><b>${name}</b>` +
+    `<span class="tag">${t.viaGateway ? "VIA GATEWAY" : "DIRECT"}</span></div>` +
+    `<code>${esc(t.url || "(not configured)")}</code>` +
+    (t.url ? `<a href="${esc(cardUrl(t))}" target="_blank" rel="noopener noreferrer" class="muted">Agent card &#8599;</a>` : "") + `</div>`;
+  $("agentbar").innerHTML = agentCard("Orchestrator Agent", cfg.orchestrator) + agentCard("Advisory Agent", cfg.advisory);
+  const modal = $("flowModal");
+  $("flowBtn").onclick = () => { modal.style.display = "block"; };
+  $("flowClose").onclick = () => { modal.style.display = "none"; };
+  modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") modal.style.display = "none"; });
+  if (me.signedIn) {
+    $("who").textContent = me.name + " <" + me.email + ">";
+    $("loginBtn").style.display = "none"; $("logoutBtn").style.display = "";
+    $("userToken").style.display = ""; $("userToken").textContent = "User token claims (aud = Orchestrator API):\n" + JSON.stringify(me.userToken, null, 2);
+  }
+}
+
+function step(cls, title, info, body) {
+  return `<div class="step ${cls}"><b>${title}</b>` +
+    (info ? `<div class="info">${info}</div>` : "") +
+    (body ? "<pre>" + body + "</pre>" : "") + "</div>";
+}
+
+function collectText(node, out = []) {
+  if (Array.isArray(node)) node.forEach((n) => collectText(n, out));
+  else if (node && typeof node === "object") {
+    if (typeof node.text === "string") out.push(node.text);
+    Object.values(node).forEach((v) => { if (v && typeof v === "object") collectText(v, out); });
+  }
+  return out;
+}
+
+function render(trace, reply) {
+  const o = trace.orchestrator || [], a = trace.advisory || [];
+  const last = (arr, kind) => [...arr].reverse().find((e) => e.kind === kind);
+  let html = "";
+  const ut = last(o, "user_token"), obo = last(o, "obo_exchange") || last(o, "obo_failed"), call = last(o, "advisory_call");
+  const latestAdv = [...a].reverse().find((e) => e.kind === "accepted" || e.kind === "rejected");
+  const accepted = latestAdv && latestAdv.kind === "accepted" ? latestAdv : null;
+  const rejected = latestAdv && latestAdv.kind === "rejected" ? latestAdv : null;
+  html += step(reply.status === 200 ? "ok" : "bad", "1. Orchestrator Agent call (HTTP " + reply.status + ")",
+    "<b>User token claims it received:</b> <code>aud</code> = Orchestrator API (who the token is for), <code>appid</code> = Portal (who asked for it), <code>scp</code> = scope the user granted, <code>oid</code>/<code>upn</code> = the signed-in user.",
+    ut ? json(ut.user_token.claims) : "");
+  if (obo) html += obo.kind === "obo_exchange"
+    ? step("ok", "2. OBO exchange with Entra: user token -> OBO token",
+        "<b>Request:</b> the user token is sent as the assertion with the Orchestrator's client credentials. <b>New token:</b> <code>aud</code> = Advisory API, <code>appid</code> = Orchestrator, <code>scp</code> = OBO scope, and the <b>same <code>oid</code></b> as the user, so the user identity is preserved.",
+        "Request: " + json(obo.request) + "\n\nOBO token claims:\n" + json(obo.obo_token.claims))
+    : step("bad", "2. OBO exchange FAILED (HTTP " + obo.status + ")", "Raw error from Entra:", esc(obo.error));
+  if (call) html += step(call.status === 200 ? "ok" : "bad",
+    "3. Orchestrator Agent called the Advisory Agent with the OBO token (HTTP " + call.status + ")",
+    "<b>URL:</b> <code>" + esc(call.url) + "</code><br><b>Advisory reply text:</b>", esc(call.response));
+  if (accepted) html += step("ok", "4. Advisory Agent accepted the OBO token",
+    "It only checks that <code>scp</code> contains the OBO scope. Claims it saw:", json(accepted.claims));
+  if (rejected) html += step("bad", "4. Advisory Agent rejected the token", "Raw error from the Advisory Agent:", esc(rejected.reason + ": " + rejected.detail));
+  $("steps").innerHTML = html || "No trace available.";
+}
+
+async function send() {
+  $("response").textContent = "..."; $("answer").textContent = "...";
+  const before = {};
+  try {
+    const t = await (await fetch("/api/trace")).json();
+    for (const key of ["orchestrator", "advisory"]) before[key] = Math.max(0, ...(t[key] || []).map((e) => e.seq || 0));
+  } catch (_) { /* trace unavailable: fall back to showing everything */ }
+  const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: $("text").value }) });
+  const reply = await res.json();
+  const texts = collectText(reply.body && reply.body.result ? reply.body.result : []);
+  $("answer").textContent = texts.length ? texts.join("\n") : (reply.error || (reply.body ? JSON.stringify(reply.body) : ""));
+  $("response").textContent = JSON.stringify(reply, null, 2);
+  const trace = await (await fetch("/api/trace")).json();
+  // Show only events produced by this request, not older ones still in the agents' trace buffers.
+  const fresh = (key) => (trace[key] || []).filter((e) => (e.seq || 0) > (before[key] || 0));
+  render({ orchestrator: fresh("orchestrator"), advisory: fresh("advisory") }, reply);
+}
+
+$("loginBtn").onclick = () => (location.href = "/api/auth/microsoft");
+$("logoutBtn").onclick = async () => { await fetch("/api/auth/logout", { method: "POST" }); location.href = "/"; };
+$("sendBtn").onclick = () => send();
+init();
+</script>
+</body>
+</html>
