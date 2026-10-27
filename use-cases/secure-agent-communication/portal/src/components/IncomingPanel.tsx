@@ -9,7 +9,13 @@ interface IncomingMessage {
   text: string;
   source: "agent" | "portal" | "forwarded";
   headers?: Record<string, string>;
+  exchange?: Exchange;
   at: string;
+}
+
+interface Exchange {
+  request?: unknown;
+  response?: unknown;
 }
 
 export default function IncomingPanel({
@@ -123,6 +129,7 @@ export default function IncomingPanel({
                           {new Date(msg.at).toLocaleTimeString()}
                         </span>
                       </div>
+                      <ExchangeView exchange={msg.exchange} />
                     </div>
                   </li>
                 );
@@ -196,6 +203,7 @@ export default function IncomingPanel({
                         </ul>
                       </details>
                     )}
+                    <ExchangeView exchange={msg.exchange} />
                   </div>
                 </li>
               );
@@ -204,6 +212,36 @@ export default function IncomingPanel({
         )}
       </div>
     </div>
+  );
+}
+
+function JsonBlock({ label, value }: { label: string; value: unknown }) {
+  if (value == null) return null;
+  const text = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+  return (
+    <details className="mt-1.5">
+      <summary className="text-xs text-slate-600 hover:text-slate-400 cursor-pointer select-none">
+        {label}
+      </summary>
+      <div className="mt-1.5 flex items-start gap-2">
+        <pre className="flex-1 min-w-0 text-xs text-slate-400 bg-slate-950 rounded-lg p-3 whitespace-pre-wrap break-all">
+          {text}
+        </pre>
+        <CopyButton value={text} />
+      </div>
+    </details>
+  );
+}
+
+function ExchangeView({ exchange }: { exchange?: Exchange }) {
+  if (!exchange || (exchange.request == null && exchange.response == null)) {
+    return null;
+  }
+  return (
+    <>
+      <JsonBlock label="Request" value={exchange.request} />
+      <JsonBlock label="Response" value={exchange.response} />
+    </>
   );
 }
 

@@ -68,9 +68,10 @@ setup() {
     header "Setting up Python venv..."
     python3 -m venv "$ROOT/agent/venv"
     "$ROOT/agent/venv/bin/pip" install -q --upgrade pip
-    "$ROOT/agent/venv/bin/pip" install -q -r "$ROOT/agent/requirements.txt"
-    success "Agent venv ready"
   fi
+  # Always sync so an existing venv picks up requirement changes (e.g. a2a-sdk upgrades)
+  "$ROOT/agent/venv/bin/pip" install -q -r "$ROOT/agent/requirements.txt"
+  success "Agent venv ready"
   if [ ! -d "$ROOT/portal/node_modules" ]; then
     header "Installing portal npm dependencies..."
     (cd "$ROOT/portal" && npm install --silent)
@@ -135,6 +136,8 @@ case "$CMD" in
     # Kill portal ports only — agents keep running if already up
     kill_by_port "$ORG_A_PORTAL_PORT"
     kill_by_port "$ORG_B_PORTAL_PORT"
+    kill_by_port "$ORG_A_AGENT_PORT"
+    kill_by_port "$ORG_B_AGENT_PORT"
     sleep 1
     # Start agents only if not already running
     if ! lsof -ti:"$ORG_A_AGENT_PORT" &>/dev/null; then

@@ -3,7 +3,7 @@ package surface.policy
 import rego.v1
 
 # Actions permitted through this surface
-allowed_actions := {"send:message"}
+allowed_actions := {"send:message","SendMessage"}
 
 default allow := false
 

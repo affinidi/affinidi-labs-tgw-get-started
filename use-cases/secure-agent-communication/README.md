@@ -173,6 +173,24 @@ That's it. `./run.sh` will:
 
 > The env files created from examples have everything set to localhost and Entra fields left empty — perfect for Step 1.1. You will update specific values in later steps. The `★ CHANGE REQUIRED` and `★ FILL IN FROM STEP 1.2` comments in the files tell you exactly what to edit and when.
 
+#### Protocol mode
+
+The agent runs on `a2a-sdk` 1.0.1. Each org selects its wire protocol
+independently with `A2A_LEGACY_MODE` in its env file (restart the agent and
+portal after changing it):
+
+| | `A2A_LEGACY_MODE=true` (default) | `A2A_LEGACY_MODE=false` |
+|---|---|---|
+| Agent serves | A2A 1.0 **plus** v0.3 compatibility | A2A 1.0 only (v0.3 → `Method not found`) |
+| Agent card | `supportedInterfaces` (0.3 + 1.0) and legacy top-level `url` / `protocolVersion: 0.3` | `supportedInterfaces` with `protocolBinding: JSONRPC`, `protocolVersion: 1.0` |
+| Portal / peer request | `POST /a2a/tasks/send`, method `message/send`, role `user`, `kind: data` part | `POST /`, method `SendMessage`, role `ROLE_USER`, part `{ "text": ... }`, header `A2A-Version: 1.0` |
+| Response | `result.status.state: completed`, `kind: text` parts | `result.task.status.state: TASK_STATE_COMPLETED`, role `ROLE_AGENT`, kind-less parts |
+
+A legacy-mode agent accepts both protocols, so a native org can call it. A
+native-mode agent rejects v0.3, so a legacy org cannot forward to it. If you
+route through Agent Gateway in native mode, configure the route to preserve
+the `A2A-Version` header. Without it, the request is treated as v0.3.
+
 #### 1.1d — Test with Guest login
 
 Open two browser windows (for example, in split view) to show both portals side by side:

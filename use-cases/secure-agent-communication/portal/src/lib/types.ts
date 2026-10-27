@@ -13,5 +13,6 @@ export interface ChatMessage {
     peerName?: string;
     isError: boolean;
     raw?: unknown;
+    request?: unknown;
     timestamp: number;
 }

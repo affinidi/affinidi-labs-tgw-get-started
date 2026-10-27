@@ -12,21 +12,23 @@ export default function ChatInterface({ agentName, peerAgentName }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const samplePrompts = [
     "Hi, how are you?",
     "What can you do?",
     `Tell ${peerAgentName}: Hello!`,
-    `Ask ${peerAgentName} how they are`,
+    `Ask ${peerAgentName}: How are you?`,
     `Ping ${peerAgentName}`,
-    `Message ${peerAgentName}: Checking in from ${agentName}`,
+    `Message ${peerAgentName}: Checking in`,
   ];
 
+  // Scroll only the message list; scrollIntoView would also shift the overflow-hidden page ancestors
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const el = listRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [messages, loading]);
 
   async function sendMessage(text: string) {
     if (!text.trim() || loading) return;
@@ -73,6 +75,7 @@ export default function ChatInterface({ agentName, peerAgentName }: Props) {
         peerName: data.peerName as string | undefined,
         isError: !!data.isError,
         raw: data.raw,
+        request: data.request,
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, agentMsg]);
@@ -103,13 +106,13 @@ export default function ChatInterface({ agentName, peerAgentName }: Props) {
   return (
     <div className="flex-1 flex flex-col min-h-0 rounded-xl border border-slate-800 bg-slate-900 overflow-hidden">
       {/* Sample prompts + clear */}
-      <div className="shrink-0 flex flex-wrap items-center gap-2 px-4 pt-4 pb-3 border-b border-slate-800">
+      <div className="shrink-0 flex flex-wrap items-center gap-1.5 px-3 py-2 border-b border-slate-800">
         {samplePrompts.map((prompt) => (
           <button
             key={prompt}
             onClick={() => sendMessage(prompt)}
             disabled={loading}
-            className="text-xs px-3 py-1.5 rounded-full border border-slate-700 text-slate-400 hover:border-brand hover:text-brand transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="shrink-0 whitespace-nowrap text-[11px] leading-4 px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:border-brand hover:text-brand transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {prompt}
           </button>
@@ -117,7 +120,7 @@ export default function ChatInterface({ agentName, peerAgentName }: Props) {
         {messages.length > 0 && (
           <button
             onClick={() => setMessages([])}
-            className="ml-auto text-xs text-slate-600 hover:text-red-400 transition-colors"
+            className="shrink-0 ml-auto text-[11px] text-slate-600 hover:text-red-400 transition-colors"
           >
             Clear
           </button>
@@ -125,7 +128,10 @@ export default function ChatInterface({ agentName, peerAgentName }: Props) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto chat-scroll px-4 py-4 space-y-4">
+      <div
+        ref={listRef}
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden chat-scroll px-4 py-4 space-y-4"
+      >
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
             <p className="text-slate-600 text-sm text-center">
@@ -156,7 +162,6 @@ export default function ChatInterface({ agentName, peerAgentName }: Props) {
           </div>
         )}
 
-        <div ref={bottomRef} />
       </div>
 
       {/* Input */}
@@ -220,7 +225,7 @@ function MessageBubble({
   return (
     <div className="flex items-start gap-3">
       <AgentAvatar isForwarded={isForwarded} isError={msg.isError} />
-      <div className="max-w-[80%] space-y-1">
+      <div className="max-w-[80%] min-w-0 space-y-1">
         <div
           className={`px-4 py-2.5 rounded-2xl rounded-tl-sm text-sm whitespace-pre-wrap break-words ${bubbleBg}`}
         >
@@ -251,13 +256,24 @@ function MessageBubble({
           )}
         </p>
 
+        {msg.request != null && (
+          <details className="mt-1">
+            <summary className="text-xs text-slate-600 hover:text-slate-400 cursor-pointer select-none">
+              Request sent
+            </summary>
+            <pre className="mt-1 text-xs text-slate-400 bg-slate-950 rounded-lg p-3 whitespace-pre-wrap break-all">
+              {JSON.stringify(msg.request, null, 2)}
+            </pre>
+          </details>
+        )}
+
         {/* Raw response — collapsible, always shown for agent messages */}
         {msg.raw != null && (
           <details className="mt-1">
             <summary className="text-xs text-slate-600 hover:text-slate-400 cursor-pointer select-none">
               Raw response
             </summary>
-            <pre className="mt-1 text-xs text-slate-400 bg-slate-950 rounded-lg p-3 overflow-auto max-h-48 whitespace-pre-wrap break-all">
+            <pre className="mt-1 text-xs text-slate-400 bg-slate-950 rounded-lg p-3 whitespace-pre-wrap break-all">
               {JSON.stringify(msg.raw, null, 2)}
             </pre>
           </details>
