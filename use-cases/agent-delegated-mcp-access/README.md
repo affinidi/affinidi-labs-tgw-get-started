@@ -4,6 +4,14 @@ A hands-on lab showing how an AI agent can work inside a user's personal third-p
 
 You run a **Personal Agent** (A2A 1.0) and a small sign-in portal. First you run them **without a gateway** and see why it fails or becomes unsafe. Then you put the **Agent Gateway** in front and see the same agent work securely.
 
+### Flow Without gateway
+
+![Without gateway](./docs/images/without-gw.png)
+
+### Flow With gateway
+
+![With gateway](./docs/images/with-gw.png)
+
 ## Table of Contents
 
 - [Without Gateway vs With Gateway](#without-gateway-vs-with-gateway)
