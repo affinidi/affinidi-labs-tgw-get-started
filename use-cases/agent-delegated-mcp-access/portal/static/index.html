@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Personal Agent · MCP via Agent Gateway</title>
+  <style>
+    body {
+      font: 14px/1.5 system-ui, sans-serif;
+      margin: 0;
+      background: #f5f6f8;
+      color: #1d2330;
+    }
+
+    header {
+      background: #1d2330;
+      color: #fff;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    section {
+      min-width: 0;
+      background: #fff;
+      border: 1px solid #dfe3ea;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    button {
+      background: #2f5bea;
+      color: #fff;
+      border: 0;
+      border-radius: 6px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button.secondary {
+      background: #e7eaf1;
+      color: #1d2330;
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    input[type=text] {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #c8cedb;
+      border-radius: 6px;
+      font: inherit;
+      min-width: 0;
+    }
+
+    pre {
+      background: #0f1420;
+      color: #d7e0f5;
+      padding: 10px;
+      border-radius: 6px;
+      overflow: auto;
+      max-height: 260px;
+      margin: 6px 0 0;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .muted {
+      color: #667;
+      font-size: 12px;
+    }
+
+    .banner {
+      padding: 8px 12px;
+      background: #fdeeee;
+      border: 1px solid #e3b4b4;
+      border-radius: 6px;
+      display: none;
+      margin-bottom: 12px;
+      grid-column: 1 / -1;
+    }
+
+    .chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 8px 0 12px;
+    }
+
+    .chip {
+      background: #eef2fd;
+      color: #2f5bea;
+      border: 1px solid #c9d5fa;
+      border-radius: 16px;
+      padding: 5px 12px;
+      font-size: 13px;
+    }
+
+    .chip:hover {
+      background: #dfe7fd;
+    }
+
+    #messages {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 240px;
+      max-height: 60vh;
+      overflow: auto;
+      padding: 4px;
+    }
+
+    .msg {
+      max-width: 88%;
+      padding: 9px 12px;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      background: #2f5bea;
+      color: #fff;
+    }
+
+    .msg.agent {
+      align-self: flex-start;
+      background: #f0f3fb;
+      border: 1px solid #dfe3ea;
+    }
+
+    .msg.error {
+      align-self: flex-start;
+      background: #fdeeee;
+      border: 1px solid #e3b4b4;
+    }
+
+    .msg.consent {
+      align-self: stretch;
+      max-width: none;
+      background: #fff8e6;
+      border: 1px solid #f0c75e;
+    }
+
+    .msg .meta {
+      font-size: 11px;
+      opacity: .7;
+      margin-top: 4px;
+    }
+
+    .consent a.approve {
+      display: inline-block;
+      margin-top: 8px;
+      background: #1d2330;
+      color: #fff;
+      padding: 7px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+    }
+
+    .ev {
+      border-left: 4px solid #2f5bea;
+      background: #f0f3fb;
+      padding: 6px 10px;
+      margin: 8px 0;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .ev.ok {
+      border-color: #1a9a55;
+      background: #eaf7f0;
+    }
+
+    .ev.bad {
+      border-color: #d33;
+      background: #fdeeee;
+    }
+
+    .ev.warn {
+      border-color: #f0b429;
+      background: #fff8e6;
+    }
+
+    .ev summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    section.wide {
+      grid-column: 1 / -1;
+    }
+
+    .urls {
+      width: 100%;
+      margin-top: 8px;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .urls th {
+      text-align: left;
+      font-weight: 600;
+      color: #445;
+      white-space: nowrap;
+      padding: 4px 12px 4px 0;
+      width: 1%;
+    }
+
+    .urls td {
+      padding: 4px 12px 4px 0;
+    }
+
+    .urls td:last-child {
+      white-space: nowrap;
+      width: 1%;
+    }
+
+    .urls code {
+      background: #e3e8f5;
+      padding: 1px 5px;
+      border-radius: 3px;
+      word-break: break-all;
+    }
+
+    .urls a {
+      color: #2f5bea;
+    }
+
+    .flow {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+
+    .flow .node {
+      flex: 1 1 0;
+      min-width: 0;
+      border: 1px solid #c8cedb;
+      background: #fafbfd;
+      border-radius: 8px;
+      padding: 4px 6px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0;
+      text-align: center;
+    }
+
+    .flow .node.gw {
+      background: #eef2fd;
+      border-color: #9fb3f3;
+    }
+
+    .flow .node.bad {
+      background: #fdeeee;
+      border-color: #e49a9a;
+    }
+
+    .flow .node ul.x li::before,
+    .flow .node.bad ul li::before {
+      content: "\2717 ";
+      color: #c0392b;
+    }
+
+    .flow[hidden],
+    .callout[hidden] {
+      display: none;
+    }
+
+    .callout.warn {
+      margin-top: 10px;
+      padding: 10px 14px;
+      border: 1px solid #e49a9a;
+      border-left: 5px solid #c0392b;
+      background: #fdeeee;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #4a1d1d;
+    }
+
+    .callout.warn ol {
+      margin: 6px 0 6px 20px;
+      padding: 0;
+    }
+
+    .callout.warn p {
+      margin: 6px 0 0;
+    }
+
+    .flow .node b {
+      font-size: 12px;
+    }
+
+    .flow .node span {
+      color: #667;
+      font-size: 11px;
+    }
+
+    .flow .node ul {
+      margin: 2px 0 0;
+      padding: 0;
+      list-style: none;
+      font-size: 10px;
+      color: #334;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0 6px;
+    }
+
+    .flow .node ul li::before {
+      content: "\2713 ";
+      color: #1a9a55;
+    }
+
+    .flowbox>summary {
+      cursor: pointer;
+      list-style: revert;
+    }
+
+    .flowbox>summary h2 {
+      display: inline;
+    }
+
+    .flowbox[open]>summary {
+      margin-bottom: 8px;
+    }
+
+    .flow .edge {
+      flex: 0 0 96px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 10px;
+      color: #445;
+      position: relative;
+      padding: 0 4px;
+      text-align: center;
+    }
+
+    .flow .edge::after {
+      content: "";
+      width: 100%;
+      border-top: 2px solid #2f5bea;
+      order: 1;
+      margin: 3px 0;
+    }
+
+    .flow .edge span:last-child {
+      order: 2;
+      color: #667;
+    }
+
+    .flow .edge::before {
+      content: "\25B6";
+      position: absolute;
+      right: -2px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #2f5bea;
+      font-size: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .flow {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .flow .edge {
+        flex: 0 0 auto;
+        flex-direction: row;
+        gap: 8px;
+        padding: 6px 0;
+        justify-content: center;
+      }
+
+      .flow .edge::after {
+        width: 2px;
+        height: 22px;
+        border-top: 0;
+        border-left: 2px solid #2f5bea;
+        order: 1;
+        margin: 0 4px;
+      }
+
+      .flow .edge::before {
+        content: "\25BC";
+        right: auto;
+        left: 50%;
+        top: auto;
+        bottom: -4px;
+        transform: translateX(-50%);
+      }
+    }
+
+    .flow code,
+    .muted code {
+      background: #e3e8f5;
+      padding: 0 4px;
+      border-radius: 3px;
+      word-break: break-all;
+    }
+
+    header code {
+      color: #b9c6ef;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <strong><span id="agentName">Personal Agent</span> &mdash; <span id="headline">MCP via Agent Gateway (credential delegation)</span></strong>
+    <span><span id="who"></span>
+      <button id="loginBtn" type="button">Sign in with Entra ID</button>
+      <button id="logoutBtn" class="secondary" type="button" style="display:none">Sign out</button>
+    </span>
+  </header>
+  <main>
+    <div class="banner" id="banner"></div>
+
+    <section class="wide">
+      <details class="flowbox" open>
+        <summary>
+          <h2>Flow</h2>
+        </summary>
+        <div class="flow" id="flowGw">
+          <div class="node"><b>Portal</b><span>Entra SSO sign-in</span></div>
+          <div class="edge"><span>A2A 1.0</span><span>Bearer: Entra token</span></div>
+          <div class="node gw"><b>Agent Gateway</b><span>agent access point</span>
+            <ul>
+              <li>Validate SSO token</li>
+              <li>identity</li>
+              <li>policy</li>
+              <li>generate transit token</li>
+            </ul>
+          </div>
+          <div class="edge"><span>A2A 1.0</span><span>X-Transit-Token</span></div>
+          <div class="node"><b class="agentName">Personal Agent</b><span>picks MCP tool</span></div>
+          <div class="edge"><span>MCP</span><span>X-Transit-Token</span></div>
+          <div class="node gw"><b>Agent Gateway</b><span>MCP transit point</span>
+            <ul>
+              <li>Validate transit token</li>
+              <li>OAuth consent</li>
+              <li>credential delegation</li>
+              <li>store token per caller</li>
+            </ul>
+          </div>
+          <div class="edge"><span>MCP</span><span>Bearer: GitHub token</span></div>
+          <div class="node"><b>GitHub MCP</b><span>api.githubcopilot.com</span></div>
+        </div>
+        <div class="flow" id="flowDirect" hidden>
+          <div class="node"><b>Portal</b><span>Entra SSO sign-in</span></div>
+          <div class="edge"><span>A2A 1.0</span><span>Bearer: Entra token</span></div>
+          <div class="node"><b class="agentName">Personal Agent</b><span>picks MCP tool</span>
+            <ul class="x">
+              <li>no SSO validation</li>
+              <li>no policy</li>
+              <li>no GitHub OAuth</li>
+            </ul>
+          </div>
+          <div class="edge"><span>MCP</span><span>no Authorization</span></div>
+          <div class="node bad"><b>GitHub MCP</b><span>api.githubcopilot.com</span>
+            <ul>
+              <li>OAuth token required</li>
+              <li>401 Unauthorized</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout warn" id="directWarn" hidden>
+          <b>Without a gateway, the agent itself has to:</b>
+          <ol>
+            <li>validate the SSO token on every request (signature, issuer, audience, scope) and work out who the caller is</li>
+            <li>enforce policy: which users may use the agent, which MCP tools they may call, rate limits</li>
+            <li>register a GitHub OAuth app and run the consent + callback for every user</li>
+            <li>store and refresh each user&rsquo;s GitHub token, and attach it as <code>Authorization: Bearer</code> on every MCP call</li>
+            <li>keep an audit trail of whose authority was used, and support revocation</li>
+          </ol>
+          <p><strong>Not secure and not governed:</strong> every agent re-implements this on its own. It would hold each
+          user&rsquo;s long-lived, reusable GitHub token, with no per-request scoping, no central policy and no central
+          audit or revocation. With the gateway, the agent never sees the token and each of these is enforced in one place.</p>
+        </div>
+        <table class="urls">
+          <tr>
+            <th id="agentUrlLabel">Agent (via gateway)</th>
+            <td><code id="agentUrlFull">-</code></td>
+            <td><a id="agentCardGw" target="_blank" rel="noopener noreferrer">agent card</a></td>
+          </tr>
+          <tr>
+            <th id="mcpUrlLabel">MCP</th>
+            <td><code id="mcpUrlFull">-</code></td>
+            <td></td>
+          </tr>
+        </table>
+      </details>
+    </section>
+
+    <section>
+      <h2>Chat with the <span class="agentName">Personal Agent</span></h2>
+      <div class="chips" id="chips"></div>
+      <div id="messages">
+        <div class="muted" id="empty">Sign in, then pick a prompt.</div>
+      </div>
+      <form class="row" id="form">
+        <input type="text" id="text" placeholder="Ask about your GitHub account…" maxlength="2000" autocomplete="off">
+        <button id="sendBtn" type="submit">Send</button>
+        <button id="clearBtn" class="secondary" type="button" title="Clear chat, trace and last response">Clear</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>What happened</h2>
+      <p class="muted">The actual messages on the wire for the last request: the A2A request the portal sent, every MCP
+        JSON-RPC request/response between the agent and the gateway, and the A2A response (Authorization headers
+        redacted).</p>
+      <div id="trace" class="muted">No requests yet.</div>
+      <details style="margin-top:12px">
+        <summary class="muted">Entra access token (raw) &mdash; lab only, treat as a secret</summary>
+        <pre id="rawToken">Sign in to see the token.</pre>
+        <div class="muted" id="tokenExp"></div>
+        <div class="muted" style="margin-top:8px">Decoded JWT (header · payload · signature not verified here)</div>
+        <pre id="jwtDecoded">-</pre>
+        <button type="button" class="secondary" id="copyToken" style="display:none;margin-top:6px">Copy token</button>
+      </details>
+      <details style="margin-top:8px">
+        <summary class="muted">Last raw A2A response</summary>
+        <pre id="raw">-</pre>
+      </details>
+    </section>
+  </main>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const PROMPTS = [
+      "Say Hi",
+      "Who am I on GitHub?",
+      "List my repositories",
+      "What GitHub tools can you use?",
+      // negative scenarios: need scopes/tools not granted on the gateway surface
+      "Show my GitHub projects",
+      "Show my notifications",
+    ];
+    let signedIn = false;
+    let busy = false;
+    let lastPrompt = "";
+
+    function setBanner(text) { $("banner").style.display = text ? "block" : "none"; $("banner").textContent = text || ""; }
+
+    function addMessage(kind, text, meta, raw) {
+      $("empty")?.remove();
+      const div = document.createElement("div");
+      div.className = "msg " + kind;
+      div.textContent = text;
+      if (meta) { const m = document.createElement("div"); m.className = "meta"; m.textContent = meta; div.appendChild(m); }
+      if (raw !== undefined && raw !== null) div.appendChild(rawBlock(raw));
+      $("messages").appendChild(div);
+      $("messages").scrollTop = $("messages").scrollHeight;
+      return div;
+    }
+
+    // Raw error exactly as the agent relayed it from the gateway / MCP server / Entra.
+    function rawBlock(raw) {
+      const d = document.createElement("details");
+      d.open = false;
+      d.className = "raw";
+      const s = document.createElement("summary");
+      const where = raw && raw.source ? raw.source : "upstream";
+      const status = raw && raw.http_status ? " · HTTP " + raw.http_status : "";
+      const method = raw && raw.method ? " · " + raw.method : "";
+      s.textContent = "Raw " + where + " response" + status + method;
+      const pre = document.createElement("pre");
+      pre.textContent = typeof raw === "string" ? raw : JSON.stringify(raw, null, 2);
+      d.append(s, pre);
+      return d;
+    }
+
+    function addConsent(text, requests, raw) {
+      $("empty")?.remove();
+      const div = document.createElement("div");
+      div.className = "msg consent";
+      const title = document.createElement("b");
+      title.textContent = "Authorization required";
+      const p = document.createElement("div");
+      p.textContent = text;
+      div.append(title, p);
+      const usable = requests.filter((r) => r && typeof r.authorization_url === "string" && /^https:\/\//i.test(r.authorization_url));
+      if (!usable.length) {
+        const m = document.createElement("div"); m.className = "meta";
+        m.textContent = "The gateway did not return a usable https authorization URL - check the trace.";
+        div.appendChild(m);
+      }
+      for (const r of usable) {
+        const a = document.createElement("a");
+        a.className = "approve"; a.href = r.authorization_url; a.target = "_blank"; a.rel = "noopener noreferrer";
+        a.textContent = "Authorize " + (r.provider_name || "GitHub");
+        const scopes = document.createElement("div"); scopes.className = "meta";
+        scopes.textContent = Array.isArray(r.scopes) && r.scopes.length ? "scopes: " + r.scopes.join(" ") : "";
+        div.append(a, scopes);
+      }
+      const retry = document.createElement("button");
+      retry.type = "button"; retry.className = "secondary"; retry.style.marginTop = "8px"; retry.style.marginLeft = "8px";
+      retry.textContent = "I've authorized — retry";
+      retry.onclick = () => { retry.disabled = true; send(lastPrompt); };
+      div.appendChild(retry);
+      if (raw) { const r = rawBlock(raw); r.open = false; div.appendChild(r); }
+      $("messages").appendChild(div);
+      $("messages").scrollTop = $("messages").scrollHeight;
+    }
+
+    // The A2A v1 result is { task: {...} } or { message: {...} }; find the final agent message.
+    function finalMessage(result) {
+      const task = result && (result.task || result);
+      if (task && task.status) return { state: task.status.state || "", message: task.status.message || null };
+      return { state: "", message: (result && result.message) || null };
+    }
+
+    function messageText(message) {
+      return ((message && message.parts) || []).map((p) => p.text || "").filter(Boolean).join("\n");
+    }
+
+    function findConsent(node) {
+      if (Array.isArray(node)) { for (const n of node) { const f = findConsent(n); if (f) return f; } return null; }
+      if (node && typeof node === "object") {
+        if (Array.isArray(node.consent_required)) return node.consent_required;
+        for (const v of Object.values(node)) { const f = findConsent(v); if (f) return f; }
+      }
+      return null;
+    }
+
+    function wireItem(cls, title, obj) {
+      const d = document.createElement("details");
+      d.className = "ev " + cls;
+      const s = document.createElement("summary"); s.textContent = title;
+      const pre = document.createElement("pre"); pre.textContent = JSON.stringify(obj, null, 2);
+      d.append(s, pre);
+      return d;
+    }
+
+    function statusClass(status) {
+      return status >= 200 && status < 300 ? "ok" : (status === 401 || status === 403 ? "warn" : "bad");
+    }
+
+    // Wire log: only messages that actually crossed the network, in order.
+    // A2A request (portal -> agent), each MCP request/response (agent <-> gateway), A2A response (agent -> portal).
+    function renderTrace(events, reply) {
+      const box = $("trace");
+      box.textContent = "";
+      const sent = reply && reply.request;
+      if (sent) {
+        const method = sent.body && sent.body.method;
+        box.appendChild(wireItem("", "① A2A request · portal → agent · POST " + sent.url + (method ? " (" + method + ")" : ""), sent));
+      }
+      for (const e of events || []) {
+        if (e.kind !== "mcp_call") continue;
+        const req = e.request && e.request.body ? e.request : { body: e.request };
+        const tool = req.body && req.body.params && req.body.params.name;
+        const label = e.method + (tool ? " (" + tool + ")" : "");
+        box.appendChild(wireItem("", "→ MCP request · agent → gateway · POST " + e.url + " · " + label, { method: "POST", url: e.url, headers: req.headers, body: req.body }));
+        if (e.response) {
+          box.appendChild(wireItem(statusClass(e.response.status), "← MCP response · gateway → agent · HTTP " + e.response.status + " · " + label, e.response));
+        } else if (e.error) {
+          box.appendChild(wireItem("bad", "← MCP request failed (no response) · " + label, { error: e.error }));
+        }
+      }
+      if (reply && reply.status !== undefined) {
+        box.appendChild(wireItem(statusClass(reply.status), "② A2A response · agent → portal · HTTP " + reply.status, { status: reply.status, headers: reply.headers, body: reply.body }));
+      } else if (reply && reply.error) {
+        box.appendChild(wireItem("bad", "② A2A request failed (no response) · " + reply.error, { error: reply.error, detail: reply.detail }));
+      }
+      if (!box.childNodes.length) box.textContent = "No messages captured.";
+    }
+
+    async function traceCursor() {
+      try { return (await (await fetch("/api/trace?since=0")).json()).cursor || 0; } catch (_) { return 0; }
+    }
+
+    async function send(text) {
+      text = (text || "").trim();
+      if (!text || busy) return;
+      setBanner("");
+      busy = true; $("sendBtn").disabled = true; lastPrompt = text;
+      addMessage("user", text);
+      const pending = addMessage("agent", "…");
+      const cursor = await traceCursor();
+      let reply = null;
+      try {
+        const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+        reply = await res.json();
+        $("raw").textContent = JSON.stringify(reply, null, 2);
+        pending.remove();
+        if (!res.ok) { addMessage("error", "Portal error: " + (reply.error || res.status) + (reply.detail ? " - " + reply.detail : ""), "", reply); return; }
+        if (reply.status !== 200 || (reply.body && reply.body.error)) {
+          const err = reply.body && reply.body.error;
+          addMessage("error", "Agent returned HTTP " + reply.status + ": " + (err ? (err.message || JSON.stringify(err)) : JSON.stringify(reply.body)), "", { source: "agent", http_status: reply.status, url: reply.url, body: reply.body });
+          return;
+        }
+        const { state, message } = finalMessage(reply.body.result);
+        const meta = (message && message.metadata) || {};
+        const upstream = meta.upstream_error;
+        const consent = findConsent(meta);
+        if (/AUTH_REQUIRED/i.test(state) || consent) {
+          addConsent(messageText(message) || "GitHub authorization is required.", consent || [], upstream);
+        } else if (/FAILED|REJECTED/i.test(state)) {
+          addMessage("error", messageText(message) || "The task failed.", state, upstream || reply.body.result);
+        } else {
+          const tools = message && message.metadata && message.metadata.mcp_tools;
+          addMessage("agent", messageText(message) || "(no text)", (tools ? "MCP: " + tools.join(", ") + " · " : "") + state);
+        }
+      } catch (err) {
+        pending.remove();
+        addMessage("error", "Request failed: " + err.message);
+      } finally {
+        busy = false; $("sendBtn").disabled = false;
+        try {
+          const t = await (await fetch("/api/trace?since=" + encodeURIComponent(cursor))).json();
+          renderTrace(t.events || [], reply);
+        } catch (_) { renderTrace([], reply); }
+      }
+    }
+
+    function decodeJwt(token) {
+      const part = (s) => JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(s.length / 4) * 4, "=")), (c) => c.charCodeAt(0))));
+      try {
+        const [h, p] = token.split(".");
+        return { header: part(h), payload: part(p) };
+      } catch (_) { return { error: "Not a decodable JWT (opaque token?)" }; }
+    }
+
+    async function showToken() {
+      try {
+        const t = await (await fetch("/api/auth/token")).json();
+        if (!t.accessToken) return;
+        $("rawToken").textContent = t.accessToken;
+        $("jwtDecoded").textContent = JSON.stringify(decodeJwt(t.accessToken), null, 2);
+        $("tokenExp").textContent = "Expires " + new Date(t.expiresAt * 1000).toLocaleString() + " · aud " + (t.claims && t.claims.aud);
+        $("copyToken").style.display = "";
+        $("copyToken").onclick = () => navigator.clipboard.writeText(t.accessToken);
+      } catch (_) { /* token panel is best effort */ }
+    }
+
+    async function init() {
+      const cfg = await (await fetch("/config")).json();
+  const direct = !cfg.agentViaGateway && !cfg.mcpViaGateway;
+  $("flowGw").hidden = direct;
+  $("flowDirect").hidden = !direct;
+  $("directWarn").hidden = !direct;
+  if (direct) $("headline").textContent = "MCP without a gateway";
+  if (cfg.agentName) {
+    document.title = cfg.agentName + (direct ? " · MCP without gateway" : " · MCP via Agent Gateway");
+    $("agentName").textContent = cfg.agentName;
+    document.querySelectorAll(".agentName").forEach((el) => { el.textContent = cfg.agentName; });
+  }
+      const cardLink = (id, base) => {
+        if (!/^https?:\/\//.test(base || "")) { $(id).style.display = "none"; return; }
+        $(id).href = base.replace(/\/+$/, "") + "/.well-known/agent-card.json";
+      };
+      $("agentUrlLabel").textContent = cfg.agentViaGateway ? "Agent (via gateway)" : "Agent (direct)";
+      $("agentUrlFull").textContent = cfg.agentUrl || "-";
+      $("mcpUrlLabel").textContent = cfg.mcpViaGateway ? "MCP (via gateway)" : "MCP (direct)";
+      $("mcpUrlFull").textContent = cfg.mcpUrl || "(MCP_URL not set)";
+      cardLink("agentCardGw", cfg.agentUrl);
+      const err = new URLSearchParams(location.search).get("error");
+      if (err) setBanner("Sign-in problem: " + err);
+      if (!cfg.configured) setBanner("Set PORTAL_CLIENT_ID / PORTAL_CLIENT_SECRET in .env");
+      for (const p of PROMPTS) {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "chip"; b.textContent = p;
+        b.onclick = () => send(p);
+        $("chips").appendChild(b);
+      }
+      const me = await (await fetch("/api/auth/me")).json();
+      if (me.signedIn) {
+        signedIn = true;
+        $("who").textContent = (me.name || "") + (me.email ? " <" + me.email + "> " : " ");
+        $("loginBtn").style.display = "none"; $("logoutBtn").style.display = "";
+        showToken();
+        $("empty").textContent = "Pick a prompt above or type your own.";
+        if (location.search) history.replaceState(null, "", "/");
+      }
+    }
+
+    $("loginBtn").onclick = () => (location.href = "/api/auth/microsoft");
+    $("logoutBtn").onclick = async () => { await fetch("/api/auth/logout", { method: "POST" }); location.href = "/"; };
+    $("form").onsubmit = (e) => { e.preventDefault(); const t = $("text").value; $("text").value = ""; send(t); };
+    $("clearBtn").onclick = () => {
+      if (busy) return;
+      $("messages").textContent = "";
+      const empty = document.createElement("div");
+      empty.className = "muted"; empty.id = "empty"; empty.textContent = "Pick a prompt above or type your own.";
+      $("messages").appendChild(empty);
+      $("trace").textContent = "No requests yet.";
+      $("raw").textContent = "-";
+      setBanner("");
+    };
+    init();
+  </script>
+</body>
+
+</html>
