@@ -1,0 +1,4 @@
+google-cloud-aiplatform[agent_engines]>=1.112.0
+a2a-sdk[http-server]>=0.3.4,<0.4
+requests>=2.31.0
+python-dotenv>=1.0.0

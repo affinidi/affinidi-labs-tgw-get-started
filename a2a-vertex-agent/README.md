@@ -301,6 +301,8 @@ python a2a_client.py https://<your-agent-gateway-url>/agents/evening/linear
 
 > **How it works:** The management API call (`agent_engines.get`) always goes to the real Vertex AI endpoint. Only the A2A messaging URL (agent card URL) is overridden when a custom `base_url` is provided.
 
+> **Gateway authentication to Vertex AI:** the gateway authenticates to Agent Engine as a Google service account through an **OAuth 2.0, JWT Bearer** credential provider used as Target Authentication. See [JWT Bearer](../feature-guide/credential-providers/jwt-bearer.md) for the service account, key and provider setup. For an end-to-end walkthrough where callers use only a gateway API key, see [Vertex AI Agent Behind the Agent Gateway](../use-cases/vertex-agent-gateway-auth/README.md).
+
 The `test.sh` script automatically:
 
 - Checks if the agent is deployed (validates `.deployed_resource_name` exists)

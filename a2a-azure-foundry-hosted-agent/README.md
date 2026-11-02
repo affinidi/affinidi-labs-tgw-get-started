@@ -517,6 +517,8 @@ Run [Test B](#test-b--m2m-token-direct-to-foundry) now. If it passes, the app an
 
 With credential delegation, the **gateway** becomes the OAuth client: it holds the Entra client ID and secret, fetches and refreshes the M2M token, and injects it into each call. The calling app holds only a gateway API key. The agent sees a valid Entra token either way and doesn't know which route the request took.
 
+> **Simpler option now available:** the Managed Agent's **Target Authentication** can use a credential provider directly. That removes the need for Credential Delegation (Step 7 below) for this M2M case, and it also authenticates the gateway's agent card fetch. With an **OAuth 2.0, Client Credentials JWT** provider, the gateway signs in with a certificate instead of a client secret. See [Client Credentials JWT](../feature-guide/credential-providers/client-credentials-jwt.md) for the Foundry setup, and the [Credential Providers Guide](../feature-guide/credential-providers/README.md) for when to use delegation instead.
+
 > **Want the full picture first?** The [A2A credential delegation lab](https://github.com/affinidi/affinidi-labs-tgw-get-started/tree/main/a2a-credential-delegation) walks through the same pattern step by step with screenshots, including a user-consent (3-legged) variant. This section is its M2M flow, adapted to Foundry. Two differences from the lab: the **scope** here is `https://ai.azure.com/.default` (Foundry's audience, not your own `api://<client-id>`), and the **target** is Foundry's Invocations path.
 
 ```mermaid
@@ -657,7 +659,7 @@ api/projects/<project>/agents/<agent-name>/endpoint/protocols/a2a/agentCard/v1.0
 
 The gateway fetches the card from there and re-serves it on the standard well-known path.
 
-> **Current limitation:** the gateway's card fetch uses Target Authentication, which only supports a static secret. Foundry's card needs an Entra token, so the card isn't served through the gateway yet. Messages are unaffected. A feedback item to support OAuth for the card fetch has been raised.
+> **Card fetch and credential delegation:** the gateway's card fetch uses Target Authentication, not Credential Delegation. With the delegation setup below (Target Authentication **None**), Foundry's card needs an Entra token the fetch doesn't have, so the card isn't served through the gateway. Messages are unaffected. Setting Target Authentication to a credential provider instead serves the card too; see [Client Credentials JWT](../feature-guide/credential-providers/client-credentials-jwt.md).
 
 ### Step 6 — Caller context (API key) and policy
 
@@ -882,7 +884,7 @@ curl -s http://localhost:8088/a2a/agentCard/v1.0 | jq
 | **Fixed platform extensions**                       | Foundry adds `https://ai.azure.com/a2a/extensions/citations/v1` and `.../mcp-approval-request/v1` to every A2A-enabled card. Not configurable, no opt-out.                                                                                                                                                            |
 | **Card requires Entra**                             | All A2A URLs, including the card, need an Entra token (user or M2M). There's no anonymous or well-known card path.                                                                                                                                                                                                    |
 | **Self-hosted card isn't reachable externally**     | `/.well-known/agent-card.json` and `/a2a/agentCard/v1.0` in the container work only when calling it directly. A `GetAgentCard` JSON-RPC method on `/invocations` could expose it, but isn't implemented; only `SendMessage` is.                                                                                       |
-| **Gateway can't fetch an Entra-protected card yet** | The gateway's card fetch supports only a static secret ([Section 5, step 5](#step-5--override-the-agent-card-location)).                                                                                                                                                                                              |
+| **Gateway card fetch needs Target Authentication** | With credential delegation only, the card fetch has no Entra token ([Section 5, step 5](#step-5--override-the-agent-card-location)). Use a credential provider as Target Authentication to serve the card ([Client Credentials JWT](../feature-guide/credential-providers/client-credentials-jwt.md)). |
 
 ### 7.3 Foundry agent endpoint
 

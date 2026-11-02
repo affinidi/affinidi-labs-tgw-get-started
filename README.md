@@ -80,6 +80,7 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
 - [Use Cases](#use-cases)
   - [Cross-Org Secure Agent Communication](#cross-org-secure-agent-communication)
   - [Cross-Org Secure Agent Communication (Copilot Studio)](#cross-org-secure-agent-communication-copilot-studio)
+  - [Vertex AI Agent Behind the Agent Gateway](#vertex-ai-agent-behind-the-agent-gateway)
 
 ---
 
@@ -1095,6 +1096,8 @@ The lab is split into two phases, so you prove the agent and your Entra app regi
 
 ➡️ **[View the complete lab guide](a2a-credential-delegation/README.md)**
 
+> **Choosing a credential provider type?** The [Credential Providers Guide](feature-guide/credential-providers/README.md) covers all four OAuth types (Client Credentials, Authorization Code, JWT Bearer for Google service accounts, and Client Credentials JWT with a certificate), which IdPs support each, and how to use them for target authentication or credential delegation.
+
 ---
 
 ## Use Cases
@@ -1159,3 +1162,21 @@ Org A (Thatcher Corp)                              Org B (Dexter Labs)
 **Key concepts covered:** A2A Proxy, Direct Line, Fabric Connection, Trust Registry, Policy enforcement, API key auth
 
 ➡️ **[View the lab guide](use-cases/copilot-studio-agent-communication/README.md)**
+
+---
+
+### Vertex AI Agent Behind the Agent Gateway
+
+**Directory:** [`use-cases/vertex-agent-gateway-auth/`](use-cases/vertex-agent-gateway-auth/)
+
+Deploy an A2A agent to **Vertex AI Agent Engine** and expose it through the gateway. Callers hold only a gateway API key; the gateway authenticates to Google as a service account with the **JWT Bearer** credential provider.
+
+**What you will learn:**
+
+- The minimum Google Cloud setup (three APIs, a staging bucket, one service account role) to run an A2A agent on Agent Engine
+- How to configure an Access Point and Managed Agent for Agent Engine's A2A 0.3 HTTP+JSON endpoint
+- How to keep Google credentials out of callers with Target Authentication
+
+**Key concepts covered:** Credential providers, JWT Bearer, Target Authentication, API key auth, A2A Surfaces
+
+➡️ **[View the lab guide](use-cases/vertex-agent-gateway-auth/README.md)**
