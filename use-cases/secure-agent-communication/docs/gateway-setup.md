@@ -257,14 +257,6 @@ Create these two surfaces on Dexter Gateway:
 
 - **Trust Recorder**: Select the Trust Registry and the Issuer this surface registers under, and keep **Include owned agent** enabled.
 
-- **Static Agent DID**: Open the agent card from the main surface Access Point URL (for `Thatcher` or `Dexter`),
-  for example: https://{GATEWAY_URL}/agents/org-a/thatcher-agent/.well-known/agent-card.json
-  Copy the `holder` DID, then set it in the opposite surface's **Static Agent Identity** element:
-  Thatcher agent DID -> `Dexter -> Thatcher` surface
-  Dexter agent DID -> `Thatcher -> Dexter` surface
-  ![Configure static agent did](images/surface-create-9.png)
-  ![Configure static agent did1](images/surface-create-10.png)
-
 6. Save the surface.
 
 Repeat the same process until all 4 surfaces are created (2 per gateway).
