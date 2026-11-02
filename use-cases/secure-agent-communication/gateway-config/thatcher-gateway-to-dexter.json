@@ -7,6 +7,13 @@
         "listen_address": "",
         "route": "/agents/burger/nominal",
         "protocol": "a2a",
+        "a2a": {
+            "accepted_versions": [
+                "0.3",
+                "1.0"
+            ],
+            "validation": "envelope"
+        },
         "trust_check_list": [
             {
                 "id": "5ccfe283-b477-42a4-b1de-94c73688dbe9",
@@ -71,17 +78,40 @@
             }
         },
         "protected": {
-            "type": "static",
-            "did": "",
+            "type": "from_payload",
             "meta_field": "serverIdentity",
+            "fields": [
+                "agentIdentity.name",
+                "agentIdentity.model",
+                "agentIdentity.role"
+            ],
             "json_schema": {
                 "type": "object",
-                "required": [],
                 "properties": {
-                    "serverIdentity": {
+                    "agentIdentity": {
                         "type": "object",
-                        "required": [],
-                        "properties": {}
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "model": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "role": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "version": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "model",
+                            "role"
+                        ]
                     }
                 }
             }
@@ -94,9 +124,9 @@
             "height": 200
         },
         "view": {
-            "x": 94.13508771929827,
-            "y": 35.80877192982456,
-            "k": 0.9175438596491228
+            "x": 152.18421052631578,
+            "y": 84.13157894736841,
+            "k": 0.7631578947368421
         },
         "nodes": [
             {
@@ -131,7 +161,12 @@
                             }
                         ]
                     },
-                    "terminate_trace_id": false
+                    "terminate_trace_id": false,
+                    "a2a_accepted_versions": [
+                        "0.3",
+                        "1.0"
+                    ],
+                    "a2a_validation": "envelope"
                 }
             },
             {
@@ -167,7 +202,7 @@
                 "label": "",
                 "parentId": "access-point",
                 "position": {
-                    "x": -299.43719762415634,
+                    "x": -283.78378378378375,
                     "y": 32
                 },
                 "config": {
@@ -218,7 +253,7 @@
                 "label": "",
                 "parentId": "trust-check-caller",
                 "position": {
-                    "x": -96.24767066490739,
+                    "x": -91.2162162162162,
                     "y": 32
                 },
                 "config": {
@@ -234,26 +269,49 @@
                 "label": "",
                 "parentId": "target",
                 "position": {
-                    "x": -203.18952695924895,
+                    "x": -192.56756756756755,
                     "y": -32
                 },
                 "config": {
                     "meta_field": "serverIdentity",
                     "json_schema": {
                         "type": "object",
-                        "required": [],
                         "properties": {
-                            "serverIdentity": {
+                            "agentIdentity": {
                                 "type": "object",
-                                "required": [],
-                                "properties": {}
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "model": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "version": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "model",
+                                    "role"
+                                ]
                             }
                         }
                     },
-                    "fields": [],
-                    "type": "static",
+                    "fields": [
+                        "agentIdentity.name",
+                        "agentIdentity.model",
+                        "agentIdentity.role"
+                    ],
+                    "type": "from_payload",
                     "static_did": "",
-                    "name": "Static Agent Identity"
+                    "name": "Agent Identity"
                 },
                 "slotId": "response:identity-protected"
             },
@@ -263,7 +321,7 @@
                 "label": "",
                 "parentId": "access-point",
                 "position": {
-                    "x": -203.18952695924895,
+                    "x": -192.56756756756755,
                     "y": 32
                 },
                 "config": {
@@ -297,7 +355,7 @@
                 "label": "Remote Gateway",
                 "parentId": null,
                 "position": {
-                    "x": -461,
+                    "x": -540,
                     "y": 0
                 },
                 "config": {
@@ -310,7 +368,7 @@
                 "label": "Dexter Agent",
                 "parentId": null,
                 "position": {
-                    "x": -355,
+                    "x": -460,
                     "y": 0
                 },
                 "config": {

@@ -7,6 +7,13 @@
         "listen_address": "",
         "route": "/agents/burger/nominal",
         "protocol": "a2a",
+        "a2a": {
+            "accepted_versions": [
+                "0.3",
+                "1.0"
+            ],
+            "validation": "envelope"
+        },
         "trust_check_list": [
             {
                 "id": "90aa8963-e373-46fc-ad03-a9825d8ee2dc",
@@ -71,17 +78,40 @@
             }
         },
         "protected": {
-            "type": "static",
-            "did": "",
+            "type": "from_payload",
             "meta_field": "serverIdentity",
+            "fields": [
+                "agentIdentity.name",
+                "agentIdentity.model",
+                "agentIdentity.role"
+            ],
             "json_schema": {
                 "type": "object",
-                "required": [],
                 "properties": {
-                    "serverIdentity": {
+                    "agentIdentity": {
                         "type": "object",
-                        "required": [],
-                        "properties": {}
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "model": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "role": {
+                                "type": "string",
+                                "x-identity": true
+                            },
+                            "version": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "model",
+                            "role"
+                        ]
                     }
                 }
             }
@@ -94,9 +124,9 @@
             "height": 200
         },
         "view": {
-            "x": 94.13508771929827,
-            "y": 35.80877192982456,
-            "k": 0.9175438596491228
+            "x": 0,
+            "y": 6,
+            "k": 1
         },
         "nodes": [
             {
@@ -115,7 +145,12 @@
                     "publish_to_did_document": false,
                     "route_prefix": "/agents",
                     "route_suffix": "burger/nominal",
-                    "terminate_trace_id": false
+                    "terminate_trace_id": false,
+                    "a2a_accepted_versions": [
+                        "0.3",
+                        "1.0"
+                    ],
+                    "a2a_validation": "envelope"
                 }
             },
             {
@@ -227,19 +262,42 @@
                     "meta_field": "serverIdentity",
                     "json_schema": {
                         "type": "object",
-                        "required": [],
                         "properties": {
-                            "serverIdentity": {
+                            "agentIdentity": {
                                 "type": "object",
-                                "required": [],
-                                "properties": {}
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "model": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "x-identity": true
+                                    },
+                                    "version": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "model",
+                                    "role"
+                                ]
                             }
                         }
                     },
-                    "fields": [],
-                    "type": "static",
+                    "fields": [
+                        "agentIdentity.name",
+                        "agentIdentity.model",
+                        "agentIdentity.role"
+                    ],
+                    "type": "from_payload",
                     "static_did": "",
-                    "name": "Static Agent Identity"
+                    "name": "Agent Identity"
                 },
                 "slotId": "response:identity-protected"
             },
