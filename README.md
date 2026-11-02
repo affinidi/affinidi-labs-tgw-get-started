@@ -71,6 +71,7 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
   - [A2A Server via Agent Gateway](#a2a-server-via-agent-gateway)
   - [A2A Vertex AI Agent via Agent Gateway](#a2a-vertex-ai-agent-via-agent-gateway)
   - [Create Identity for Your Agent or MCP Server](#create-identity-for-your-agent-or-mcp-server)
+  - [Configuring MCP Caller Identity and Server (Managed) Identity](#configuring-mcp-caller-identity-and-server-managed-identity)
   - [Sample MCP Request & Response Messages](#sample-mcp-request--response-messages)
 - [Part 3: A2A Agent Identity — Decentralized Identity](#part-3-a2a-agent-identity--decentralized-identity)
 - [Part 4: Observability — Visualise Agent Gateway Metrics](#part-4-observability--visualise-agent-gateway-metrics)
@@ -781,6 +782,143 @@ The Agent Gateway can issue a decentralized identity (DID) for the **agent or MC
    ![Injected agent identity shown in the surface dashboard](docs/images/channel-mcp-identity-dashboard.jpg)
 
 > For a detailed walkthrough with identity schema configuration and sample request/response messages, see the **[A2A Agent Identity lab](a2a-agent-identity/README.MD)**.
+
+---
+
+## Configuring MCP Caller Identity and Server (Managed) Identity
+
+### Concepts
+
+- **Server / managed identity** (`protected_identity` slot) identifies the MCP server behind the surface. The gateway reads it from the server's response.
+- **Caller identity** (`inbound_identity` slot) identifies the MCP client. The gateway reads it from the request.
+- Both use payload extraction. The gateway reads a JSON object from `_meta` and issues a DID from the fields marked `x-identity: true`.
+
+### Where the identity goes
+
+| Direction | `_meta` key | Slot |
+| --- | --- | --- |
+| Response (server to gateway) | `serverIdentity` (default) | `protected_identity` |
+| Request (client to gateway) | `agentIdentity` (set `meta_field` to the same name) | `inbound_identity` |
+
+- `_meta` may be at the top level of the message or inside `params` (request) or `result` (response).
+- The server must return the identity on every successful response, including `initialize`. Error replies are treated as anonymous.
+- If the slot's `meta_field` differs from `serverIdentity`, the gateway tries that name first and then falls back to `serverIdentity`.
+
+### Server Identity (Managed Identity) Configuration
+
+#### Server Identity Example
+
+The MCP server returns its identity in the response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": { "content": [] },
+  "_meta": {
+    "serverIdentity": { "name": "Simple MCP Server" }
+  }
+}
+```
+
+#### Server Identity Schema
+
+The server payload is validated unwrapped, so the schema root has the fields directly:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "x-identity": true }
+  },
+  "required": ["name"]
+}
+```
+
+**Visual Configuration Reference:**
+
+![Server Identity Schema Configuration](mcp/docs/gw-server-identity-schema.png.png)
+
+> **Note:** The server schema describes `{ "name": "..." }` directly. It does not describe the raw `_meta` JSON wrapper.
+
+### Caller Identity Configuration
+
+#### Caller Identity Example
+
+The MCP client sends its identity in the request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "_meta": {
+    "agentIdentity": {
+      "name": "MCP Test Client",
+      "version": "1.0.0"
+    }
+  },
+  "params": {
+    "name": "weather_forecast",
+    "arguments": { "city": "New York" }
+  }
+}
+```
+
+#### Caller Identity Schema
+
+The caller payload is wrapped under the `meta_field` name before validation, so the schema root contains `agentIdentity`:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "agentIdentity": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "x-identity": true },
+        "version": { "type": "string", "x-identity": true }
+      },
+      "required": ["name", "version"]
+    }
+  },
+  "required": ["agentIdentity"]
+}
+```
+
+**Visual Configuration Reference:**
+
+![Caller Identity Schema Configuration](mcp/docs/gw-caller-identity-schema.png)
+
+> **Note:** The caller schema describes `{ "agentIdentity": { "name": "...", "version": "..." } }`. It does not describe the raw `_meta` JSON wrapper.
+
+### Key Differences Between Schemas
+
+| Aspect | Server Identity | Caller Identity |
+| --- | --- | --- |
+| `_meta` field name | `serverIdentity` | `agentIdentity` |
+| Schema wrapping | Unwrapped (direct fields) | Wrapped (under `agentIdentity`) |
+| Example fields | `name` | `name`, `version` |
+| Returned in | Response | Request |
+
+### Choosing what to enable
+
+- **Server identity only:** configure `protected_identity` only. Callers are not identified.
+- **Caller identity only:** configure `inbound_identity` and leave `protected_identity` unset. The server is treated as anonymous.
+- **Both:** configure both with the separate schemas above.
+
+### Troubleshooting table
+
+| Error | Cause | Fix |
+| --- | --- | --- |
+| `422 identity_extension_missing`, slot `protected_identity` | The server's response has no `_meta.serverIdentity` (or the configured `meta_field`), or its fields don't match the schema | Return the identity in every success response, including `initialize`. Check the key name and the schema |
+| `422 identity_validation_failed`, slot `inbound_identity`, "Identity field 'name' ... not found" | The caller schema is flat. It must be wrapped under `agentIdentity` | Use the wrapped schema (with `agentIdentity` wrapping) from the Caller Identity section |
+| Response VP shows the caller's fields, not the server's | `protected_identity` is not configured | Add the slot with its own unwrapped schema |
+
+### Notes for the author
+
+- Stored caller fields use dotted names (for example `agentIdentity.name`). Server fields are plain (`name`).
+- Verify against a running gateway before publishing: send a request and check the response VP's `workloadBinding` for the expected fields.
 
 ---
 

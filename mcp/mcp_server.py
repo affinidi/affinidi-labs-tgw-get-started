@@ -95,7 +95,7 @@ def create_json_rpc_response(id: Any, result: Any) -> Dict:
         "id": id,
         "result": result,
         "_meta": {
-            "agentIdentity": {
+            "serverIdentity": {
                 "name": "Simple MCP Server",
             }
         }
