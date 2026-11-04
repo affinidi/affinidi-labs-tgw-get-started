@@ -57,6 +57,15 @@ The token is cached until 60 seconds before it expires, so the IdP is called rou
 
 > **Reachability.** The gateway must reach both the IdP token endpoint and the agent. The gateway refuses a token endpoint that resolves to a loopback address (`localhost`, `127.0.0.1`). For a local IdP, use the machine's LAN address (for example `http://192.0.2.10:8180`) or a hostname that resolves to it. A gateway hosted in the cloud needs a public URL for both, for example through a tunnel.
 
+> **http token endpoints.** From gateway 1.0.5, saving a provider with an `http://` token endpoint is refused (`400 token_endpoint must be an https URL`) unless that exact URL is allowed in the gateway's `config.toml`, followed by a restart:
+>
+> ```toml
+> [credential_policy]
+> insecure_token_endpoints = ["http://<lan-ip>:8180/realms/agents/protocol/openid-connect/token"]
+> ```
+>
+> Use this only for a local test IdP. In production, use an `https` token endpoint.
+
 ---
 
 ## Step 1: Configure the IdP (Keycloak)

@@ -127,6 +127,8 @@ chmod 600 sa.key.pem
 
 Delete `sa-key.json` after the values are stored in the gateway.
 
+> **Gateway 1.0.5 and later:** you can skip the `jq` steps and store the whole `sa-key.json` content as the **Signing Key** secret. The gateway signs with its `private_key` and uses its `private_key_id` as the key ID, so **Key ID** can be left empty. You still need `client_email` for **Issuer** and **Subject**.
+
 ### If key creation or upload is blocked
 
 New Google Cloud organizations enforce these organization policy constraints by default:
@@ -184,7 +186,9 @@ Use the constraint name shown in the error message. Changes can take a few minut
 | Certificate        | optional (`gcp_sa_cert`); Google does not need it          |
 | Signing Algorithm  | RS256                                                      |
 | Audience           | leave empty (the token endpoint is used)                   |
-| Subject            | leave empty. Set it only for Workspace domain-wide delegation, to the user to impersonate. |
+| Subject            | the service account email (same as **Issuer**). For Workspace domain-wide delegation, set it to the user to impersonate instead. |
+
+> **Subject is required in upcoming gateway releases.** Releases after 1.0.5 refuse to save a JWT Bearer provider without a Subject. Google accepts the service account's own email as `sub`, so set it now.
 
 There are no Client ID or Client Secret fields for this type.
 
@@ -299,7 +303,7 @@ Point the Managed Agent's endpoint at the local agent (a `localhost` target is a
 | `invalid_grant: Invalid JWT Signature`         | The key does not belong to the service account in **Issuer**, or the key was deleted or disabled. Check **Key ID** against `gcloud iam service-accounts keys list`. |
 | `invalid_grant: Invalid JWT: Token must be a short-lived token...` | The gateway host's clock is wrong. Fix NTP.                                                                  |
 | `invalid_grant: Invalid email or User ID`      | **Issuer** is not the service account email, or the account is deleted or disabled.                                    |
-| `unauthorized_client`                          | **Subject** is set without domain-wide delegation. Clear it.                                                           |
+| `unauthorized_client`                          | **Subject** names a user, but domain-wide delegation is not enabled. Set **Subject** to the service account email.     |
 | Vertex `403 PERMISSION_DENIED`                 | The service account lacks `roles/aiplatform.user` on the project, or the Vertex AI API is not enabled.                 |
 | Vertex `404`                                   | Wrong region, project or engine ID in the endpoint.                                                                    |
 | Key upload: `FAILED_PRECONDITION` naming a constraint | An organization policy blocks it. See [If key creation or upload is blocked](#if-key-creation-or-upload-is-blocked). |

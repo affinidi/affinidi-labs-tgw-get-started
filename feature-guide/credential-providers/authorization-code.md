@@ -124,6 +124,15 @@ Keycloak asks the user to complete their profile at first sign-in if email or na
 
 The authorization endpoint is opened by the **browser**; the token endpoint is called by the **gateway**. Both must be reachable from where they are used. Keycloak returns a refresh token for this flow by default.
 
+> **http token endpoints.** From gateway 1.0.5, saving a provider with an `http://` token endpoint is refused (`400 token_endpoint must be an https URL`) unless that exact URL is allowed in the gateway's `config.toml`, followed by a restart:
+>
+> ```toml
+> [credential_policy]
+> insecure_token_endpoints = ["http://<lan-ip>:8180/realms/agents/protocol/openid-connect/token"]
+> ```
+>
+> Use this only for a local test IdP. In production, use an `https` token endpoint.
+
 References: [Keycloak OIDC clients](https://www.keycloak.org/docs/latest/server_admin/#_oidc_clients), [Managing users](https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-users_server_administration_guide).
 
 ---
