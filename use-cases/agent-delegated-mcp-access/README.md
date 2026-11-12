@@ -551,6 +551,8 @@ cp a2a-agent-bridge.js ~/.config/Claude/
 %APPDATA%\Claude\claude_desktop_config.json
 ```
 
+![Claude Desktop config with MCP servers section](./docs/images/claude-mcp-server.png)
+
 2. Add the following to the `mcpServers` section:
 
 ```json
@@ -612,6 +614,8 @@ I can work with GitHub on your behalf. Try:
 - Specific question: "what are your capabilities?" that only your agent knows the answer to
 - No MCP tool calls needed — just agent responding with its help text
 
+![Claude agent responding with capabilities](./docs/images/claude-agent-chat-1.png)
+
 **Alternative prompts for Phase A (all guarantee agent is called):**
 - `Hi Affinidi agent, what tools do you have?`
 - `Affinidi agent, what can you do?`
@@ -643,6 +647,8 @@ You are @yourusername on GitHub. Your profile shows:
 ```
 
 ✅ If you see your actual GitHub profile → full MCP integration works!
+
+![Claude agent with full GitHub MCP integration](./docs/images/claude-agent-chat-2.png)
 
 **Other Phase B prompts to try:**
 - `Affinidi agent, list my repositories`
