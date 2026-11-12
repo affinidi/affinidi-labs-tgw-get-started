@@ -571,7 +571,7 @@
   </main>
   <script>
     const $ = (id) => document.getElementById(id);
-    const PROMPTS = [
+    let PROMPTS = [
       "Say Hi",
       "Who am I on GitHub?",
       "List my repositories",
@@ -780,6 +780,14 @@
 
     async function init() {
       const cfg = await (await fetch("/config")).json();
+      // Add bonus prompts if available
+      if (cfg.bonusAvailable) {
+        PROMPTS.push(
+          "What bonus tools are available?",
+          "Weather forecast for New York for 3 days",
+          "Bonus weather in London"
+        );
+      }
   const direct = !cfg.agentViaGateway && !cfg.mcpViaGateway;
   $("flowGw").hidden = direct;
   $("flowDirect").hidden = !direct;

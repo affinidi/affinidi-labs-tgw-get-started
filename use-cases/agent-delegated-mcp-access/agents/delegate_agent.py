@@ -47,14 +47,31 @@ IDENTITY = {
     "version": "1.0.0",
 }
 
+BONUS_MCP_URL = os.environ.get(
+    "BONUS_MCP_URL",
+    "https://thatcher-gateway.proxy.apse1.octo.affinidi.io/outbound/routes/bonus/outside",
+).strip()
+
 HELP_TEXT = (
     "I can work with GitHub on your behalf. Try:\n"
     "- Who am I on GitHub?\n"
     "- List my repositories\n"
     "- What GitHub tools can you use?\n"
     "- Show my GitHub projects\n"
-    "- Show my notifications"
+    "- Show my notifications\n"
+    + (
+        "Bonus MCP server:\n"
+        "- What bonus tools are available?\n"
+        "- Weather forecast for New York for 3 days\n"
+        "- Bonus weather in London"
+        if BONUS_MCP_URL
+        else ""
+    )
 )
+BONUS_META = {"agentIdentity": {
+    "name": "Agent MCP Client", "version": "1.0.0"}}
+WEATHER_PATTERN = re.compile(
+    r"\b(?:in|for)\s+([A-Za-z][A-Za-z .'-]*?)(?:\s+(?:for|over|next)\s+(\d+)\s*days?)?\s*$", re.I)
 
 GREETING_PATTERN = re.compile(
     r"^\s*(say\s+)?(hi|hello|hey|hiya|good (morning|afternoon|evening))\b", re.I
@@ -72,7 +89,8 @@ class AgentConfig:
         self.via_gateway = bool(gateway_url)
         self.mcp_url = gateway_url or os.environ.get("MCP_URL", "").strip()
         if not self.mcp_url.lower().startswith("https://"):
-            raise EntraConfigError("Set MCP_GATEWAY_URL or MCP_URL to an https MCP endpoint")
+            raise EntraConfigError(
+                "Set MCP_GATEWAY_URL or MCP_URL to an https MCP endpoint")
 
 
 # --- intent -> MCP tool -------------------------------------------------------
@@ -81,6 +99,16 @@ class AgentConfig:
 def plan(text: str) -> tuple[str, dict] | None:
     """Map a prompt to a (tool, arguments) pair. Rule-based, no LLM."""
     lowered = text.lower()
+    if BONUS_MCP_URL:
+        if "bonus" in lowered and "tool" in lowered:
+            return ("__bonus_list_tools__", {})
+        if "weather" in lowered or "forecast" in lowered:
+            found = WEATHER_PATTERN.search(text.strip().rstrip("?.!"))
+            return (
+                "__bonus_weather__",
+                {"city": (found[1].strip() if found else "New York"),
+                 "days": int(found[2]) if found and found[2] else 3},
+            )
     if "tool" in lowered:
         return ("__list_tools__", {})
     if "team" in lowered:
@@ -150,9 +178,11 @@ def format_items(title: str, data, empty: str) -> str:
     if not items:
         return empty
     total = data.get("total_count") if isinstance(data, dict) else None
-    lines = [f"{title}" + (f" ({total} total)" if isinstance(total, int) else "")]
+    lines = [f"{title}" +
+             (f" ({total} total)" if isinstance(total, int) else "")]
     for item in items[:10]:
-        label = item.get("full_name") or item.get("title") or item.get("name") or item.get("login") or "?"
+        label = item.get("full_name") or item.get(
+            "title") or item.get("name") or item.get("login") or "?"
         if item.get("number"):
             label = f"#{item['number']} {label}"
         extras = []
@@ -172,7 +202,8 @@ def format_items(title: str, data, empty: str) -> str:
 def format_profile(data) -> str:
     if not isinstance(data, dict):
         return "GitHub returned an empty profile."
-    details = data.get("details") if isinstance(data.get("details"), dict) else {}
+    details = data.get("details") if isinstance(
+        data.get("details"), dict) else {}
     merged = {**details, **data}
     fields = [
         ("Login", merged.get("login")),
@@ -182,12 +213,24 @@ def format_profile(data) -> str:
         ("Followers", merged.get("followers")),
         ("Profile", merged.get("profile_url") or merged.get("html_url")),
     ]
-    lines = [f"- {label}: {value}" for label, value in fields if value not in (None, "")]
+    lines = [f"- {label}: {value}" for label,
+             value in fields if value not in (None, "")]
     return "Your GitHub profile (via the gateway's delegated token):\n" + "\n".join(lines)
 
 
 async def run_plan(mcp: McpGatewayClient, tool: str, args: dict) -> tuple[str, list[str]]:
     """Execute the plan; returns (reply text, MCP tools called)."""
+    if tool == "__bonus_list_tools__":
+        tools = await mcp.list_tools()
+        names = sorted(t.get("name", "?") for t in tools)
+        return (
+            f"The bonus MCP server exposes {len(names)} tools:\n" +
+            "\n".join(f"- {n}" for n in names),
+            ["tools/list"],
+        )
+    if tool == "__bonus_weather__":
+        result = await mcp.call_tool("weather_forecast", args)
+        return tool_text(result)[:3000] or "No result.", ["weather_forecast"]
     if tool == "__list_tools__":
         tools = await mcp.list_tools()
         names = sorted(t.get("name", "?") for t in tools)
@@ -202,7 +245,8 @@ async def run_plan(mcp: McpGatewayClient, tool: str, args: dict) -> tuple[str, l
         if not login:
             return "Could not determine your GitHub login.", ["get_me"]
         result = await mcp.call_tool(
-            "search_repositories", {"query": f"user:{login} sort:updated", "perPage": 10}
+            "search_repositories", {
+                "query": f"user:{login} sort:updated", "perPage": 10}
         )
         return _render("search_repositories", result, f"Repositories for {login}"), [
             "get_me",
@@ -215,7 +259,8 @@ async def run_plan(mcp: McpGatewayClient, tool: str, args: dict) -> tuple[str, l
             return "Could not determine your GitHub login.", ["get_me"]
         result = await mcp.call_tool(
             "projects_list",
-            {"method": "list_projects", "owner": login, "owner_type": "user", "perPage": 10},
+            {"method": "list_projects", "owner": login,
+                "owner_type": "user", "perPage": 10},
         )
         return _render("projects_list", result, f"Projects for {login}"), [
             "get_me",
@@ -264,20 +309,23 @@ class GitHubAgentExecutor(AgentExecutor):
         state = context.call_context.state if context.call_context else {}
         transit_token = state.get("transit_token", "")
         claims = state.get("claims", {})
-        user = claims.get("name") or claims.get("preferred_username") or claims.get("oid", "unknown")
+        user = claims.get("name") or claims.get(
+            "preferred_username") or claims.get("oid", "unknown")
         prompt = context.get_user_input().strip()
         record("prompt", agent=AGENT_LABEL, user=user, prompt=prompt)
 
         def reply(text: str, metadata: dict | None = None):
             message = updater.new_agent_message(
                 [Part(text=text)],
-                metadata={IDENTITY_EXTENSION_URI: IDENTITY, **(metadata or {})},
+                metadata={IDENTITY_EXTENSION_URI: IDENTITY,
+                          **(metadata or {})},
             )
             message.extensions.append(IDENTITY_EXTENSION_URI)
             return message
 
         if GREETING_PATTERN.match(prompt):
-            record("plan", agent=AGENT_LABEL, tool=None, note="greeting, answered locally")
+            record("plan", agent=AGENT_LABEL, tool=None,
+                   note="greeting, answered locally")
             await updater.complete(reply(greeting_reply(user)))
             return
         step = plan(prompt)
@@ -293,13 +341,17 @@ class GitHubAgentExecutor(AgentExecutor):
         try:
             # Hand the gateway's transit token back to the GitHub transit point, which
             # does the credential delegation. No token -> the gateway's own error is relayed.
-            record("route", agent=AGENT_LABEL, url=self._config.mcp_url,
-                   via="gateway" if self._config.via_gateway else "direct",
+            bonus = tool.startswith("__bonus_")
+            target = BONUS_MCP_URL if bonus else self._config.mcp_url
+            record("route", agent=AGENT_LABEL, url=target,
+                   via="gateway" if (
+                       bonus or self._config.via_gateway) else "direct",
                    transit_token_present=bool(transit_token))
             async with McpGatewayClient(
-                self._config.mcp_url,
-                transit_token=transit_token, via_gateway=self._config.via_gateway,
+                target,
+                transit_token=transit_token, via_gateway=bonus or self._config.via_gateway,
                 on_exchange=on_exchange,
+                meta=BONUS_META if bonus else None,
             ) as mcp:
                 text, called = await run_plan(mcp, tool, args)
             record("completed", agent=AGENT_LABEL, tools=called)
@@ -308,7 +360,8 @@ class GitHubAgentExecutor(AgentExecutor):
             raw = error.raw()
             if error.consent_required:
                 consent = [c.as_dict() for c in error.consent]
-                record("consent_required", agent=AGENT_LABEL, consent=consent, upstream=raw)
+                record("consent_required", agent=AGENT_LABEL,
+                       consent=consent, upstream=raw)
                 await updater.requires_auth(
                     reply(
                         "GitHub authorization is required. Open the authorization link, "
@@ -317,13 +370,17 @@ class GitHubAgentExecutor(AgentExecutor):
                     )
                 )
                 return
-            record("failed", agent=AGENT_LABEL, status=error.status, error=str(error), upstream=raw)
+            record("failed", agent=AGENT_LABEL, status=error.status,
+                   error=str(error), upstream=raw)
             await updater.failed(reply(str(error), {UPSTREAM_ERROR_KEY: raw}))
         except Exception as error:  # noqa: BLE001 - surface unexpected agent bugs to the portal
-            raw = {"source": "agent", "exception": type(error).__name__, "message": str(error)}
-            record("failed", agent=AGENT_LABEL, error=f"{type(error).__name__}: {error}", upstream=raw)
+            raw = {"source": "agent", "exception": type(
+                error).__name__, "message": str(error)}
+            record("failed", agent=AGENT_LABEL,
+                   error=f"{type(error).__name__}: {error}", upstream=raw)
             await updater.failed(
-                reply(f"Agent error: {type(error).__name__}: {error}", {UPSTREAM_ERROR_KEY: raw})
+                reply(f"Agent error: {type(error).__name__}: {error}", {
+                      UPSTREAM_ERROR_KEY: raw})
             )
 
     async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
@@ -336,11 +393,14 @@ def build_app(port: int):
     # its 401/consent errors are relayed verbatim. Set AGENT_VALIDATE_TOKEN=true to
     # also validate the Entra token at the agent (defense in depth).
     if os.environ.get("AGENT_VALIDATE_TOKEN", "false").strip().lower() == "true":
-        validator = EntraTokenValidator(load_settings("USER_TOKEN_AUDIENCE", "USER_TOKEN_SCOPE"))
+        validator = EntraTokenValidator(load_settings(
+            "USER_TOKEN_AUDIENCE", "USER_TOKEN_SCOPE"))
     else:
         validator = PassthroughValidator()
-        print(f"[{AGENT_LABEL}] token validation disabled - gateway enforces auth", flush=True)
-    base_url = os.environ.get("AGENT_PUBLIC_URL", f"http://localhost:{port}").rstrip("/")
+        print(
+            f"[{AGENT_LABEL}] token validation disabled - gateway enforces auth", flush=True)
+    base_url = os.environ.get(
+        "AGENT_PUBLIC_URL", f"http://localhost:{port}").rstrip("/")
     card = create_card(
         name=AGENT_NAME,
         description="Works with GitHub on behalf of a signed-in user through the GitHub MCP "

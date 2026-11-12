@@ -206,7 +206,9 @@ class McpGatewayClient:
         via_gateway: bool = True,
         on_exchange: Callable[[dict], None] | None = None,
         timeout: float = 30.0,
+        meta: dict | None = None,
     ) -> None:
+        self._meta = meta
         self._url = url
         self._token = bearer_token
         self._transit_token = transit_token
@@ -288,6 +290,8 @@ class McpGatewayClient:
     async def _rpc(self, method: str, params: dict | None, *, notification: bool = False) -> Any:
         assert self._client is not None
         message: dict[str, Any] = {"jsonrpc": "2.0", "method": method}
+        if self._meta:
+            message["_meta"] = self._meta
         if params is not None:
             message["params"] = params
         request_id = None
