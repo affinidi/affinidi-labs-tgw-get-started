@@ -369,6 +369,23 @@ Use the portal's trace panel to see each hop and the headers the agent received.
 
 Once your agent is deployed on the gateway with Entra SSO, you can expose it to Claude Desktop via A2A API Key authentication. This allows external tools (like Claude) to call your agent securely.
 
+### Why You Need the Bridge File
+
+Claude Desktop uses the **MCP (Model Context Protocol)** standard to communicate with tools. However, your agent speaks the **A2A (Agent-to-Agent) v1.0 protocol** via the Affinidi gateway. The bridge file (`a2a-agent-bridge.js`) **translates between these two protocols**:
+
+```
+Claude (MCP) → Bridge (translator) → A2A Agent → Gateway → GitHub MCP
+```
+
+**What the bridge does:**
+1. Receives MCP tool calls from Claude
+2. Converts them to A2A v1.0 format
+3. Adds your API key for authentication
+4. Sends to your agent via the gateway
+5. Returns agent's response back to Claude
+
+Without the bridge, Claude and your agent couldn't communicate because they speak different protocols.
+
 ### 3.1 Configure A2A Surface with API Key Auth
 
 In the **Affinidi Agent Gateway dashboard**, open your surface and follow these steps:
