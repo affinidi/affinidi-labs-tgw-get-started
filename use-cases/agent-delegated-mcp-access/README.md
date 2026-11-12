@@ -369,6 +369,33 @@ Use the portal's trace panel to see each hop and the headers the agent received.
 
 Once your agent is deployed on the gateway with Entra SSO, you can expose it to Claude Desktop via A2A API Key authentication. This allows external tools (like Claude) to call your agent securely.
 
+### Why API Key Instead of Entra SSO?
+
+Your agent uses **Entra SSO** internally — that's secure for human users signing in through the portal. But for **external tools like Claude**, Entra SSO won't work:
+
+**Entra SSO issues for external tools:**
+- ❌ Requires interactive user login (browser redirect)
+- ❌ No way for Claude to provide Entra credentials
+- ❌ Not designed for service-to-service authentication
+- ❌ Would expose your Entra setup to external systems
+
+**API Key advantages:**
+- ✅ Non-interactive authentication
+- ✅ Easy for Claude to include in each request
+- ✅ Can be revoked independently
+- ✅ Keeps Entra SSO private (portal only)
+- ✅ Each API key can be tracked/audited separately
+- ✅ Different keys for different clients (Claude, other tools, etc.)
+
+**Architecture:**
+```
+Portal (Entra SSO) ─────┐
+                        └─> Agent Gateway
+Claude (API Key) ────────┘
+```
+
+Both can access your agent, but via different authentication methods — Entra for humans, API Key for external tools.
+
 ### Why You Need the Bridge File
 
 Claude Desktop uses the **MCP (Model Context Protocol)** standard to communicate with tools. However, your agent speaks the **A2A (Agent-to-Agent) v1.0 protocol** via the Affinidi gateway. The bridge file (`a2a-agent-bridge.js`) **translates between these two protocols**:
@@ -480,13 +507,11 @@ Now integrate your agent into Claude Desktop:
 
 The bridge file is included in this repository:
 
-```bash
-# From the repo root
-a2a-agent-bridge.js
+📄 **[a2a-agent-bridge.js](./a2a-agent-bridge.js)** — Located in this directory
 
-# Or full path
-use-cases/agent-delegated-mcp-access/a2a-agent-bridge.js
-```
+You can also find it at:
+- Full path: `use-cases/agent-delegated-mcp-access/a2a-agent-bridge.js`
+- Download from GitHub repo
 
 #### Step 2: Install the Bridge
 
