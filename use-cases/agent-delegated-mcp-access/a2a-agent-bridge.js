@@ -22,9 +22,21 @@ let requestCounter = 0;
 let contextId = null;
 let taskId = null;
 
+// Task states the gateway treats as still running. Anything else is terminal, and
+// replaying its taskId on the next message gets us -32602 "terminal state".
+const LIVE_TASK_STATES = new Set([
+  'TASK_STATE_SUBMITTED',
+  'TASK_STATE_WORKING',
+  'TASK_STATE_INPUT_REQUIRED',
+]);
+
 const CALL_AGENT_TOOL = {
-  name: 'call_agent',
-  description: 'Send a prompt to your A2A agent.',
+  name: 'github_agent',
+  description:
+    "Answer questions and act on the user's GitHub account: identity, repositories, " +
+    'issues, pull requests and commits. Works through the GitHub MCP server behind an ' +
+    "Agent Gateway surface holding the user's delegated GitHub OAuth token. Use this for " +
+    'any GitHub question about this user.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -36,6 +48,22 @@ const CALL_AGENT_TOOL = {
     required: ['prompt'],
   },
 };
+
+// Older docs and chats refer to the tool by its original name.
+const TOOL_ALIASES = new Set([CALL_AGENT_TOOL.name, 'call_agent']);
+
+// On TASK_STATE_AUTH_REQUIRED the gateway returns the consent links in metadata. The user
+// never sees metadata, so fold them into the reply text or they are stranded.
+function formatConsentLinks(metadata) {
+  const consents = metadata?.consent_required;
+  if (!Array.isArray(consents) || consents.length === 0) return '';
+  return consents
+    .map((c) => {
+      const scopes = Array.isArray(c.scopes) ? ` (scopes: ${c.scopes.join(', ')})` : '';
+      return `\n\n${c.provider_name || 'Authorization'}${scopes}:\n${c.authorization_url}`;
+    })
+    .join('');
+}
 
 const rl = readline.createInterface({ input: process.stdin });
 
@@ -151,20 +179,31 @@ async function callAgent(prompt) {
     }
 
     const result = response.body;
-    
-    // Extract and store context from response for next message
-    if (result?.result?.task) {
-      contextId = result.result.task.contextId;
-      taskId = result.result.task.id;
-      console.error(`[bridge] Updated context: taskId=${taskId}, contextId=${contextId}`);
+
+    // JSON-RPC errors come back on HTTP 200, so the status check above misses them.
+    if (result?.error) {
+      const message = result.error.message || JSON.stringify(result.error);
+      console.error(`[bridge] JSON-RPC error: ${message}`);
+      taskId = null;  // whatever task we were holding is unusable
+      return { type: 'text', text: `Agent error: ${message}` };
     }
-    
+
+    // Extract and store context from response for next message. contextId carries the
+    // conversation; taskId is only valid while the task is still running. Holding a
+    // finished taskId wedges every later message with "is in terminal state".
+    const task = result?.result?.task;
+    if (task) {
+      contextId = task.contextId;
+      taskId = LIVE_TASK_STATES.has(task.status?.state) ? task.id : null;
+      console.error(`[bridge] Updated context: state=${task.status?.state} taskId=${taskId}, contextId=${contextId}`);
+    }
+
     // Extract agent's response text
-    if (result?.result?.task?.status?.message?.parts?.[0]?.text) {
-      const replyText = result.result.task.status.message.parts[0].text;
+    if (task?.status?.message?.parts?.[0]?.text) {
+      const replyText = task.status.message.parts[0].text;
       return {
         type: 'text',
-        text: replyText,
+        text: replyText + formatConsentLinks(task.status.message.metadata),
       };
     }
 
@@ -208,6 +247,11 @@ function respondJson(obj) {
 
 async function handleMessage(msg) {
   try {
+    // Notifications carry no id and must never be answered.
+    if (msg.id === undefined || msg.method?.startsWith('notifications/')) {
+      return;
+    }
+
     if (msg.method === 'initialize') {
       respondJson({
         jsonrpc: '2.0',
@@ -237,7 +281,7 @@ async function handleMessage(msg) {
       const toolName = msg.params?.name;
       const args = msg.params?.arguments || {};
 
-      if (toolName === 'call_agent') {
+      if (TOOL_ALIASES.has(toolName)) {
         const result = await callAgent(args.prompt);
         respondJson({
           jsonrpc: '2.0',
