@@ -93,7 +93,6 @@ async def index(_r: Request) -> FileResponse:
 
 
 async def config(_r: Request) -> JSONResponse:
-    bonus_mcp_url = _env("BONUS_MCP_URL")
     return JSONResponse(
         {
             "configured": bool(_env("PORTAL_CLIENT_ID") and _env("PORTAL_CLIENT_SECRET")),
@@ -102,7 +101,6 @@ async def config(_r: Request) -> JSONResponse:
             "agentViaGateway": bool(_env("AGENT_GATEWAY_URL")),
             "mcpUrl": _env("MCP_GATEWAY_URL") or _env("MCP_URL"),
             "mcpViaGateway": bool(_env("MCP_GATEWAY_URL")),
-            "bonusAvailable": bool(bonus_mcp_url),
         }
     )
 

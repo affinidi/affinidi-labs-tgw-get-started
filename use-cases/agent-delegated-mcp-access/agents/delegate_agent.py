@@ -47,11 +47,6 @@ IDENTITY = {
     "version": "1.0.0",
 }
 
-BONUS_MCP_URL = os.environ.get(
-    "BONUS_MCP_URL",
-    "https://thatcher-gateway.proxy.apse1.octo.affinidi.io/outbound/routes/bonus/outside",
-).strip()
-
 HELP_TEXT = (
     "I can work with GitHub on your behalf. Try:\n"
     "- Who am I on GitHub?\n"
@@ -59,19 +54,7 @@ HELP_TEXT = (
     "- What GitHub tools can you use?\n"
     "- Show my GitHub projects\n"
     "- Show my notifications\n"
-    + (
-        "Bonus MCP server:\n"
-        "- What bonus tools are available?\n"
-        "- Weather forecast for New York for 3 days\n"
-        "- Bonus weather in London"
-        if BONUS_MCP_URL
-        else ""
-    )
 )
-BONUS_META = {"agentIdentity": {
-    "name": "Agent MCP Client", "version": "1.0.0"}}
-WEATHER_PATTERN = re.compile(
-    r"\b(?:in|for)\s+([A-Za-z][A-Za-z .'-]*?)(?:\s+(?:for|over|next)\s+(\d+)\s*days?)?\s*$", re.I)
 
 GREETING_PATTERN = re.compile(
     r"^\s*(say\s+)?(hi|hello|hey|hiya|good (morning|afternoon|evening))\b", re.I
@@ -99,16 +82,6 @@ class AgentConfig:
 def plan(text: str) -> tuple[str, dict] | None:
     """Map a prompt to a (tool, arguments) pair. Rule-based, no LLM."""
     lowered = text.lower()
-    if BONUS_MCP_URL:
-        if "bonus" in lowered and "tool" in lowered:
-            return ("__bonus_list_tools__", {})
-        if "weather" in lowered or "forecast" in lowered:
-            found = WEATHER_PATTERN.search(text.strip().rstrip("?.!"))
-            return (
-                "__bonus_weather__",
-                {"city": (found[1].strip() if found else "New York"),
-                 "days": int(found[2]) if found and found[2] else 3},
-            )
     if "tool" in lowered:
         return ("__list_tools__", {})
     if "team" in lowered:
@@ -217,20 +190,8 @@ def format_profile(data) -> str:
              value in fields if value not in (None, "")]
     return "Your GitHub profile (via the gateway's delegated token):\n" + "\n".join(lines)
 
-
 async def run_plan(mcp: McpGatewayClient, tool: str, args: dict) -> tuple[str, list[str]]:
     """Execute the plan; returns (reply text, MCP tools called)."""
-    if tool == "__bonus_list_tools__":
-        tools = await mcp.list_tools()
-        names = sorted(t.get("name", "?") for t in tools)
-        return (
-            f"The bonus MCP server exposes {len(names)} tools:\n" +
-            "\n".join(f"- {n}" for n in names),
-            ["tools/list"],
-        )
-    if tool == "__bonus_weather__":
-        result = await mcp.call_tool("weather_forecast", args)
-        return tool_text(result)[:3000] or "No result.", ["weather_forecast"]
     if tool == "__list_tools__":
         tools = await mcp.list_tools()
         names = sorted(t.get("name", "?") for t in tools)
@@ -341,17 +302,13 @@ class GitHubAgentExecutor(AgentExecutor):
         try:
             # Hand the gateway's transit token back to the GitHub transit point, which
             # does the credential delegation. No token -> the gateway's own error is relayed.
-            bonus = tool.startswith("__bonus_")
-            target = BONUS_MCP_URL if bonus else self._config.mcp_url
-            record("route", agent=AGENT_LABEL, url=target,
-                   via="gateway" if (
-                       bonus or self._config.via_gateway) else "direct",
+            record("route", agent=AGENT_LABEL, url=self._config.mcp_url,
+                   via="gateway" if self._config.via_gateway else "direct",
                    transit_token_present=bool(transit_token))
             async with McpGatewayClient(
-                target,
-                transit_token=transit_token, via_gateway=bonus or self._config.via_gateway,
+                self._config.mcp_url,
+                transit_token=transit_token, via_gateway=self._config.via_gateway,
                 on_exchange=on_exchange,
-                meta=BONUS_META if bonus else None,
             ) as mcp:
                 text, called = await run_plan(mcp, tool, args)
             record("completed", agent=AGENT_LABEL, tools=called)

@@ -21,6 +21,8 @@ You run a **Personal Agent** (A2A 1.0) and a small sign-in portal. First you run
 - [Phase 1 — Run Without Gateway](#phase-1--run-without-gateway)
 - [Phase 2 — Run With Gateway](#phase-2--run-with-gateway)
   - [2.1 GitHub OAuth app](#21--create-the-github-oauth-app) · [2.2 Secrets](#22--store-the-oauth-client-in-gateway-secrets) · [2.3 Credential provider](#23--create-the-github-credential-provider) · [2.4 JWT strategy](#24--create-the-jwt-verification-strategy-entra-sso) · [2.5 Surface policy](#25--create-the-surface-policy) · [2.6 Surface](#26--create-the-agent-surface) · [2.7 MCP transit point](#27--add-the-mcp-transit-point-with-credential-delegation) · [2.8 Configure](#28--point-the-lab-at-the-gateway) · [2.9 Try it](#29--try-it)
+- [Phase 3 — Integrate with Claude Desktop](#phase-3--integrate-with-claude-desktop)
+  - [3.1 Configure A2A Surface with API Key Auth](#31-configure-a2a-surface-with-api-key-auth) · [3.2 Test with curl](#32-test-the-agent-with-curl) · [3.3 Set Up Claude Desktop Integration](#33-set-up-claude-desktop-integration)
 - [Try These Prompts](#try-these-prompts)
 - [Troubleshooting](#troubleshooting)
 
@@ -363,11 +365,261 @@ Use the portal's trace panel to see each hop and the headers the agent received.
 
 ---
 
+## Phase 3 — Integrate with Claude Desktop
+
+Once your agent is deployed on the gateway with Entra SSO, you can expose it to Claude Desktop via A2A API Key authentication. This allows external tools (like Claude) to call your agent securely.
+
+### 3.1 Configure A2A Surface with API Key Auth
+
+In the **Affinidi Agent Gateway dashboard**, open your surface and follow these steps:
+
+#### Step 1: Select Caller Context and Add Auth Method
+
+1. Open **Agent Gateway Dashboard** → your agent surface
+2. Click **Caller Context** (or similar section for authentication config)
+3. Click **Add Auth Method** → select **API Key Provider**
+
+   ![Add API Key Provider auth method](./docs/images/gw-auth-apikey.png)
+
+#### Step 2: Configure Identity Extraction
+
+1. Select the identity element between **AP** (Agent Access Point) and **MA** (MCP Access Point)
+2. Set **Identity Extraction Type** → `From API Key`
+   - This tells the gateway to extract the caller's identity from the API key header
+   - Each API key can be mapped to a specific identity/client
+
+   ![Configure identity extraction from API Key](./docs/images/gw-identity-api-key.png)
+
+#### Step 3: Generate API Keys
+
+1. In **Agent Gateway Dashboard**, go to **Secrets** → **API Keys**
+2. Click **Create New API Key**
+3. Fill in:
+   - **Select A2A Surface**: Choose your agent surface
+   - **Client Name**: Enter a meaningful name (e.g., "Claude Desktop - Paramesh", "Claude Desktop - Jane")
+   - Click **Create**
+4. **Copy the generated API key** (you'll need it for Claude setup)
+
+   ![Create new API Key in Agent Gateway](./docs/images/gw-api-key-create.png)
+
+> You can generate multiple API keys for different clients/users. Each key maps to a unique identity.
+
+### 3.2 Test the Agent with curl
+
+Before setting up Claude, test that your agent is accessible via API Key:
+
+```bash
+# Set your API key
+API_KEY="your-generated-api-key-here"
+AGENT_URL="https://your-gateway-url/agents/archive/github"
+
+# Test with curl
+curl -X POST "$AGENT_URL" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: $API_KEY" \
+  -H "A2A-Version: 1.0" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": "msg-001",
+    "method": "SendMessage",
+    "params": {
+      "message": {
+        "messageId": "test-001",
+        "role": "ROLE_USER",
+        "parts": [
+          {"text": "Hi"}
+        ]
+      }
+    }
+  }'
+```
+
+**Expected Response:**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "task": {
+      "id": "task-123",
+      "contextId": "ctx-456",
+      "status": {
+        "message": {
+          "parts": [{ "text": "Hi! How can I help you with GitHub today?" }]
+        }
+      }
+    }
+  }
+}
+```
+
+If you get a successful response, your agent is ready for Claude! ✅
+
+### 3.3 Set Up Claude Desktop Integration
+
+Now integrate your agent into Claude Desktop:
+
+#### Step 1: Get the Bridge File
+
+The bridge file is included in this repository:
+
+```bash
+# From the repo root
+a2a-agent-bridge.js
+
+# Or full path
+use-cases/agent-delegated-mcp-access/a2a-agent-bridge.js
+```
+
+#### Step 2: Install the Bridge
+
+Copy the file to Claude's config folder:
+
+**macOS:**
+
+```bash
+cp a2a-agent-bridge.js ~/Library/Application\ Support/Claude/
+```
+
+**Windows:**
+
+```cmd
+copy a2a-agent-bridge.js %APPDATA%\Claude\
+```
+
+**Linux:**
+
+```bash
+cp a2a-agent-bridge.js ~/.config/Claude/
+```
+
+#### Step 3: Update Claude Desktop Config
+
+1. Open the Claude Desktop config file:
+
+**macOS/Linux:**
+
+```bash
+~/.claude_desktop_config.json
+```
+
+**Windows:**
+
+```
+%APPDATA%\Claude\claude_desktop_config.json
+```
+
+2. Add the following to the `mcpServers` section:
+
+```json
+{
+  "mcpServers": {
+    "affinidi-agent": {
+      "command": "node",
+      "args": ["/path/to/a2a-agent-bridge.js"],
+      "env": {
+        "AGENT_URL": "https://your-gateway-url/agents/archive/github",
+        "AGENT_API_KEY": "your-generated-api-key-here"
+      }
+    }
+  }
+}
+```
+
+**Update the paths and values:**
+
+- Replace `/path/to/a2a-agent-bridge.js` with the full path where you installed the bridge file from Step 2:
+  - macOS example: `/Users/yourname/Library/Application Support/Claude/a2a-agent-bridge.js`
+  - Windows example: `C:/Users/yourname/AppData/Roaming/Claude/a2a-agent-bridge.js`
+  - Linux example: `/home/yourname/.config/Claude/a2a-agent-bridge.js`
+- Replace `https://your-gateway-url/agents/archive/github` with your actual Agent Gateway URL
+- Replace `your-generated-api-key-here` with the API key you generated in Phase 3.1
+
+#### Step 4: Restart Claude
+
+1. **Close Claude Desktop completely**
+2. **Reopen Claude Desktop**
+3. The bridge will load automatically
+
+#### Step 5: Test in Claude
+
+Open a new chat and test in two phases:
+
+**Phase A: Verify Agent Connection (Agent-Only Response)**
+
+Send a prompt that explicitly addresses your agent and asks for its capabilities:
+
+```
+Hi Affinidi agent, what are your capabilities?
+```
+
+**Expected response:**
+```
+I can work with GitHub on your behalf. Try:
+- Who am I on GitHub?
+- List my repositories
+- What GitHub tools can you use?
+- Show my GitHub projects
+- Show my notifications
+```
+
+✅ If you see this exact GitHub-specific help text → agent was definitely called!
+
+**Why this prompt works:**
+- Explicit tool reference: "Affinidi agent" ensures Claude routes to your agent
+- Specific question: "what are your capabilities?" that only your agent knows the answer to
+- No MCP tool calls needed — just agent responding with its help text
+
+**Alternative prompts for Phase A (all guarantee agent is called):**
+- `Hi Affinidi agent, what tools do you have?`
+- `Affinidi agent, what can you do?`
+- `Talk to Affinidi agent: what are your capabilities?`
+
+**Phase B: Test GitHub MCP Integration**
+
+Once Phase A works, try a GitHub query:
+
+```
+Affinidi agent, who am I on GitHub?
+```
+
+Expected flow:
+
+1. Claude calls `call_agent` tool (affinidi-agent)
+2. Bridge converts to A2A v1.0 format with your API key
+3. Your agent receives message via gateway
+4. **Agent routes to GitHub MCP** (queries your GitHub profile)
+5. Agent returns your GitHub identity
+6. Claude presents it to you
+
+**Expected response:**
+```
+You are @yourusername on GitHub. Your profile shows:
+- Name: Your Full Name
+- Location: ...
+- Bio: ...
+```
+
+✅ If you see your actual GitHub profile → full MCP integration works!
+
+**Other Phase B prompts to try:**
+- `Affinidi agent, list my repositories`
+- `Affinidi agent, show my open issues`
+- `Affinidi agent, what GitHub tools can you use?`
+
+**Other prompts to try:**
+
+- "List my repositories"
+- "Show my open issues"
+- "What GitHub tools can you use?"
+
+---
+
 ## Try These Prompts
 
 | Prompt                         | Without gateway | With gateway                        |
 | ------------------------------ | --------------- | ----------------------------------- |
-| Say Hi                         | Works           | Works                               |
+| Say Hi                         | Works           | Works (agent only, no MCP)          |
 | Who am I on GitHub?            | 401             | Consent, then your profile          |
 | List my repositories           | 401             | Your repositories                   |
 | What GitHub tools can you use? | 401             | Only the tools the gateway allows   |
