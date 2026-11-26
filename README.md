@@ -520,7 +520,7 @@ Surfaces are the fundamental routing unit. Each surface defines:
 ## Prerequisites
 
 - An Agent Gateway to connect to, either:
-  - access to an Affinidi project with Agent Gateway enabled (whitelisted), or
+  - an Affinidi project with Agent Gateway enabled, or
   - Docker with Compose v2, to [run the gateway yourself](#option-b-run-agent-gateway-yourself-with-docker)
 - Python 3.10+
 - ngrok (for local MCP/A2A servers — **not needed** for Vertex AI agent)
@@ -538,7 +538,7 @@ Choose one way to get an Agent Gateway. The rest of this guide works the same wi
 #### Step 1: Create Agent Gateway Configuration
 
 1. Log in to the [Affinidi Developer Portal](https://portal.affinidi.com)
-2. Select your project from the top left menu (only whitelisted projects can create a Agent Gateway)
+2. Select your project from the top left menu
 3. Click on `Agent Gateway` in the left menu
 4. Click `Create Configuration` and provide a name and description
 
@@ -577,7 +577,7 @@ docker compose up -d
 
 When the `agent-gateway` container is `healthy`, open **<http://localhost:8080/dashboard/>** and register. The first account becomes the administrator. Use `localhost`, not `127.0.0.1`: browsers do not allow passkeys on an IP address.
 
-To use other ports, set `AG_HTTP_PORT` and `AG_HTTPS_PORT` in a `.env` file **before the first start**. The guide covers this, running on a server with a public HTTPS address, installing a certificate, protecting the secret keys, backup and restore, upgrades, and use without internet access: [gateway-docker-guide/README.md](gateway-docker-guide/README.md).
+To change settings such as the ports, copy the example file with `cp .env.example .env` and edit `.env` **before the first start**. It lists every setting with its default value. The guide covers this, running on a server with a public HTTPS address, installing a certificate, protecting the secret keys, backup and restore, upgrades, and use without internet access: [gateway-docker-guide/README.md](gateway-docker-guide/README.md).
 
 > The gateway version is set by the image in `compose.yaml`. The dashboard steps in the rest of this guide are the same for both options.
 

@@ -75,7 +75,13 @@ This means:
 
 The setup step does **not** create a `.env` file. Without `.env`, the gateway uses the default settings for a trial on your computer (`http://localhost:8080`).
 
-Create `.env` yourself when you need to change a setting, for example the public address on a server. Section 4, Step 2 lists all settings.
+Create `.env` when you need to change a setting, for example the public address on a server. Copy the example file, which lists every setting with its default value:
+
+```bash
+cp .env.example .env
+```
+
+Section 4, Step 2 explains all settings.
 
 The secret keys are **not** in `.env`. They are created automatically in `secrets/keys.env`.
 
@@ -278,9 +284,13 @@ On a server, other people and agents connect to the gateway through a public add
 
 ### Step 2 — Create the settings file (.env)
 
-The `.env` file is not created automatically. Create a text file named `.env` in the same folder as `compose.yaml`, **before the first start**.
+The `.env` file is not created automatically. Copy the example file in the same folder as `compose.yaml`, **before the first start**, and change the values:
 
-Copy this template and change the values:
+```bash
+cp .env.example .env
+```
+
+`.env.example` contains the template below (it also has `AG_IMAGE`, see the table):
 
 ```bash
 # Public address of the gateway. Change this to your DNS name.

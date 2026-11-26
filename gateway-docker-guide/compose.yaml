@@ -14,7 +14,7 @@
 #   backup_restore/  backups made from the dashboard
 # Later starts never overwrite these files.
 #
-# Optional settings (put them in a file named .env next to this file):
+# Optional settings (copy .env.example to .env next to this file, see that file for all settings):
 #   PUBLIC_URL=https://gateway.example.com   address used by browsers and agents (default: http://localhost:8080)
 #   AG_PUBLISH_ADDRESS=0.0.0.0               open the ports to the network (default: 127.0.0.1, this computer only)
 #                                            Network setting only. Docker needs an IP address here, not a name.
