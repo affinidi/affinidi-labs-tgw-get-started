@@ -65,6 +65,8 @@ Establish governed MCP and A2A connections by routing clients through the Agent 
   - [What is the Agent Gateway?](#what-is-the-agent-gateway)
   - [Prerequisites](#prerequisites-1)
   - [Setup Agent Gateway](#setup-agent-gateway)
+    - [Option A: Managed Agent Gateway (Affinidi Developer Portal)](#option-a-managed-agent-gateway-affinidi-developer-portal)
+    - [Option B: Run Agent Gateway yourself with Docker](#option-b-run-agent-gateway-yourself-with-docker)
   - [Copilot Studio Agent via Agent Gateway](#copilot-studio-agent-via-agent-gateway)
   - [MCP Server via Agent Gateway](#mcp-server-via-agent-gateway)
     - [Optional: Enable Authentication on the MCP Surface Route](#optional-enable-authentication-on-the-mcp-surface-route)
@@ -261,6 +263,9 @@ affinidi-labs-tgw-get-started/
 │   ├── run.sh               # Start the server on port 11100
 │   ├── test.sh              # Test local or gateway endpoints
 │   └── README.md            # Protocol comparison and wire examples
+├── gateway-docker-guide/
+│   ├── compose.yaml         # Run the Agent Gateway with Docker Compose (no build, no clone)
+│   └── README.md            # Full guide: local trial, server setup, backup, upgrade
 ├── a2a-vertex-agent/
 │   ├── agent.py             # Vertex AI A2A agent definition
 │   ├── a2a_client.py        # A2A client for the deployed agent
@@ -514,7 +519,9 @@ Surfaces are the fundamental routing unit. Each surface defines:
 
 ## Prerequisites
 
-- Access to an Affinidi project with Agent Gateway enabled (whitelisted)
+- An Agent Gateway to connect to, either:
+  - an Affinidi project with Agent Gateway enabled, or
+  - Docker with Compose v2, to [run the gateway yourself](#option-b-run-agent-gateway-yourself-with-docker)
 - Python 3.10+
 - ngrok (for local MCP/A2A servers — **not needed** for Vertex AI agent)
 - Ports 11000 and 10000 available
@@ -524,10 +531,14 @@ Surfaces are the fundamental routing unit. Each surface defines:
 
 ## Setup Agent Gateway
 
-### Step 1: Create Agent Gateway Configuration
+Choose one way to get an Agent Gateway. The rest of this guide works the same with either.
+
+### Option A: Managed Agent Gateway (Affinidi Developer Portal)
+
+#### Step 1: Create Agent Gateway Configuration
 
 1. Log in to the [Affinidi Developer Portal](https://portal.affinidi.com)
-2. Select your project from the top left menu (only whitelisted projects can create a Agent Gateway)
+2. Select your project from the top left menu
 3. Click on `Agent Gateway` in the left menu
 4. Click `Create Configuration` and provide a name and description
 
@@ -538,7 +549,7 @@ Surfaces are the fundamental routing unit. Each surface defines:
 
 ![Alt text](docs/images/agent-gateway-done.jpg)
 
-### Step 2: Register and Login to Agent Gateway Control Plane
+#### Step 2: Register and Login to Agent Gateway Control Plane
 
 1. Open the Agent Gateway dashboard URL in your browser
 2. **First-time users:**
@@ -554,6 +565,21 @@ Surfaces are the fundamental routing unit. Each surface defines:
 4. After login you will see the dashboard
 
 ![Alt text](docs/images/gateway-dashboard.jpg)
+
+### Option B: Run Agent Gateway yourself with Docker
+
+Run the gateway on your own computer or server from the published Docker image. You need Docker and one file, [`gateway-docker-guide/compose.yaml`](gateway-docker-guide/compose.yaml). You do not need to build source code or clone the gateway repository.
+
+```bash
+cd gateway-docker-guide
+docker compose up -d
+```
+
+When the `agent-gateway` container is `healthy`, open **<http://localhost:8080/dashboard/>** and register. The first account becomes the administrator. Use `localhost`, not `127.0.0.1`: browsers do not allow passkeys on an IP address.
+
+To change settings such as the ports, copy the example file with `cp .env.example .env` and edit `.env` **before the first start**. It lists every setting with its default value. The guide covers this, running on a server with a public HTTPS address, installing a certificate, protecting the secret keys, backup and restore, upgrades, and use without internet access: [gateway-docker-guide/README.md](gateway-docker-guide/README.md).
+
+> The gateway version is set by the image in `compose.yaml`. The dashboard steps in the rest of this guide are the same for both options.
 
 ---
 
