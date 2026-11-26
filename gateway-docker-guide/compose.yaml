@@ -120,6 +120,8 @@ services:
       - ./secrets:/app/secrets:ro
       - ./storage:/app/_storage
       - ./backup_restore:/app/_backup_restore
+    # The check runs inside the container, which always listens on 8080.
+    # AG_HTTP_PORT changes only the port on your computer, so do not change this URL.
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8080/api/v1/health"]
       interval: 15s
