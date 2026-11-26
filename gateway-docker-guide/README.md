@@ -300,7 +300,7 @@ You can leave out any line. A missing line uses the default value.
 | `AG_HTTP_PORT` | HTTP port on the server. Change it if 8080 is in use. | `8080` | Every start |
 | `AG_HTTPS_PORT` | HTTPS port on the server. Change it if 8443 is in use. Use `443` for option B in Step 3. | `8443` | Every start |
 | `RUST_LOG` | Log level: `error`, `warn`, `info`, or `debug` | `info` | Every start |
-| `AG_IMAGE` | A different Docker image. Use it for an image loaded from a file (section 2.2, workaround A), or when Affinidi asks you to. | The image in `compose.yaml` | Every start |
+| `AG_IMAGE` | A different Docker image. Use it for an image loaded from a file (section 2.2, workaround A), or to run another version (section 8, "Choose the gateway version"). | The image in `compose.yaml` | Every start |
 
 #### Rules for `PUBLIC_URL`
 
@@ -448,7 +448,22 @@ The backup contains the secret keys. Store it securely.
 
 ---
 
-## 8. Upgrade to a later version
+## 8. Choose the gateway version and upgrade
+
+### Choose the gateway version
+
+`compose.yaml` runs the version named in its `image:` line. To run a different release, set `AG_IMAGE` in `.env` to that release's image. No other change is needed, because the setup step reads the version from the image and downloads the matching configuration files.
+
+```bash
+AG_IMAGE=public.ecr.aws/affinidi/agent-gateway:v<version>
+```
+
+- Use an exact version tag, for example `v1.0.10`. There is no `latest` tag. The available versions are listed on <https://gallery.ecr.aws/affinidi/agent-gateway>.
+- Set it **before the first start** to begin on that version. To switch later, follow the upgrade steps below.
+- Use a version that is not much older or newer than the one in `compose.yaml`. The setup step and the configuration files it creates are checked against that release.
+- An `AG_IMAGE` line overrides the image in `compose.yaml`. Remove the line to return to the version in `compose.yaml`.
+
+### Upgrade to a later version
 
 1. Read the release notes of the new version.
 2. Make a backup (section 7).
