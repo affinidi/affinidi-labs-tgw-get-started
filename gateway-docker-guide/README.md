@@ -1,5 +1,13 @@
 # Affinidi Agent Gateway — Docker Guide
 
+## About
+
+Agent Gateway is an intercepting proxy that sits between callers and managed agent backends. It applies identity verification, policy enforcement, and observability to every request, from one configuration layer, without changing agent or backend code. It is protocol aware (A2A, MCP, AP2 and more) and is part of Affinidi Trust Fabric.
+
+For what the gateway does and how it works, see the [Agent Gateway documentation](https://docs.affinidi.com/products/affinidi-trust-fabric/agent-gateway/) and its [overview](https://docs.affinidi.com/products/affinidi-trust-fabric/agent-gateway/overview/).
+
+## Run it with Docker
+
 | | |
 |---|---|
 | Gateway version | The version in the `image:` line of your `compose.yaml`. In this guide it is written as `<version>`, for example `1.0.10`. |
